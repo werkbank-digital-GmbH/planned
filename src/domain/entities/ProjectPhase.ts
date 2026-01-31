@@ -271,10 +271,13 @@ export class ProjectPhase {
    */
   private static validateBereich(bereich: string): void {
     if (!isValidPhaseBereich(bereich)) {
-      throw new ValidationError('Ungültiger Bereich. Erlaubt: produktion, montage', {
-        field: 'bereich',
-        value: bereich,
-      });
+      throw new ValidationError(
+        'Ungültiger Bereich. Erlaubt: produktion, montage, externes_gewerk',
+        {
+          field: 'bereich',
+          value: bereich,
+        }
+      );
     }
   }
 
