@@ -12,6 +12,7 @@ export { UserForm } from './UserForm';
 export type { UserFormData, UserFormProps } from './UserForm';
 
 export { SettingsSidebar } from './SettingsSidebar';
+export { SettingsTabs } from './SettingsTabs';
 export { ProfileForm } from './ProfileForm';
 export { PasswordChangeSection } from './PasswordChangeSection';
 export { CompanyForm } from './CompanyForm';

@@ -12,7 +12,7 @@
 
 DO $$
 DECLARE
-    v_auth_id UUID := 'REPLACE_WITH_YOUR_AUTH_USER_ID'; -- Manuell ersetzen!
+    v_auth_id UUID := '514495d6-ff3f-42ac-8919-29543555185b'; -- Admin Auth User
     v_tenant_id UUID;
     v_admin_id UUID;
     v_planer_id UUID;

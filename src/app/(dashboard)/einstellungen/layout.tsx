@@ -4,13 +4,13 @@ import type { UserRole } from '@/domain/types';
 
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 
-import { SettingsSidebar } from '@/presentation/components/settings';
+import { SettingsTabs } from '@/presentation/components/settings';
 
 /**
  * Settings Layout
  *
  * Layout für alle Einstellungs-Seiten.
- * Zeigt Sidebar mit Navigation basierend auf Benutzerrolle.
+ * Zeigt horizontale Tabs-Navigation basierend auf Benutzerrolle.
  */
 export default async function SettingsLayout({
   children,
@@ -37,9 +37,9 @@ export default async function SettingsLayout({
   const userRole = (userData?.role as UserRole) ?? 'gewerblich';
 
   return (
-    <div className="flex h-full">
-      <SettingsSidebar userRole={userRole} />
-      <div className="flex-1 overflow-auto p-6">{children}</div>
+    <div className="-m-6">
+      <SettingsTabs userRole={userRole} />
+      <div className="p-6">{children}</div>
     </div>
   );
 }
