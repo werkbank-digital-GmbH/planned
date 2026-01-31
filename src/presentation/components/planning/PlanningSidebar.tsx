@@ -8,9 +8,10 @@ import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
 import { CapacityBar } from './CapacityBar';
 import { FilterDropdown } from './FilterDropdown';
+import { ProjectList } from './ProjectList';
 
 interface PlanningSidebarProps {
-  /** Verfügbare Projekte für den Filter */
+  /** Verfügbare Projekte für den Filter und die Projekt-Liste */
   projects: Array<{ id: string; name: string }>;
   /** Verfügbare Mitarbeiter für den Filter */
   users: Array<{ id: string; fullName: string }>;
@@ -54,6 +55,9 @@ export function PlanningSidebar({ projects, users }: PlanningSidebarProps) {
           />
         </CardContent>
       </Card>
+
+      {/* Project List Section */}
+      <ProjectList projects={projects} />
 
       {/* Summary Section */}
       {summary && (
