@@ -102,10 +102,9 @@ export async function middleware(request: NextRequest) {
   // ─────────────────────────────────────────────────────────────────────────
   // 3. Session prüfen
   // ─────────────────────────────────────────────────────────────────────────
-  const {
-    data: { user: authUser },
-    error: authError,
-  } = await supabase.auth.getUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error: authError } = await (supabase.auth as any).getUser();
+  const authUser = data?.user;
 
   const isAuthenticated = !!authUser && !authError;
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
