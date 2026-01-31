@@ -586,12 +586,16 @@ export async function getProjectWeekDataAction(input: {
       absenceRepo
     );
 
+    console.log('[getProjectWeekDataAction] Executing with tenantId:', currentUser.tenantId, 'weekStart:', validatedFields.data.weekStart);
+
     const result = await query.executeProjectCentric({
       tenantId: currentUser.tenantId,
       weekStart: new Date(validatedFields.data.weekStart),
       projectId: validatedFields.data.projectId,
       userId: validatedFields.data.userId,
     });
+
+    console.log('[getProjectWeekDataAction] Result: projectRows:', result.projectRows.length, 'poolItems:', result.poolItems.length);
 
     return Result.ok(result);
   } catch (error) {
