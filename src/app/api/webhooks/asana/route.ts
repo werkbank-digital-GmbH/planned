@@ -333,12 +333,14 @@ export async function POST(request: Request) {
     // Log sync operation
     await supabase.from('sync_logs').insert({
       tenant_id: tenantId,
-      source: 'asana_webhook',
+      service: 'asana',
+      operation: 'webhook_events',
       status: 'success',
-      details: {
+      result: {
         events_count: payload.events.length,
         event_types: [...new Set(payload.events.map(e => `${e.action}:${e.resource.resource_type}`))],
       },
+      completed_at: new Date().toISOString(),
     });
 
     return NextResponse.json({ ok: true });
