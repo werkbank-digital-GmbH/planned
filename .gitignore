@@ -54,3 +54,4 @@ tests/e2e/.auth
 
 # Vercel
 .vercel
+.env*.local

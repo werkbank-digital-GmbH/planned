@@ -36,7 +36,11 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: planned. - Multi-Tenant Planungstool\n\nNext.js 15 App mit Supabase Backend für Ressourcenplanung:\n- Clean Architecture \\(Domain, Application, Infrastructure, Presentation\\)\n- Multi-Tenancy mit Row Level Security\n- Supabase Auth Integration\n- Allocation Management \\(Create, Move, Delete\\)\n- User Management \\(CRUD, Roles: admin, planer, gewerblich\\)\n- Asana & TimeTac Integration vorbereitet\n- Realtime Subscriptions\n- Keyboard Shortcuts & Undo/Redo System\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(grep:*)",
+      "Bash(curl:*)"
     ]
   }
 }
