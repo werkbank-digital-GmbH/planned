@@ -27,6 +27,7 @@ interface DesktopNavigationProps {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/planung', label: 'Planung' },
+  { href: '/projekte', label: 'Projekte' },
   { href: '/einstellungen', label: 'Einstellungen' },
 ];
 

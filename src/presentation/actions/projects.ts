@@ -32,6 +32,21 @@ export interface ProjectPhaseDTO {
   bereich: string;
 }
 
+export interface ProjectOverviewDTO {
+  id: string;
+  name: string;
+  clientName?: string;
+  address?: string;
+  status: 'planning' | 'active' | 'paused' | 'completed';
+  phasesTotal: number;
+  phasesCompleted: number;
+  budgetHours: number;
+  actualHours: number;
+  progressPercent: number;
+  isLate: boolean;
+  assignedUsers: Array<{ id: string; fullName: string; avatarUrl?: string }>;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -159,6 +174,158 @@ export async function getProjectPhasesAction(
     }));
 
     return Result.ok(phaseDTOs);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET PROJECTS OVERVIEW ACTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Lädt alle Projekte mit aggregierten Daten für die Übersichtsseite.
+ *
+ * Enthält: Phasen-Zähler, Stunden (SOLL/IST), Fortschritt, zugewiesene User.
+ */
+export async function getProjectsOverviewAction(): Promise<
+  ActionResult<ProjectOverviewDTO[]>
+> {
+  try {
+    const tenantId = await getCurrentUserTenant();
+    const supabase = await createActionSupabaseClient();
+
+    // Projekte mit Phasen und Allocations laden
+    const { data: projectsData, error: projectsError } = await supabase
+      .from('projects')
+      .select(
+        `
+        id,
+        name,
+        client_name,
+        address,
+        status,
+        project_phases (
+          id,
+          status,
+          budget_hours,
+          actual_hours,
+          end_date
+        )
+      `
+      )
+      .eq('tenant_id', tenantId)
+      .order('name');
+
+    if (projectsError) {
+      throw new Error(projectsError.message);
+    }
+
+    // Allocations mit User-Daten laden
+    const { data: allocationsData } = await supabase
+      .from('allocations')
+      .select(
+        `
+        project_phase_id,
+        user_id,
+        users (
+          id,
+          full_name,
+          avatar_url
+        )
+      `
+      )
+      .eq('tenant_id', tenantId)
+      .not('user_id', 'is', null);
+
+    // Phase-ID zu Project-ID Mapping erstellen
+    const phaseToProjectMap = new Map<string, string>();
+    projectsData?.forEach((project) => {
+      project.project_phases?.forEach((phase: { id: string }) => {
+        phaseToProjectMap.set(phase.id, project.id);
+      });
+    });
+
+    // User pro Projekt aggregieren (unique)
+    const projectUsersMap = new Map<
+      string,
+      Map<string, { id: string; fullName: string; avatarUrl?: string }>
+    >();
+
+    allocationsData?.forEach((allocation) => {
+      const projectId = phaseToProjectMap.get(allocation.project_phase_id);
+      if (projectId && allocation.users) {
+        if (!projectUsersMap.has(projectId)) {
+          projectUsersMap.set(projectId, new Map());
+        }
+        const userMap = projectUsersMap.get(projectId)!;
+        const user = allocation.users as {
+          id: string;
+          full_name: string;
+          avatar_url?: string;
+        };
+        if (!userMap.has(user.id)) {
+          userMap.set(user.id, {
+            id: user.id,
+            fullName: user.full_name,
+            avatarUrl: user.avatar_url ?? undefined,
+          });
+        }
+      }
+    });
+
+    // DTOs erstellen
+    const today = new Date();
+    const projectDTOs: ProjectOverviewDTO[] = (projectsData ?? []).map((project) => {
+      const phases = project.project_phases ?? [];
+      const activePhases = phases.filter(
+        (p: { status: string }) => p.status === 'active'
+      );
+
+      // Stunden aggregieren
+      const budgetHours = activePhases.reduce(
+        (sum: number, p: { budget_hours?: number }) => sum + (p.budget_hours ?? 0),
+        0
+      );
+      const actualHours = activePhases.reduce(
+        (sum: number, p: { actual_hours?: number }) => sum + (p.actual_hours ?? 0),
+        0
+      );
+
+      // Fortschritt berechnen
+      const progressPercent =
+        budgetHours > 0 ? Math.round((actualHours / budgetHours) * 100) : 0;
+
+      // Überfällig prüfen (Phasen mit end_date vor heute)
+      const isLate = activePhases.some((p: { end_date?: string }) => {
+        if (!p.end_date) return false;
+        return new Date(p.end_date) < today;
+      });
+
+      // Zugewiesene User
+      const usersMap = projectUsersMap.get(project.id);
+      const assignedUsers = usersMap ? Array.from(usersMap.values()) : [];
+
+      return {
+        id: project.id,
+        name: project.name,
+        clientName: project.client_name ?? undefined,
+        address: project.address ?? undefined,
+        status: project.status as ProjectOverviewDTO['status'],
+        phasesTotal: phases.length,
+        phasesCompleted: phases.filter(
+          (p: { status: string }) => p.status === 'deleted'
+        ).length,
+        budgetHours,
+        actualHours,
+        progressPercent,
+        isLate,
+        assignedUsers,
+      };
+    });
+
+    return Result.ok(projectDTOs);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
     return Result.fail('INTERNAL_ERROR', message);
