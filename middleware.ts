@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -98,10 +98,9 @@ export async function middleware(request: NextRequest) {
   // ─────────────────────────────────────────────────────────────────────────
   // 3. Session prüfen
   // ─────────────────────────────────────────────────────────────────────────
-  const {
-    data: { user: authUser },
-    error: authError,
-  } = await supabase.auth.getUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error: authError } = await (supabase.auth as any).getUser();
+  const authUser = data?.user;
 
   const isAuthenticated = !!authUser && !authError;
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
