@@ -74,7 +74,10 @@ export class DeactivateUserUseCase {
     }
 
     // 6. Auth-User deaktivieren (verhindert Login)
-    await this.authService.disableUser(user.authId);
+    // Nur wenn der User einen Auth-Account hat (manche User sind nur in DB ohne Auth)
+    if (user.authId) {
+      await this.authService.disableUser(user.authId);
+    }
 
     // 7. User deaktivieren und speichern
     const deactivatedUser = user.deactivate();

@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { UserRole } from '@/domain/types';
 
 import {
-  getUsersAction,
   createUserAction,
-  updateUserAction,
   deactivateUserAction,
+  getUsersAction,
   resendInvitationAction,
+  updateUserAction,
   type UserDTO,
 } from '@/presentation/actions/users';
 import {
-  UserList,
   UserForm,
+  UserList,
   type User,
   type UserFormData,
 } from '@/presentation/components/settings';
@@ -75,7 +75,7 @@ export default function MitarbeiterPage() {
     setIsFormOpen(true);
   };
 
-  const handleEditUser = async (id: string) => {
+  const handleEditUser = (id: string) => {
     const user = users.find((u) => u.id === id);
     if (user) {
       setFormMode('edit');
@@ -85,35 +85,47 @@ export default function MitarbeiterPage() {
     }
   };
 
-  const handleDeactivateUser = async (id: string) => {
+  const handleDeactivateUser = async () => {
+    if (!editingUser) return;
+
     if (!confirm('Möchten Sie diesen Mitarbeiter wirklich deaktivieren?')) {
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      const result = await deactivateUserAction(id);
+      const result = await deactivateUserAction(editingUser.id);
 
       if (result.success) {
+        setIsFormOpen(false);
+        setEditingUser(null);
         await loadUsers();
       } else {
-        setError(result.error.message);
+        setFormError(result.error.message);
       }
     } catch {
-      setError('Fehler beim Deaktivieren');
+      setFormError('Fehler beim Deaktivieren');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleResendInvitation = async (id: string) => {
+  const handleResendInvitation = async () => {
+    if (!editingUser) return;
+
+    setIsSubmitting(true);
     try {
-      const result = await resendInvitationAction(id);
+      const result = await resendInvitationAction(editingUser.id);
 
       if (result.success) {
         alert('Einladung wurde erneut gesendet');
       } else {
-        setError(result.error.message);
+        setFormError(result.error.message);
       }
     } catch {
-      setError('Fehler beim Senden der Einladung');
+      setFormError('Fehler beim Senden der Einladung');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -190,8 +202,6 @@ export default function MitarbeiterPage() {
         currentUserRole={currentUserRole}
         onAddUser={handleAddUser}
         onEditUser={handleEditUser}
-        onDeactivateUser={handleDeactivateUser}
-        onResendInvitation={handleResendInvitation}
       />
 
       {/* User Form Dialog */}
@@ -210,8 +220,11 @@ export default function MitarbeiterPage() {
         isOpen={isFormOpen}
         isSubmitting={isSubmitting}
         error={formError}
+        isActive={editingUser?.isActive ?? true}
         onSubmit={handleFormSubmit}
         onClose={handleFormClose}
+        onDeactivate={handleDeactivateUser}
+        onResendInvitation={handleResendInvitation}
       />
     </div>
   );

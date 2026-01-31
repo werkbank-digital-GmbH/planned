@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, UserPlus } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { UserRole } from '@/domain/types';
 
@@ -24,8 +24,6 @@ export interface UserListProps {
   currentUserRole: UserRole;
   onAddUser: () => void;
   onEditUser: (id: string) => void;
-  onDeactivateUser: (id: string) => void;
-  onResendInvitation: (id: string) => void;
 }
 
 export function UserList({
@@ -33,8 +31,6 @@ export function UserList({
   currentUserRole,
   onAddUser,
   onEditUser,
-  onDeactivateUser,
-  onResendInvitation,
 }: UserListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showInactive, setShowInactive] = useState(false);
@@ -145,8 +141,6 @@ export function UserList({
                   {...user}
                   isAdmin={isAdmin}
                   onEdit={onEditUser}
-                  onDeactivate={onDeactivateUser}
-                  onResendInvitation={onResendInvitation}
                 />
               ))
             )}

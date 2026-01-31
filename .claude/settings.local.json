@@ -41,7 +41,8 @@
       "WebFetch(domain:supabase.com)",
       "Bash(grep:*)",
       "Bash(curl:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(find src -name \"*.ts\" -type f -exec grep -l \"JSON\\\\.parse\" {} ;)"
     ]
   }
 }

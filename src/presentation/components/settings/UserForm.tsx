@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { Mail, UserX, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import type { UserRole } from '@/domain/types';
@@ -20,8 +20,11 @@ export interface UserFormProps {
   isOpen: boolean;
   isSubmitting: boolean;
   error?: string;
+  isActive?: boolean;
   onSubmit: (data: UserFormData) => void;
   onClose: () => void;
+  onDeactivate?: () => void;
+  onResendInvitation?: () => void;
 }
 
 const ROLES: { value: UserRole; label: string }[] = [
@@ -36,8 +39,11 @@ export function UserForm({
   isOpen,
   isSubmitting,
   error,
+  isActive = true,
   onSubmit,
   onClose,
+  onDeactivate,
+  onResendInvitation,
 }: UserFormProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -202,6 +208,36 @@ export function UserForm({
             </Button>
           </div>
         </form>
+
+        {/* Additional Actions (nur im Edit-Mode für aktive User) */}
+        {mode === 'edit' && isActive && (onResendInvitation || onDeactivate) && (
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <div className="space-y-3">
+              {onResendInvitation && (
+                <button
+                  type="button"
+                  onClick={onResendInvitation}
+                  disabled={isSubmitting}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <Mail className="h-4 w-4" />
+                  Einladung erneut senden
+                </button>
+              )}
+              {onDeactivate && (
+                <button
+                  type="button"
+                  onClick={onDeactivate}
+                  disabled={isSubmitting}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                >
+                  <UserX className="h-4 w-4" />
+                  Mitarbeiter deaktivieren
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </dialog>
   );

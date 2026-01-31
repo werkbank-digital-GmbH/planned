@@ -1,8 +1,7 @@
 'use client';
 
-import { MoreHorizontal, Mail, UserX } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
 
 import type { UserRole } from '@/domain/types';
 
@@ -18,8 +17,6 @@ export interface UserRowProps {
   avatarUrl?: string;
   isAdmin: boolean;
   onEdit: (id: string) => void;
-  onDeactivate: (id: string) => void;
-  onResendInvitation: (id: string) => void;
 }
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -44,11 +41,7 @@ export function UserRow({
   avatarUrl,
   isAdmin,
   onEdit,
-  onDeactivate,
-  onResendInvitation,
 }: UserRowProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const initials = fullName
     .split(' ')
     .map((n) => n[0])
@@ -114,65 +107,14 @@ export function UserRow({
       {/* Aktionen */}
       <td className="px-4 py-3">
         {isAdmin && (
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Aktionen"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-
-            {isMenuOpen && (
-              <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsMenuOpen(false)}
-                />
-
-                {/* Menu */}
-                <div className="absolute right-0 z-20 mt-1 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
-                  <button
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      onEdit(id);
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    Bearbeiten
-                  </button>
-
-                  {isActive && (
-                    <>
-                      <button
-                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => {
-                          onResendInvitation(id);
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Mail className="h-4 w-4" />
-                        Einladung erneut senden
-                      </button>
-
-                      <button
-                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                        onClick={() => {
-                          onDeactivate(id);
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <UserX className="h-4 w-4" />
-                        Deaktivieren
-                      </button>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(id)}
+            aria-label="Bearbeiten"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
         )}
       </td>
     </tr>
