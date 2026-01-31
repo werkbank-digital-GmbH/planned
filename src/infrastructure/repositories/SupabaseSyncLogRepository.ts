@@ -24,7 +24,7 @@ function mapToDomain(row: SyncLogRow): SyncLogEntry {
     status: row.status,
     result: row.result as Record<string, unknown> | null,
     errorMessage: row.error_message,
-    startedAt: new Date(row.started_at),
+    startedAt: row.started_at ? new Date(row.started_at) : new Date(),
     completedAt: row.completed_at ? new Date(row.completed_at) : null,
   };
 }

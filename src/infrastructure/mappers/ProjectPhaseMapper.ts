@@ -30,15 +30,15 @@ export class ProjectPhaseMapper {
       bereich: row.bereich as PhaseBereich,
       startDate: row.start_date ? new Date(row.start_date) : undefined,
       endDate: row.end_date ? new Date(row.end_date) : undefined,
-      sortOrder: row.sort_order,
+      sortOrder: row.sort_order ?? 0,
       budgetHours: row.budget_hours ?? undefined,
-      plannedHours: row.planned_hours,
-      actualHours: row.actual_hours,
+      plannedHours: row.planned_hours ?? 0,
+      actualHours: row.actual_hours ?? 0,
       status: row.status as PhaseStatus,
       asanaGid: row.asana_gid ?? undefined,
       deletedAt: row.deleted_at ? new Date(row.deleted_at) : undefined,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return ProjectPhase.create(props);

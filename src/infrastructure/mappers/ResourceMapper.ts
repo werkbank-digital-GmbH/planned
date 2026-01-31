@@ -21,9 +21,9 @@ export class ResourceMapper {
       resourceTypeId: row.resource_type_id,
       name: row.name,
       licensePlate: row.license_plate ?? undefined,
-      isActive: row.is_active,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      isActive: row.is_active ?? true,
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return Resource.create(props);

@@ -29,8 +29,8 @@ export class TimeEntryMapper {
       hours: row.hours,
       description: row.description ?? undefined,
       timetacId: row.timetac_id,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return TimeEntry.create(props);

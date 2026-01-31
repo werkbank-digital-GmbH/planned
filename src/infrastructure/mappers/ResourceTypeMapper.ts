@@ -22,8 +22,8 @@ export class ResourceTypeMapper {
       icon: row.icon ?? undefined,
       color: row.color ?? undefined,
       sortOrder: row.sort_order,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return ResourceType.create(props);

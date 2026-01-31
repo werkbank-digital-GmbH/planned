@@ -99,8 +99,8 @@ export class SupabaseUserRepository implements IUserRepository {
       email: data.email,
       fullName: data.full_name,
       role: data.role as UserRole,
-      weeklyHours: data.weekly_hours,
-      isActive: data.is_active,
+      weeklyHours: data.weekly_hours ?? 40,
+      isActive: data.is_active ?? true,
       avatarUrl: data.avatar_url ?? undefined,
       tenant: {
         id: tenant.id,
@@ -259,12 +259,12 @@ export class SupabaseUserRepository implements IUserRepository {
       email: row.email,
       fullName: row.full_name,
       role: row.role as UserRole,
-      weeklyHours: row.weekly_hours,
-      isActive: row.is_active,
+      weeklyHours: row.weekly_hours ?? 40,
+      isActive: row.is_active ?? true,
       timetacId: row.timetac_id ?? undefined,
       avatarUrl: row.avatar_url ?? undefined,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return User.create(props);

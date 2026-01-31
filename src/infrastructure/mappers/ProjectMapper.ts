@@ -25,8 +25,8 @@ export class ProjectMapper {
       status: row.status as ProjectStatus,
       asanaGid: row.asana_gid ?? undefined,
       syncedAt: row.synced_at ? new Date(row.synced_at) : undefined,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return Project.create(props);

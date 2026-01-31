@@ -944,3 +944,13 @@ export const Constants = {
     },
   },
 } as const
+
+// Convenience type exports for use in application code
+export type AbsenceType = Database["public"]["Enums"]["absence_type"];
+export type ConflictResolution = Database["public"]["Enums"]["conflict_resolution"];
+export type PhaseBereich = Database["public"]["Enums"]["phase_bereich"];
+export type PhaseStatus = Database["public"]["Enums"]["phase_status"];
+export type ProjectStatus = Database["public"]["Enums"]["project_status"];
+export type SyncService = Database["public"]["Enums"]["sync_service"];
+export type SyncStatus = Database["public"]["Enums"]["sync_status"];
+export type UserRole = Database["public"]["Enums"]["user_role"];

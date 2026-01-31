@@ -24,8 +24,8 @@ export class AllocationMapper {
       date: new Date(row.date),
       plannedHours: row.planned_hours ?? undefined,
       notes: row.notes ?? undefined,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return Allocation.create(props);

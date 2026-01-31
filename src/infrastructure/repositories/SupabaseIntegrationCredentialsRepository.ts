@@ -32,8 +32,8 @@ function mapToDomain(row: CredentialsRow): IntegrationCredentialsData {
     asanaPhaseBudgetHoursFieldId: row.asana_phase_budget_hours_field_id,
     timetacAccountId: row.timetac_account_id,
     timetacApiToken: row.timetac_api_token,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
   };
 }
 

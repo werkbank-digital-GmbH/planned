@@ -24,8 +24,8 @@ export class AbsenceMapper {
       endDate: new Date(row.end_date),
       notes: row.notes ?? undefined,
       timetacId: row.timetac_id ?? undefined,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
 
     return Absence.create(props);
