@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - Integrations Standardized Tabs</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#181411] dark:text-[#f4f2f0]">
+<div class="flex h-screen w-full overflow-hidden">
+<aside class="w-72 flex-shrink-0 flex flex-col bg-white dark:bg-[#1a1612] border-r border-[#e6e2de] dark:border-[#3a2e26]">
+<div class="p-6 border-b border-[#e6e2de] dark:border-[#3a2e26]">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center rounded-lg size-10 bg-primary/10 text-xl border border-primary/20">
+                        🔶
+                    </div>
+<div>
+<h1 class="text-[#181411] dark:text-white text-xl font-black leading-tight tracking-tight">bänk</h1>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#5c4d40] dark:text-[#a08d7a] hover:bg-[#f4f2f0] dark:hover:bg-[#2a221c] transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">grid_view</span>
+<span class="text-sm font-medium leading-normal">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#5c4d40] dark:text-[#a08d7a] hover:bg-[#f4f2f0] dark:hover:bg-[#2a221c] transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">calendar_month</span>
+<span class="text-sm font-medium leading-normal">Planung</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#5c4d40] dark:text-[#a08d7a] hover:bg-[#f4f2f0] dark:hover:bg-[#2a221c] transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">folder_open</span>
+<span class="text-sm font-medium leading-normal">Projekte</span>
+</a>
+<div class="flex flex-col gap-1 mt-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#181411] dark:text-white bg-[#f4f2f0] dark:bg-[#2a221c] transition-colors group cursor-pointer">
+<span class="material-symbols-outlined text-2xl text-primary">settings</span>
+<span class="text-sm font-bold leading-normal">Einstellungen</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-[#e6e2de] dark:border-[#3a2e26]">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-[#f4f2f0] dark:hover:bg-[#2a221c] cursor-pointer transition-colors">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 ring-1 ring-[#e6e2de]" data-alt="Profile picture of Max Mustermann" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcVM9O4cRt48Nkkv9XNXwRsR_7NSmewOsbJV8U9fO0kpMUfqdx2ZHJbOVADRaGXUfnl7ZO-l3yx62QqKSBuACVKx8mIokqo-0lMTcl_pbX55Y-FXtoHkdibpO5jW9sMZggxWU4C_15V4Frrd8qUe-KO-_VVEK5AX4b0HQOxugEt_uUrOWFxhbsPFNZEsqAnNAdqWQG_JZ3Y51tKmIaTsS12dqm1icV5slLYIuncGbJdxm__23VCpbkVUlwWjb9i-_xuWXuS72uliM");'></div>
+<div class="flex flex-col min-w-0">
+<h1 class="text-[#181411] dark:text-white text-sm font-bold leading-tight truncate">Max Mustermann</h1>
+<p class="text-[#897561] dark:text-[#a08d7a] text-xs font-normal leading-normal">Abmelden</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-y-auto relative">
+<div class="px-8 pt-8">
+<h1 class="text-[#181411] dark:text-white text-3xl font-black leading-tight tracking-tight mb-6">Einstellungen</h1>
+<div class="border-b border-[#e6e2de] dark:border-[#3a2e26]">
+<nav aria-label="Tabs" class="-mb-px flex gap-8">
+<a class="border-transparent text-[#897561] dark:text-[#a08d7a] hover:border-[#e6e2de] hover:text-[#181411] dark:hover:text-white whitespace-nowrap border-b-2 py-4 text-sm font-medium transition-colors" href="#">
+                Firma
+            </a>
+<a class="border-transparent text-[#897561] dark:text-[#a08d7a] hover:border-[#e6e2de] hover:text-[#181411] dark:hover:text-white whitespace-nowrap border-b-2 py-4 text-sm font-medium transition-colors" href="#">
+                Mitarbeiter
+            </a>
+<a class="border-transparent text-[#897561] dark:text-[#a08d7a] hover:border-[#e6e2de] hover:text-[#181411] dark:hover:text-white whitespace-nowrap border-b-2 py-4 text-sm font-medium transition-colors" href="#">
+                Ressourcen
+            </a>
+<a aria-current="page" class="border-primary text-primary whitespace-nowrap border-b-2 py-4 text-sm font-bold" href="#">
+                Integrationen
+            </a>
+</nav>
+</div>
+</div>
+<div class="px-8 py-8">
+<div class="flex flex-col gap-2 max-w-4xl">
+<h2 class="text-[#181411] dark:text-white text-2xl font-bold leading-tight">Integrationen</h2>
+<p class="text-[#897561] dark:text-[#a08d7a] text-base font-normal leading-normal">Verwalten Sie Ihre Verbindungen zu Drittanbieter-Tools wie Projektmanagement und Zeiterfassung.</p>
+</div>
+</div>
+<div class="px-8 pb-12">
+<div class="max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="flex flex-col rounded-xl border border-[#e6e2de] dark:border-[#3a2e26] bg-white dark:bg-[#1a1612] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden transition-all hover:shadow-md">
+<div class="p-6 flex flex-col gap-6 flex-1">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-[#F06A6A]/10 flex items-center justify-center p-2">
+<div class="w-full h-full bg-contain bg-center bg-no-repeat" data-alt="Asana logo showing three dots" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCR5kBA6QgIMzNhb2-6EhYOaGDKokPXe1rGb6pahav7S3Xx8kI47vfDtH7t67Ej_xjB-Z8iCM2_6v-nwd4_NbIvU2H_b2AI-SKw7FD9WIATT4SFDiqUKnCLcMRZ-Ok-jYMyMWdJBPvrKz-urizPXNfS_IxbFP7tw52j1_iZ1rjtd9ABFMTJIfnK1qXgVsSFDZvnLWopFb5q1p_0y0zV5SsycAGbssOqr5rSf6SFNqae4QcvUq2C2CqMiaKDx-j23pNXj2jitNw_HPc');"></div>
+</div>
+<div>
+<h3 class="text-lg font-bold text-[#181411] dark:text-white">Asana</h3>
+<p class="text-sm text-[#897561] dark:text-[#a08d7a]">Projektmanagement</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                    Verbunden
+                                </span>
+</div>
+<div class="flex flex-col gap-3 p-4 bg-[#f8f7f6] dark:bg-[#221910] rounded-lg">
+<div class="flex justify-between items-center text-sm">
+<span class="text-[#897561] dark:text-[#a08d7a]">Workspace</span>
+<span class="font-semibold text-[#181411] dark:text-white">bänk Holzbau GmbH</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-[#897561] dark:text-[#a08d7a]">Letzte Synchronisierung</span>
+<span class="font-medium text-[#181411] dark:text-white">Heute, 09:41 Uhr</span>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-[#e6e2de] dark:border-[#3a2e26] bg-[#faf9f8] dark:bg-[#1f1a16] flex gap-3">
+<button class="flex-1 h-10 px-4 rounded-lg bg-primary hover:bg-[#d67311] text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+                                Synchronisieren
+                            </button>
+<button class="flex-1 h-10 px-4 rounded-lg bg-white dark:bg-[#2a221c] border border-[#e6e2de] dark:border-[#3a2e26] text-[#181411] dark:text-white hover:bg-[#f4f2f0] dark:hover:bg-[#352b24] text-sm font-bold transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+                                Konfigurieren
+                            </button>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-[#e6e2de] dark:border-[#3a2e26] bg-white dark:bg-[#1a1612] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden transition-all hover:shadow-md">
+<div class="p-6 flex flex-col gap-6 flex-1">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-[#005CA9]/10 flex items-center justify-center p-2">
+<div class="size-10 flex items-center justify-center text-[#005CA9] dark:text-[#3b8fd9]">
+<span class="material-symbols-outlined text-4xl">schedule</span>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-bold text-[#181411] dark:text-white">TimeTac</h3>
+<p class="text-sm text-[#897561] dark:text-[#a08d7a]">Zeiterfassung</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                    Verbunden
+                                </span>
+</div>
+<div class="flex flex-col gap-3 p-4 bg-[#f8f7f6] dark:bg-[#221910] rounded-lg">
+<div class="flex justify-between items-center text-sm">
+<span class="text-[#897561] dark:text-[#a08d7a]">Account</span>
+<span class="font-semibold text-[#181411] dark:text-white">admin@baenk-holz.de</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-[#897561] dark:text-[#a08d7a]">Letzte Synchronisierung</span>
+<span class="font-medium text-[#181411] dark:text-white">Gestern, 18:20 Uhr</span>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-[#e6e2de] dark:border-[#3a2e26] bg-[#faf9f8] dark:bg-[#1f1a16] flex gap-3">
+<button class="flex-1 h-10 px-4 rounded-lg bg-primary hover:bg-[#d67311] text-white text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+                                Synchronisieren
+                            </button>
+<button class="flex-1 h-10 px-4 rounded-lg bg-white dark:bg-[#2a221c] border border-[#e6e2de] dark:border-[#3a2e26] text-[#181411] dark:text-white hover:bg-[#f4f2f0] dark:hover:bg-[#352b24] text-sm font-bold transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+                                Konfigurieren
+                            </button>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#e6e2de] dark:border-[#3a2e26] bg-transparent p-8 text-center gap-4 hover:bg-[#f8f7f6] dark:hover:bg-[#221910]/50 transition-colors cursor-pointer group min-h-[280px]">
+<div class="size-16 rounded-full bg-[#f4f2f0] dark:bg-[#2a221c] flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-[#897561] dark:text-[#a08d7a]">add</span>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="text-base font-bold text-[#181411] dark:text-white">Neue Integration hinzufügen</h3>
+<p class="text-sm text-[#897561] dark:text-[#a08d7a]">Verbinden Sie weitere Tools mit bänk.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

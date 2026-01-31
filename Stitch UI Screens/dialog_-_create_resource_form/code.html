@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Resource Dialog</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        /* Custom scrollbar for textarea if needed, keeping it minimal */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="font-display bg-gray-200 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
+<!-- Modal Overlay -->
+<div aria-hidden="true" class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity z-40"></div>
+<!-- Modal Container -->
+<div class="relative z-50 w-full max-w-[520px] bg-background-light dark:bg-background-dark rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-[#e6e0db] dark:border-[#3a2e26]">
+<!-- Header -->
+<div class="px-6 py-5 flex items-center justify-between border-b border-[#e6e0db] dark:border-[#3a2e26] bg-white dark:bg-[#2a2018]">
+<h2 class="text-[#181411] dark:text-white tracking-tight text-[22px] font-bold leading-tight">Ressource anlegen</h2>
+<button class="text-[#897561] hover:text-[#181411] dark:hover:text-white transition-colors p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<!-- Body Content -->
+<div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-[#2a2018] flex flex-col gap-6">
+<!-- Field: Bezeichnung -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181411] dark:text-[#e6e0db] text-sm font-medium leading-normal">Bezeichnung</label>
+<input class="form-input w-full rounded-lg text-[#181411] dark:text-white dark:bg-[#221910] focus:ring-2 focus:ring-primary/20 focus:border-primary border border-[#e6e0db] dark:border-[#4a3b2f] h-12 px-4 text-base font-normal placeholder:text-[#897561]" placeholder="z.B. Fahrzeug 01" type="text" value="Sprinter 1"/>
+</div>
+<!-- Field: Typ -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181411] dark:text-[#e6e0db] text-sm font-medium leading-normal">Typ</label>
+<div class="relative">
+<select class="form-select w-full rounded-lg text-[#181411] dark:text-white dark:bg-[#221910] focus:ring-2 focus:ring-primary/20 focus:border-primary border border-[#e6e0db] dark:border-[#4a3b2f] h-12 pl-4 pr-10 text-base font-normal appearance-none cursor-pointer">
+<option selected="" value="vehicle">🚗 Fahrzeug</option>
+<option value="machine">🚜 Maschine</option>
+<option value="tool">🔨 Werkzeug</option>
+<option value="location">🏢 Standort</option>
+</select>
+<!-- Custom Arrow Icon using Material Symbols -->
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#897561]">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Field: Beschreibung -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181411] dark:text-[#e6e0db] text-sm font-medium leading-normal">
+                    Beschreibung <span class="text-[#897561] font-normal">(optional)</span>
+</label>
+<textarea class="form-textarea w-full rounded-lg text-[#181411] dark:text-white dark:bg-[#221910] focus:ring-2 focus:ring-primary/20 focus:border-primary border border-[#e6e0db] dark:border-[#4a3b2f] min-h-[120px] p-4 text-base font-normal resize-y placeholder:text-[#897561]">K-HB 2023, Mercedes</textarea>
+</div>
+<!-- Field: Aktiv Checkbox -->
+<div class="flex items-center gap-3 py-1">
+<div class="relative flex items-center">
+<input checked="" class="peer h-5 w-5 rounded border-[#e6e0db] dark:border-[#4a3b2f] border-2 text-primary focus:ring-primary/20 focus:ring-offset-0 bg-transparent cursor-pointer checked:bg-primary checked:border-primary transition-all" id="active_check" type="checkbox"/>
+<label class="ml-3 text-[#181411] dark:text-[#e6e0db] text-base font-normal cursor-pointer select-none" for="active_check">
+                        Aktiv
+                    </label>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 py-5 bg-[#fcfbf9] dark:bg-[#221910] border-t border-[#e6e0db] dark:border-[#3a2e26] flex justify-end gap-3">
+<button class="px-5 h-11 flex items-center justify-center rounded-lg border border-[#e6e0db] dark:border-[#4a3b2f] bg-white dark:bg-transparent text-[#181411] dark:text-[#e6e0db] font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors focus:ring-2 focus:ring-gray-200 outline-none">
+                Abbrechen
+            </button>
+<button class="px-6 h-11 flex items-center justify-center rounded-lg bg-primary text-white font-medium hover:bg-[#d67210] transition-colors shadow-sm focus:ring-2 focus:ring-primary/40 outline-none">
+                Speichern
+            </button>
+</div>
+</div>
+</body></html>

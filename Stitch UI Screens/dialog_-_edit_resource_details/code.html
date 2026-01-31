@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Resource Details</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e4b90c",
+                        "primary-hover": "#cda60b",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221f10",
+                        "stone-surface": "#ffffff",
+                        "stone-surface-dark": "#1c1a14",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for textarea if needed */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #e6e4db;
+            border-radius: 4px;
+        }
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4">
+<!-- Modal Overlay -->
+<div aria-hidden="true" class="fixed inset-0 bg-stone-900/40 modal-overlay z-40 transition-opacity"></div>
+<!-- Modal Container -->
+<div class="relative z-50 w-full max-w-4xl bg-stone-surface dark:bg-stone-surface-dark rounded-2xl shadow-2xl border border-[#e6e4db] dark:border-stone-800 flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+<!-- Header -->
+<div class="px-8 py-6 border-b border-[#e6e4db] dark:border-stone-800 flex justify-between items-center bg-white dark:bg-stone-surface-dark sticky top-0 z-10">
+<h3 class="text-[#181711] dark:text-stone-100 text-xl font-bold leading-tight tracking-tight">Ressource bearbeiten</h3>
+<button class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors rounded-full p-1 hover:bg-stone-100 dark:hover:bg-stone-800">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+<div class="flex flex-col gap-8 max-w-4xl mx-auto">
+<!-- Section 1: Basic Info -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Designation Input -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181711] dark:text-stone-200 text-sm font-medium">Bezeichnung</label>
+<div class="relative">
+<input class="w-full rounded-lg border border-[#e6e4db] dark:border-stone-700 bg-white dark:bg-[#221f10] text-[#181711] dark:text-stone-100 focus:ring-2 focus:ring-primary/50 focus:border-primary h-12 px-4 text-base transition-shadow" type="text" value="Sprinter 1"/>
+</div>
+</div>
+<!-- Type Input -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181711] dark:text-stone-200 text-sm font-medium">Typ</label>
+<div class="relative">
+<select class="w-full appearance-none rounded-lg border border-[#e6e4db] dark:border-stone-700 bg-white dark:bg-[#221f10] text-[#181711] dark:text-stone-100 focus:ring-2 focus:ring-primary/50 focus:border-primary h-12 px-4 pr-10 text-base transition-shadow">
+<option selected="">🚗 Fahrzeug</option>
+<option>🔨 Werkzeug</option>
+<option>📱 Gerät</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-stone-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Description -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181711] dark:text-stone-200 text-sm font-medium">Beschreibung</label>
+<textarea class="w-full min-h-[100px] rounded-lg border border-[#e6e4db] dark:border-stone-700 bg-white dark:bg-[#221f10] text-[#181711] dark:text-stone-100 focus:ring-2 focus:ring-primary/50 focus:border-primary p-4 text-base resize-y transition-shadow leading-relaxed">K-HB 2023, Mercedes Sprinter, 3,5t, Ladevolumen 14m³</textarea>
+</div>
+<!-- Section 3: Status -->
+<div class="flex flex-col gap-4 pt-2">
+<h2 class="text-[#181711] dark:text-stone-100 text-sm font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Status</h2>
+<!-- Segmented Control -->
+<div class="flex p-1 bg-[#f5f4f0] dark:bg-stone-800 rounded-lg w-full md:w-fit self-start border border-stone-200 dark:border-stone-700">
+<label class="relative cursor-pointer flex-1 md:flex-none">
+<input checked="" class="peer sr-only" name="status" type="radio" value="active"/>
+<div class="px-6 py-2 rounded-md text-sm font-medium text-stone-600 dark:text-stone-400 transition-all peer-checked:bg-white dark:peer-checked:bg-[#2c2818] peer-checked:text-[#181711] dark:peer-checked:text-primary peer-checked:shadow-sm flex items-center justify-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                Aktiv
+                            </div>
+</label>
+<label class="relative cursor-pointer flex-1 md:flex-none">
+<input class="peer sr-only" name="status" type="radio" value="inactive"/>
+<div class="px-6 py-2 rounded-md text-sm font-medium text-stone-600 dark:text-stone-400 transition-all peer-checked:bg-white dark:peer-checked:bg-[#2c2818] peer-checked:text-[#181711] dark:peer-checked:text-stone-100 peer-checked:shadow-sm flex items-center justify-center gap-2">
+<span class="w-2 h-2 rounded-full bg-stone-300 border border-stone-400"></span>
+                                Inaktiv
+                            </div>
+</label>
+</div>
+<!-- Warning Alert -->
+<div class="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400 rounded-r-lg">
+<span class="material-symbols-outlined text-amber-600 dark:text-amber-500 shrink-0">warning</span>
+<p class="text-sm text-amber-900 dark:text-amber-100 leading-normal">
+                            Inaktive Ressourcen erscheinen nicht im Ressourcen-Pool (z.B. bei Wartung oder Defekt).
+                        </p>
+</div>
+</div>
+<!-- Section 4: Usage History -->
+<div class="flex flex-col gap-4 pt-2">
+<h2 class="text-[#181711] dark:text-stone-100 text-sm font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Nutzungshistorie</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Stat Card 1 -->
+<div class="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-4 border border-stone-100 dark:border-stone-800 flex flex-col gap-1 items-start">
+<div class="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs font-medium uppercase tracking-wide mb-1">
+<span class="material-symbols-outlined text-lg">calendar_view_week</span>
+                                Diese Woche
+                            </div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-[#181711] dark:text-white">3</span>
+<span class="text-sm text-stone-500">Einsätze</span>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-4 border border-stone-100 dark:border-stone-800 flex flex-col gap-1 items-start">
+<div class="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs font-medium uppercase tracking-wide mb-1">
+<span class="material-symbols-outlined text-lg">calendar_month</span>
+                                Dieser Monat
+                            </div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-[#181711] dark:text-white">12</span>
+<span class="text-sm text-stone-500">Einsätze</span>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-stone-50 dark:bg-stone-800/50 rounded-xl p-4 border border-stone-100 dark:border-stone-800 flex flex-col gap-1 items-start">
+<div class="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-xs font-medium uppercase tracking-wide mb-1">
+<span class="material-symbols-outlined text-lg">functions</span>
+                                Gesamt
+                            </div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-[#181711] dark:text-white">47</span>
+<span class="text-sm text-stone-500">Einsätze</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-8 py-5 border-t border-[#e6e4db] dark:border-stone-800 bg-[#fbfbf9] dark:bg-[#1a1810] flex flex-col sm:flex-row justify-between items-center gap-4">
+<button class="group flex items-center gap-2 px-4 py-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm font-medium w-full sm:w-auto justify-center sm:justify-start">
+<span class="material-symbols-outlined text-[1.25rem] group-hover:scale-110 transition-transform">delete</span>
+                Ressource löschen
+            </button>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-medium text-sm hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors focus:ring-2 focus:ring-stone-200">
+                    Abbrechen
+                </button>
+<button class="flex-1 sm:flex-none px-6 py-2.5 rounded-lg bg-primary hover:bg-primary-hover text-[#181711] font-semibold text-sm shadow-sm hover:shadow transition-all focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-[#1c1a14]">
+                    Speichern
+                </button>
+</div>
+</div>
+</div>
+</body></html>

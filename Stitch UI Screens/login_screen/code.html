@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>🔶 bänk - Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-hover": "#d56e0d", "background-light": "#f8f8f5", "background-dark": "#231f0f", "card-light": "#ffffff", "card-dark": "#2C2016", "text-main": "#181411", "text-muted": "#897561", "border-light": "#e6e0db", "border-dark": "#4a3b32"}, fontFamily: {display: "Inter", sans: ["Inter", "sans-serif"]}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>.wood-texture {
+            background-color: #f8f7f6;
+            background-image: 
+                radial-gradient(at 40% 20%, rgba(236, 127, 19, 0.03) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(236, 127, 19, 0.02) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, rgba(236, 127, 19, 0.02) 0px, transparent 50%);
+        }
+        .dark .wood-texture {
+            background-color: #221910;
+            background-image: 
+                radial-gradient(at 40% 20%, rgba(236, 127, 19, 0.05) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(236, 127, 19, 0.03) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="font-display antialiased text-text-main dark:text-gray-100">
+<div class="wood-texture relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden p-4">
+<div class="relative w-full max-w-[440px] flex flex-col rounded-xl bg-card-light dark:bg-card-dark shadow-xl border border-border-light dark:border-border-dark overflow-hidden">
+<div class="flex flex-col items-center justify-center pt-10 pb-6 px-8 text-center">
+<h2 class="text-3xl font-bold tracking-tight text-text-main dark:text-white">🔶 bänk</h2>
+<p class="mt-2 text-sm font-medium text-text-muted dark:text-gray-400">Ressourcenplanung für den Holzbau</p>
+</div>
+<div class="px-8 pb-10">
+<form action="#" class="space-y-5" method="POST">
+<div class="space-y-2">
+<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-text-main dark:text-gray-200" for="email">
+                        E-Mail Adresse
+                    </label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</span>
+<input class="flex h-12 w-full rounded-lg border border-border-light bg-white px-3 pl-10 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#1f160e] dark:border-border-dark dark:text-gray-100 dark:ring-offset-card-dark dark:focus-visible:ring-primary" id="email" placeholder="name@firma.de" required="" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-text-main dark:text-gray-200" for="password">
+                            Passwort
+                        </label>
+</div>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-muted">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</span>
+<input class="flex h-12 w-full rounded-lg border border-border-light bg-white px-3 pl-10 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#1f160e] dark:border-border-dark dark:text-gray-100 dark:ring-offset-card-dark dark:focus-visible:ring-primary" id="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<div class="flex justify-end">
+<a class="text-sm font-medium text-primary hover:text-primary-hover hover:underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-sm" href="#">
+                        Passwort vergessen?
+                    </a>
+</div>
+<button class="inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:ring-offset-card-dark" type="submit">
+                    Anmelden
+                </button>
+</form>
+<div class="mt-6 text-center text-xs text-text-muted dark:text-gray-500">
+<p>© 2024 🔶 bänk. Alle Rechte vorbehalten.</p>
+</div>
+</div>
+</div>
+<div class="absolute -bottom-40 -left-40 -z-10 h-[500px] w-[500px] rounded-full border-[40px] border-black/5 dark:border-white/5 opacity-50 pointer-events-none" data-alt="Abstract decorative circle mimicking wood ring"></div>
+<div class="absolute bottom-20 -left-20 -z-10 h-[300px] w-[300px] rounded-full border-[20px] border-black/5 dark:border-white/5 opacity-50 pointer-events-none" data-alt="Abstract decorative circle mimicking wood ring"></div>
+</div>
+</body></html>

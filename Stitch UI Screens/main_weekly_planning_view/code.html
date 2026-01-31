@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - Wochenplanung</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-dark": "#b05d0b", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, boxShadow: {soft: "0 2px 8px -2px rgba(24, 20, 17, 0.08)", card: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)"}}}};</script>
+<style>.custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }.half-circle {
+            background: linear-gradient(90deg, #ec7f13 50%, #e5e7eb 50%);
+        }
+        .dark .half-circle {
+            background: linear-gradient(90deg, #ec7f13 50%, #374151 50%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#181411] dark:text-gray-100 font-display min-h-screen flex overflow-hidden">
+<aside class="w-64 bg-white dark:bg-[#2a221b] border-r border-gray-100 dark:border-[#3a322b] flex flex-col h-screen shrink-0 z-20">
+<div class="p-6 flex items-center gap-3">
+<div class="flex items-center justify-center size-10 rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined" style="font-size: 28px;">grid_view</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-[#181411] dark:text-white">bänk</h1>
+</div>
+<nav class="flex-1 px-4 flex flex-col gap-2 mt-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#322a24] transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-100 transition-colors" href="#">
+<span class="material-symbols-outlined fill-current">calendar_month</span>
+<span class="font-medium">Planung</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#322a24] transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">work</span>
+<span class="font-medium">Projekte</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#322a24] transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+<span class="font-medium">Einstellungen</span>
+</a>
+</nav>
+<div class="p-4 border-t border-gray-100 dark:border-[#3a322b]">
+<div class="flex items-center gap-3 px-2">
+<div class="size-8 rounded-full bg-gray-200 bg-cover bg-center" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA7PLc3IVl-o5arjjyeer-xnqP8Z0OIuRycHvGwctZYfsp_x3UAURINaXGBVKv4EpAV0EACW9OWF4EOy_1i8Lr7hEpuYcZ0-L3WkqEDfFiuKmPbMYhtNcfHDx35GfdjPMEVEdv7ZaGossdLQMrpy9TC7NHm5VnFgMac-EY5Kz2SRPVIaLrphgfrGE7h4C1vaTe7smj64PBT5ax9P6trn-is0p3KYSsQEghh19ULHdUeFDSkNCHjqoahMw5ypL5sTSSmCxL1mPzG24k");'></div>
+<div class="flex flex-col">
+<p class="text-sm font-semibold text-[#181411] dark:text-white">Max Mustermann</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Planer</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+<header class="h-20 bg-white dark:bg-[#2a221b] border-b border-gray-100 dark:border-[#3a322b] px-8 flex items-center justify-between shrink-0">
+<div class="flex flex-col">
+<h2 class="text-2xl font-extrabold text-[#181411] dark:text-white tracking-tight leading-none">WOCHENPLANUNG</h2>
+<div class="flex items-center gap-2 mt-1 text-primary">
+<button class="hover:bg-primary/10 rounded p-0.5 transition-colors"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<span class="text-sm font-medium uppercase tracking-wide">Februar 2024</span>
+<button class="hover:bg-primary/10 rounded p-0.5 transition-colors"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-gray-100 dark:bg-[#3a322b] p-1 rounded-lg flex items-center">
+<button class="px-4 py-1.5 rounded-md text-gray-500 dark:text-gray-400 text-xs font-medium hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
+                        Tag
+                    </button>
+<button class="px-4 py-1.5 rounded-md bg-white dark:bg-[#4a4036] shadow-sm text-xs font-bold text-primary dark:text-primary-100 flex items-center gap-2">
+                        Woche
+                    </button>
+</div>
+<button class="bg-gray-100 hover:bg-gray-200 dark:bg-[#3a322b] dark:hover:bg-[#4a4036] text-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                    Filter
+                </button>
+</div>
+</header>
+<div class="flex-1 overflow-auto custom-scrollbar flex flex-col">
+<div class="min-w-[1000px] p-6 pb-0">
+<div class="bg-white dark:bg-[#2a221b] rounded-xl border border-gray-200 dark:border-[#3a322b] shadow-soft overflow-hidden">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-gray-50/50 dark:bg-[#322a24] border-b border-gray-200 dark:border-[#3a322b]">
+<th class="w-[280px] text-left py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider sticky left-0 bg-gray-50/50 dark:bg-[#322a24] z-10 border-r border-gray-100 dark:border-[#3a322b]">Projekt / Phase</th>
+<th class="w-[180px] text-center py-3 px-2 border-r border-gray-100 dark:border-[#3a322b] last:border-0">
+<div class="text-sm font-bold text-[#181411] dark:text-white">KW 06</div>
+<div class="text-xs text-gray-400 font-medium mt-0.5">05. - 09.</div>
+</th>
+<th class="w-[180px] text-center py-3 px-2 border-r border-gray-100 dark:border-[#3a322b] last:border-0">
+<div class="text-sm font-bold text-[#181411] dark:text-white">KW 07</div>
+<div class="text-xs text-gray-400 font-medium mt-0.5">12. - 16.</div>
+</th>
+<th class="w-[180px] text-center py-3 px-2 border-r border-gray-100 dark:border-[#3a322b] last:border-0">
+<div class="text-sm font-bold text-[#181411] dark:text-white">KW 08</div>
+<div class="text-xs text-gray-400 font-medium mt-0.5">19. - 23.</div>
+</th>
+<th class="w-[180px] text-center py-3 px-2 border-r border-gray-100 dark:border-[#3a322b] last:border-0">
+<div class="text-sm font-bold text-[#181411] dark:text-white">KW 09</div>
+<div class="text-xs text-gray-400 font-medium mt-0.5">26. - 01.</div>
+</th>
+<th class="w-[180px] text-center py-3 px-2 border-r border-gray-100 dark:border-[#3a322b] last:border-0">
+<div class="text-sm font-bold text-[#181411] dark:text-white">KW 10</div>
+<div class="text-xs text-gray-400 font-medium mt-0.5">04. - 08.</div>
+</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-[#3a322b]">
+<tr class="bg-gray-50/30 dark:bg-[#2f2720]">
+<td class="py-3 px-6 sticky left-0 bg-gray-50/30 dark:bg-[#2f2720] z-10 border-r border-gray-100 dark:border-[#3a322b]">
+<div class="flex items-center gap-2">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</button>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#181411] dark:text-white">BVH 24-01: Neubau</span>
+<span class="text-[10px] text-gray-400">München, Baierbrunner Str.</span>
+</div>
+</div>
+</td>
+<td colspan="5"></td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-[#322a24] transition-colors">
+<td class="py-4 px-6 sticky left-0 bg-white dark:bg-[#2a221b] group-hover:bg-gray-50 dark:group-hover:bg-[#322a24] z-10 border-r border-gray-100 dark:border-[#3a322b]">
+<div class="flex items-center gap-3 pl-8 border-l-2 border-gray-200 dark:border-[#4a4036] ml-2">
+<div>
+<p class="text-xs font-semibold text-gray-700 dark:text-gray-300">Elementierung</p>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 mt-1 uppercase tracking-wide">Produktion</span>
+</div>
+</div>
+</td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed">
+<div class="h-10 w-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center px-3 gap-2 cursor-pointer hover:shadow-md transition-shadow">
+<div class="size-6 rounded-full bg-white text-[10px] font-bold text-primary flex items-center justify-center border border-primary/20">TM</div>
+<span class="text-xs font-medium text-amber-900 dark:text-amber-100 truncate">T. Müller (Mo-Fr)</span>
+</div>
+</td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed relative">
+<div class="absolute right-2 top-2 bottom-2 w-2/5 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlPSIjZjNmNGY2IiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-50 rounded-r-lg"></div>
+<div class="relative z-10 h-10 w-3/5 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-l-lg rounded-r-sm flex items-center px-3 gap-2 cursor-pointer hover:shadow-md transition-shadow">
+<div class="size-6 rounded-full bg-white text-[10px] font-bold text-primary flex items-center justify-center border border-primary/20">TM</div>
+<span class="text-xs font-medium text-amber-900 dark:text-amber-100 truncate">T. Müller (Mo-Mi)</span>
+</div>
+</td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed"></td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed"></td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed"></td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-[#322a24] transition-colors">
+<td class="py-4 px-6 sticky left-0 bg-white dark:bg-[#2a221b] group-hover:bg-gray-50 dark:group-hover:bg-[#322a24] z-10 border-r border-gray-100 dark:border-[#3a322b]">
+<div class="flex items-center gap-3 pl-8 border-l-2 border-gray-200 dark:border-[#4a4036] ml-2">
+<div>
+<p class="text-xs font-semibold text-gray-700 dark:text-gray-300">Montage</p>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 mt-1 uppercase tracking-wide">Vor Ort</span>
+</div>
+</div>
+</td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed"></td>
+<td class="p-2 border-r border-gray-100 dark:border-[#3a322b] border-dashed"></td>
+<td class="p-2 relative" colspan="3">
+<div class="flex flex-col gap-2">
+<div class="w-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center px-3 py-1.5 gap-2 cursor-pointer hover:shadow-md transition-shadow">
+<div class="size-6 rounded-full bg-white text-[10px] font-bold text-primary flex items-center justify-center border border-primary/20 shrink-0">TM</div>
+<span class="text-xs font-medium text-amber-900 dark:text-amber-100 truncate">T. Müller (Mo-Fr)</span>
+</div>
+<div class="w-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center px-3 py-1.5 gap-2 cursor-pointer hover:shadow-md transition-shadow">
+<div class="size-6 rounded-full bg-white text-[10px] font-bold text-primary flex items-center justify-center border border-primary/20 shrink-0">LF</div>
+<span class="text-xs font-medium text-amber-900 dark:text-amber-100 truncate">L. Fischer (Mo-Fr)</span>
+</div>
+<div class="w-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center px-3 py-1.5 gap-2 cursor-pointer hover:shadow-md transition-shadow">
+<div class="size-6 rounded-full bg-white text-[10px] font-bold text-primary flex items-center justify-center border border-primary/20 shrink-0">
+<span class="material-symbols-outlined text-sm">local_shipping</span>
+</div>
+<span class="text-xs font-medium text-amber-900 dark:text-amber-100 truncate">Sprinter (Mo-Fr)</span>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-auto bg-white dark:bg-[#2a221b] border-t border-gray-200 dark:border-[#3a322b] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-30">
+<div class="px-8 py-4 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">groups</span>
+                            Ressourcen-Pool
+                        </h3>
+<div class="flex items-center gap-2">
+<button class="text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">filter_list</span></button>
+<button class="text-gray-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+<div class="min-w-[280px] bg-white dark:bg-[#322a24] border border-gray-200 dark:border-[#4a4036] rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-grab group">
+<div class="flex items-start justify-between mb-3">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-700 bg-cover bg-center" data-alt="Portrait of T. Müller" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD-Livj40PrWiNscQBjZxCVIa-205fqyZqkMnWnwsrllwHOvny1OhFHPjm6xS-HVOPU_Gh9EQRNKkfrsUhOxvR6ZYB_fxYOOhm7Ejwd4wQi1PFnHb6r8hDms96J2LB-LqHGCqsty_618fuUGniPuAJJpwd3ifJJHWpxVabXSAqYvjjAI2Uptc_PZT9RzHMsaamTXxMuzrJQKJYlXb527dMb-zFohFpcmLqsEsPKxreTmTY2I7GKzYsQyOK5YGx6K4YSghGsfPNhc_U");'></div>
+<div>
+<p class="text-sm font-bold text-[#181411] dark:text-white group-hover:text-primary transition-colors">T. Müller</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Vorarbeiter</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-300">drag_indicator</span>
+</div>
+<div class="bg-gray-50 dark:bg-[#2a221b] rounded-lg p-2.5">
+<div class="flex justify-between px-1 mb-1.5">
+<span class="text-[10px] text-gray-400 font-mono">KW 06</span>
+<span class="text-[10px] text-gray-400 font-mono">07</span>
+<span class="text-[10px] text-gray-400 font-mono">08</span>
+<span class="text-[10px] text-gray-400 font-mono">09</span>
+<span class="text-[10px] text-gray-400 font-mono">10</span>
+</div>
+<div class="flex justify-between items-center px-2">
+<div class="size-3 rounded-full bg-primary shadow-sm ring-2 ring-white dark:ring-[#2a221b]"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm ring-2 ring-white dark:ring-[#2a221b]"></div>
+<div class="size-3 rounded-full half-circle shadow-sm ring-2 ring-white dark:ring-[#2a221b]" title="Partial Availability"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm ring-2 ring-white dark:ring-[#2a221b]"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm ring-2 ring-white dark:ring-[#2a221b]"></div>
+</div>
+</div>
+</div>
+<div class="min-w-[280px] bg-white dark:bg-[#322a24] border border-gray-200 dark:border-[#4a4036] rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-grab group">
+<div class="flex items-start justify-between mb-3">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-700 bg-cover bg-center" data-alt="Portrait of L. Fischer" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC_amEChKmjPkQ55xgjGXhQyh3eYDB_GfduDmCbmZb1ZBFzcNvLexc9G9EDXXNai3H6L_lEI94qZu8tGfMNuBSNYNWsC17UFBxDnZrRUJ7whaxOEXKAwKZhHbPVfWfKoWO_RgDzW253yaH9UXSnGGGN-RmFZMLyIvX4HGCRY1VC3dZS8Hwk_BvRZKma7SQ9WfifyizdCsQtCTcmde4Pug4CxDa0OV2YUvX2Mp_XIyzxuzQxrddvxbKB4OScmzsCBI6JqP5VrUhhToM");'></div>
+<div>
+<p class="text-sm font-bold text-[#181411] dark:text-white group-hover:text-primary transition-colors">L. Fischer</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Monteur</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-300">drag_indicator</span>
+</div>
+<div class="bg-gray-50 dark:bg-[#2a221b] rounded-lg p-2.5">
+<div class="flex justify-between px-1 mb-1.5">
+<span class="text-[10px] text-gray-400 font-mono">06</span>
+<span class="text-[10px] text-gray-400 font-mono">07</span>
+<span class="text-[10px] text-gray-400 font-mono">08</span>
+<span class="text-[10px] text-gray-400 font-mono">09</span>
+<span class="text-[10px] text-gray-400 font-mono">10</span>
+</div>
+<div class="flex justify-between items-center px-2">
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+</div>
+</div>
+</div>
+<div class="min-w-[280px] bg-white dark:bg-[#322a24] border border-gray-200 dark:border-[#4a4036] rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-grab group">
+<div class="flex items-start justify-between mb-3">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-700 bg-cover bg-center" data-alt="Portrait of K. Wagner" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBeuM8tvwy5_uqztxyffSlC-aWzlY65n4pn7zDMd8Ptgh3u_XxwpXDdDL6mx-34xWnUsAvquCDNM-ELZeG7YuQuD-9LTR-QZAVO_Xe3t0t-dckEZwicpAm889ISEXgleCHShwS95rnuGlId3vtfnEpJF_eshoftsK4smFfGr90CrQf71q_0gyUT8uIxXrWUWsxq3QQjIZO0hKFbidIKK1sfbjGjn_zM9sc3QYL1_yud8yLVHbgctJb_85cphgILjrtU__A8Sm7r0s8");'></div>
+<div>
+<p class="text-sm font-bold text-[#181411] dark:text-white group-hover:text-primary transition-colors">K. Wagner</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Azubi</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-300">drag_indicator</span>
+</div>
+<div class="bg-gray-50 dark:bg-[#2a221b] rounded-lg p-2.5 relative overflow-hidden">
+<div class="absolute top-8 left-1/2 -translate-x-1/2 bg-red-100 text-red-600 border border-red-200 px-1.5 py-0.5 rounded text-[9px] font-bold shadow-sm whitespace-nowrap z-10">
+                                    Urlaub W7
+                                </div>
+<div class="flex justify-between px-1 mb-1.5">
+<span class="text-[10px] text-gray-400 font-mono">06</span>
+<span class="text-[10px] text-gray-400 font-mono">07</span>
+<span class="text-[10px] text-gray-400 font-mono">08</span>
+<span class="text-[10px] text-gray-400 font-mono">09</span>
+<span class="text-[10px] text-gray-400 font-mono">10</span>
+</div>
+<div class="flex justify-between items-center px-2">
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-red-100 border-2 border-red-400"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+<div class="size-3 rounded-full bg-primary shadow-sm"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Range-Select Interaction States</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e4b90c",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221f10",
+                        "wood-light": "#f4efe6", // Subtle wood/paper tone
+                        "wood-border": "#e6dec8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom pattern for "Ghost" chips */
+        .ghost-pattern {
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(228, 185, 12, 0.1) 5px, rgba(228, 185, 12, 0.1) 10px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#181711] dark:text-gray-100 font-display min-h-screen flex flex-col">
+<!-- Page Header -->
+<header class="w-full px-6 py-12 md:px-20 lg:px-40 flex justify-center bg-white dark:bg-[#1a180e] border-b border-stone-200 dark:border-stone-800">
+<div class="max-w-[1200px] w-full flex flex-col gap-4">
+<div class="flex flex-col gap-2">
+<h1 class="text-4xl md:text-5xl font-black leading-tight tracking-tight text-[#181711] dark:text-primary">
+                    Range-Select Interaction States
+                </h1>
+<p class="text-[#8a8260] text-lg md:text-xl font-normal leading-relaxed max-w-2xl">
+                    Interaction showcase for <span class="font-semibold text-primary">bänk</span> planning grid. Visualizing the drag &amp; drop mechanics for multi-day assignments.
+                </p>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full px-6 py-10 md:px-20 lg:px-40 flex justify-center">
+<div class="max-w-[1200px] w-full flex flex-col gap-12">
+<!-- Storyboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<!-- 1. START STATE -->
+<div class="group flex flex-col gap-4">
+<div class="flex items-center gap-3 pb-2 border-b border-stone-200 dark:border-stone-700">
+<span class="flex items-center justify-center w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-sm font-bold text-stone-500">1</span>
+<h3 class="text-lg font-bold tracking-tight">START</h3>
+</div>
+<!-- Visualization Card -->
+<div class="relative bg-white dark:bg-[#2c291d] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 overflow-hidden">
+<!-- Description -->
+<p class="text-sm text-stone-500 mb-6">User hovers over an existing assignment.</p>
+<!-- Grid Visualization -->
+<div class="bg-wood-light dark:bg-[#383324] rounded-xl p-4 border border-wood-border dark:border-stone-600">
+<!-- Date Headers -->
+<div class="flex justify-between mb-2 px-1">
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-16 text-center">Mo 05</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-16 text-center">Di 06</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-16 text-center">Mi 07</div>
+</div>
+<!-- Tracks -->
+<div class="flex justify-between gap-2 relative">
+<!-- Day 1: Active -->
+<div class="w-16 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative group/slot cursor-pointer">
+<!-- Chip -->
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary rounded shadow-sm flex flex-col items-center justify-center gap-1 z-10 transition-transform hover:scale-105">
+<div class="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-[10px] font-bold text-[#423d29]">TM</div>
+<span class="text-[10px] font-bold text-[#423d29] leading-none">T. Müller</span>
+</div>
+<!-- Cursor Hand -->
+<div class="absolute -bottom-4 -right-4 z-50 text-stone-800 dark:text-white drop-shadow-md">
+<span class="material-symbols-outlined text-4xl" style="font-size: 36px;">pan_tool_alt</span>
+</div>
+</div>
+<!-- Day 2: Empty -->
+<div class="w-16 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600"></div>
+<!-- Day 3: Empty -->
+<div class="w-16 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 2. DRAG STATE -->
+<div class="group flex flex-col gap-4">
+<div class="flex items-center gap-3 pb-2 border-b border-primary border-opacity-50">
+<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-sm font-bold text-white">2</span>
+<h3 class="text-lg font-bold tracking-tight text-primary">DRAG</h3>
+</div>
+<!-- Visualization Card -->
+<div class="relative bg-white dark:bg-[#2c291d] rounded-2xl shadow-md border-2 border-primary/20 p-6 overflow-hidden">
+<!-- Description -->
+<p class="text-sm text-stone-500 mb-6">Dragging right creates a selection range.</p>
+<!-- Grid Visualization -->
+<div class="bg-wood-light dark:bg-[#383324] rounded-xl p-4 border border-wood-border dark:border-stone-600 relative">
+<!-- Connection Line (Underlay) -->
+<div class="absolute top-[68px] left-[36px] right-[36px] h-1 bg-primary z-0"></div>
+<!-- Date Headers -->
+<div class="flex justify-between mb-2 px-1">
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Mo</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Di</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Mi</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Do</div>
+</div>
+<!-- Tracks -->
+<div class="flex justify-between gap-2 relative">
+<!-- Day 1: Origin -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative z-10">
+<!-- Active Chip State -->
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary rounded shadow-lg ring-2 ring-primary ring-offset-1 flex flex-col items-center justify-center gap-1 z-20">
+<div class="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center text-[9px] font-bold text-[#423d29]">TM</div>
+<span class="text-[9px] font-bold text-[#423d29] leading-none">T. Müller</span>
+</div>
+</div>
+<!-- Day 2: Ghost -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative z-10">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary/10 border-2 border-dashed border-primary rounded flex items-center justify-center z-10 ghost-pattern">
+<span class="text-primary/50 text-xs font-bold">...</span>
+</div>
+</div>
+<!-- Day 3: Ghost -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative z-10">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary/10 border-2 border-dashed border-primary rounded flex items-center justify-center z-10 ghost-pattern">
+<span class="text-primary/50 text-xs font-bold">...</span>
+</div>
+</div>
+<!-- Day 4: Drag Target -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative z-10">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary/10 border-2 border-dashed border-primary rounded flex items-center justify-center z-10 ghost-pattern">
+<!-- Cursor Hand -->
+<div class="absolute -bottom-4 -right-8 z-50 text-stone-800 dark:text-white drop-shadow-md">
+<span class="material-symbols-outlined text-4xl" style="font-size: 36px;">swipe_right_alt</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. DROP STATE -->
+<div class="group flex flex-col gap-4">
+<div class="flex items-center gap-3 pb-2 border-b border-stone-200 dark:border-stone-700">
+<span class="flex items-center justify-center w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-sm font-bold text-stone-500">3</span>
+<h3 class="text-lg font-bold tracking-tight">DROP</h3>
+</div>
+<!-- Visualization Card -->
+<div class="relative bg-white dark:bg-[#2c291d] rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 overflow-hidden">
+<!-- Description -->
+<p class="text-sm text-stone-500 mb-6">Releasing fills all days in the range.</p>
+<!-- Grid Visualization -->
+<div class="bg-wood-light dark:bg-[#383324] rounded-xl p-4 border border-wood-border dark:border-stone-600">
+<!-- Date Headers -->
+<div class="flex justify-between mb-2 px-1">
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Mo</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Di</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Mi</div>
+<div class="text-xs font-semibold text-stone-400 uppercase tracking-wider w-14 text-center">Do</div>
+</div>
+<!-- Tracks -->
+<div class="flex justify-between gap-2 relative">
+<!-- Day 1: Filled -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary rounded shadow-sm flex flex-col items-center justify-center gap-1 z-10">
+<div class="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center text-[9px] font-bold text-[#423d29]">TM</div>
+<span class="text-[9px] font-bold text-[#423d29] leading-none">T. Müller</span>
+<!-- Success Badge -->
+<div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white border border-white">
+<span class="material-symbols-outlined text-[10px] font-bold">check</span>
+</div>
+</div>
+</div>
+<!-- Day 2: Filled -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary rounded shadow-sm flex flex-col items-center justify-center gap-1 z-10">
+<div class="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center text-[9px] font-bold text-[#423d29]">TM</div>
+<span class="text-[9px] font-bold text-[#423d29] leading-none">T. Müller</span>
+<div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white border border-white">
+<span class="material-symbols-outlined text-[10px] font-bold">check</span>
+</div>
+</div>
+</div>
+<!-- Day 3: Filled -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary rounded shadow-sm flex flex-col items-center justify-center gap-1 z-10">
+<div class="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center text-[9px] font-bold text-[#423d29]">TM</div>
+<span class="text-[9px] font-bold text-[#423d29] leading-none">T. Müller</span>
+<div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white border border-white">
+<span class="material-symbols-outlined text-[10px] font-bold">check</span>
+</div>
+</div>
+</div>
+<!-- Day 4: Filled -->
+<div class="w-14 h-24 bg-white dark:bg-stone-800/50 rounded-lg border border-stone-200 dark:border-stone-600 relative">
+<div class="absolute top-1 left-1 right-1 h-20 bg-primary rounded shadow-sm flex flex-col items-center justify-center gap-1 z-10">
+<div class="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center text-[9px] font-bold text-[#423d29]">TM</div>
+<span class="text-[9px] font-bold text-[#423d29] leading-none">T. Müller</span>
+<div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white border border-white">
+<span class="material-symbols-outlined text-[10px] font-bold">check</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Legend Section -->
+<section class="mt-8 border-t border-stone-200 dark:border-stone-800 pt-8">
+<h4 class="text-sm font-bold text-stone-400 uppercase tracking-widest mb-6">Legende / Visual Language</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Legend Item 1 -->
+<div class="flex items-start gap-4">
+<div class="flex-shrink-0 w-12 h-16 bg-primary rounded shadow-sm flex items-center justify-center">
+<span class="text-white font-bold text-xs">A</span>
+</div>
+<div>
+<p class="font-bold text-[#181711] dark:text-white">Active Chip</p>
+<p class="text-sm text-[#8a8260]">Represents the source of the interaction. Solid fill indicates a confirmed or currently held object.</p>
+</div>
+</div>
+<!-- Legend Item 2 -->
+<div class="flex items-start gap-4">
+<div class="flex-shrink-0 w-12 h-16 bg-primary/10 border-2 border-dashed border-primary rounded ghost-pattern flex items-center justify-center">
+<span class="text-primary font-bold text-xs opacity-60">G</span>
+</div>
+<div>
+<p class="font-bold text-[#181711] dark:text-white">Ghost Chip</p>
+<p class="text-sm text-[#8a8260]">Indicates the potential target range. Opacity and dashed borders signify a temporary "preview" state.</p>
+</div>
+</div>
+<!-- Legend Item 3 -->
+<div class="flex items-start gap-4">
+<div class="flex-shrink-0 w-12 h-16 flex items-center justify-center relative">
+<div class="w-full h-1 bg-primary absolute"></div>
+<div class="w-2 h-2 rounded-full bg-primary absolute"></div>
+</div>
+<div>
+<p class="font-bold text-[#181711] dark:text-white">Connection Line</p>
+<p class="text-sm text-[#8a8260]">Visually links the start and end points of a range selection, reinforcing continuity.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

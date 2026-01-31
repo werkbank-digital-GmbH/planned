@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="light" lang="de"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk Planning - Resource Pool</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-dark": "#d66e0a", "background-light": "#f8f8f5", "background-dark": "#231f0f", "wood-50": "#faf9f8", "wood-100": "#f4f2f0", "wood-200": "#e6e0db", "wood-300": "#d6cec5", "wood-400": "#a89c90", "wood-600": "#897561", "wood-800": "#181411", "wood-900": "#110e0c"}, fontFamily: {display: "Inter"}, boxShadow: {floating: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)", paper: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", "cell-active": "inset 0 0 0 2px #ec7f13"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .wood-texture-bg {
+             background-color: #f8f7f6;
+             background-image: radial-gradient(#e6e0db 1px, transparent 1px);
+             background-size: 20px 20px;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }.no-scrollbar {
+            -ms-overflow-style: none;scrollbar-width: none;}
+    </style>
+</head>
+<body class="wood-texture-bg dark:bg-background-dark text-wood-800 dark:text-white min-h-screen flex flex-col overflow-x-hidden relative">
+<header class="sticky top-0 z-30 w-full bg-white/80 dark:bg-wood-900/90 backdrop-blur-md border-b border-wood-200 dark:border-white/10">
+<div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<span class="text-2xl leading-none">🔶</span>
+<h1 class="text-xl font-bold tracking-tight text-wood-800 dark:text-white">bänk</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium text-wood-600 hover:text-wood-800 dark:text-gray-400 transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-primary" href="#">Planung</a>
+<a class="text-sm font-medium text-wood-600 hover:text-wood-800 dark:text-gray-400 transition-colors" href="#">Projekte</a>
+<a class="text-sm font-medium text-wood-600 hover:text-wood-800 dark:text-gray-400 transition-colors" href="#">Einstellungen</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center bg-wood-100 dark:bg-white/5 rounded-lg px-3 h-10 w-64 border border-transparent focus-within:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-wood-600 dark:text-gray-400 text-[20px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full text-wood-800 dark:text-white placeholder:text-wood-400" placeholder="Suche Projekt oder MA..." type="text"/>
+</div>
+<div class="size-9 rounded-full bg-cover bg-center border border-wood-200 shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDJmXZFljecGE7XbCOmJHS6bmJkivQ2sP8v9rWvl5_LZ-ZulRSdyzBquBUARz6eT5TsgQub-S3TkTvc0KXASE2H2be2uYtrM3d2oXYfma09kjfdBtgdxJe9F2MUfLIN-FodhOUpv44cgnIeLbXLVeb_l2c6OjCPuGuqS8up9VdCuTeYs27bPks4l42RpIWz1FWL-VxQuJuBOhli8v16qNYetqTlIZQX3RH2FBfXsZ2W4Q74awqLkUVIifjVwMK_yzd71wwXQfOMmRQ')"></div>
+</div>
+</div>
+</header>
+<div class="max-w-[1600px] mx-auto px-6 py-6 w-full">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-wood-600 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                Tagesplanung
+            </div>
+<div class="flex items-center gap-4">
+<h2 class="text-3xl font-bold text-wood-800 dark:text-white">KW 06 <span class="text-wood-400 font-normal text-xl ml-2">05. - 11. Februar</span></h2>
+<div class="flex bg-white dark:bg-white/5 rounded-lg border border-wood-200 dark:border-white/10 p-0.5 shadow-sm">
+<button class="px-2 py-1 rounded hover:bg-wood-50 dark:hover:bg-white/10 text-wood-600 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="px-2 py-1 rounded hover:bg-wood-50 dark:hover:bg-white/10 text-wood-600 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-wood-100 dark:bg-white/5 p-1 rounded-lg border border-wood-200/50">
+<button class="px-4 py-1.5 rounded-md bg-white dark:bg-white/10 shadow-sm text-sm font-semibold text-wood-800 dark:text-white">Day View</button>
+<button class="px-4 py-1.5 rounded-md text-sm font-medium text-wood-600 dark:text-gray-400 hover:text-wood-800">Week View</button>
+</div>
+<button class="bg-wood-800 hover:bg-wood-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-md">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                Filter
+            </button>
+</div>
+</div>
+</div>
+<main class="flex-1 max-w-[1600px] mx-auto w-full px-6 pb-64 relative">
+<div class="bg-white dark:bg-[#2A221B] rounded-xl shadow-paper border border-wood-200 dark:border-white/5 overflow-hidden">
+<div class="grid grid-cols-[320px_1fr_1fr_1fr_1fr_1fr] border-b border-wood-200 dark:border-white/5 bg-wood-50 dark:bg-white/5">
+<div class="p-4 pl-6 text-xs font-bold uppercase tracking-wider text-wood-500 dark:text-gray-400 flex items-center gap-2">
+<span>Projekt / Phase</span>
+</div>
+<div class="p-3 border-l border-wood-200 dark:border-white/5">
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold text-wood-400 uppercase">MO</span>
+<span class="text-xl font-bold text-wood-800 dark:text-white">05</span>
+</div>
+</div>
+<div class="p-3 border-l border-wood-200 dark:border-white/5 bg-primary/5">
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold text-primary uppercase">DI</span>
+<span class="text-xl font-bold text-primary">06</span>
+</div>
+</div>
+<div class="p-3 border-l border-wood-200 dark:border-white/5">
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold text-wood-400 uppercase">MI</span>
+<span class="text-xl font-bold text-wood-800 dark:text-white">07</span>
+</div>
+</div>
+<div class="p-3 border-l border-wood-200 dark:border-white/5">
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold text-wood-400 uppercase">DO</span>
+<span class="text-xl font-bold text-wood-800 dark:text-white">08</span>
+</div>
+</div>
+<div class="p-3 border-l border-wood-200 dark:border-white/5">
+<div class="flex flex-col items-center">
+<span class="text-[10px] font-bold text-wood-400 uppercase">FR</span>
+<span class="text-xl font-bold text-wood-800 dark:text-white">09</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-[320px_1fr_1fr_1fr_1fr_1fr] border-b border-wood-200 dark:border-white/5 bg-wood-50/50 group">
+<div class="p-4 pl-6 flex flex-col justify-center bg-wood-50 dark:bg-white/5 relative border-r border-wood-200 dark:border-white/5">
+<div class="flex items-start gap-3">
+<button class="text-wood-400 hover:text-wood-600 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-wood-900 dark:text-white">BVH 24-01: Neubau Fam. Weber</h3>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">AKTIV</span>
+</div>
+<p class="text-xs text-wood-500">Münchener Str. 12, Augsburg</p>
+</div>
+</div>
+</div>
+<div class="col-span-5 relative bg-wood-50/30 flex items-center p-2">
+<div class="w-full h-8 relative flex items-center">
+<div class="absolute right-0 w-[40%] h-1.5 rounded-full bg-primary/80"></div>
+<div class="absolute right-0 w-[40%] h-1.5 rounded-full bg-wood-200/50 -z-10 w-full"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-[320px_1fr_1fr_1fr_1fr_1fr] border-b border-wood-200 dark:border-white/5 min-h-[100px]">
+<div class="p-4 pl-12 flex flex-col justify-center border-r border-wood-200 dark:border-white/5 bg-white dark:bg-transparent">
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-orange-400"></div>
+<span class="text-sm font-semibold text-wood-800 dark:text-white">Elementierung</span>
+</div>
+<span class="text-[10px] font-bold text-wood-400 uppercase ml-4 mt-1">Produktion</span>
+</div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5 flex flex-col gap-2">
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">M. Bauer</span>
+</div>
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">S. Meyer</span>
+</div>
+</div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5 bg-amber-50/40 relative">
+<div class="h-full w-full rounded border-2 border-dashed border-primary bg-amber-50 flex flex-col p-2 gap-2 relative transition-all shadow-[inset_0_0_10px_rgba(236,127,19,0.1)]">
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm opacity-50">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">M. Bauer</span>
+</div>
+</div>
+</div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5"></div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5"></div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5"></div>
+</div>
+<div class="grid grid-cols-[320px_1fr_1fr_1fr_1fr_1fr] border-b border-wood-200 dark:border-white/5 min-h-[100px]">
+<div class="p-4 pl-12 flex flex-col justify-center border-r border-wood-200 dark:border-white/5 bg-white dark:bg-transparent">
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-blue-500"></div>
+<span class="text-sm font-semibold text-wood-800 dark:text-white">Montage</span>
+</div>
+<span class="text-[10px] font-bold text-wood-400 uppercase ml-4 mt-1">Vor Ort</span>
+</div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5"></div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5 bg-primary/5"></div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5 flex flex-col gap-2">
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">P. Klein</span>
+</div>
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">L. Fischer</span>
+</div>
+</div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5 flex flex-col gap-2">
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">M. Weber</span>
+</div>
+</div>
+<div class="p-2 border-l border-wood-200 dark:border-white/5 flex flex-col gap-2">
+<div class="bg-white border border-wood-200 rounded p-1.5 flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-wood-500 text-[16px]">person</span>
+<span class="text-xs font-medium text-wood-800">K. Wagner</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-[320px_1fr_1fr_1fr_1fr_1fr] border-b border-wood-200 dark:border-white/5 hover:bg-wood-50/50 transition-colors">
+<div class="p-4 pl-6 flex flex-col justify-center border-r border-wood-200 dark:border-white/5">
+<div class="flex items-start gap-3">
+<button class="text-wood-400 hover:text-wood-600 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-wood-900 dark:text-white">BVH 23-45: Sanierung Schmidt</h3>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-wood-200 text-wood-600 border border-wood-300">GEPLANT</span>
+</div>
+<p class="text-xs text-wood-500">Dorfstr. 4, Gersthofen</p>
+</div>
+</div>
+</div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5 bg-primary/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+</div>
+<div class="grid grid-cols-[320px_1fr_1fr_1fr_1fr_1fr] border-b border-wood-200 dark:border-white/5 hover:bg-wood-50/50 transition-colors">
+<div class="p-4 pl-6 flex flex-col justify-center border-r border-wood-200 dark:border-white/5">
+<div class="flex items-start gap-3">
+<button class="text-wood-400 hover:text-wood-600 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h3 class="text-sm font-bold text-wood-900 dark:text-white">BVH 24-05: Holzrahmenbau Kita</h3>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-wood-200 text-wood-600 border border-wood-300">GEPLANT</span>
+</div>
+<p class="text-xs text-wood-500">Parkweg 1, Friedberg</p>
+</div>
+</div>
+</div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5 bg-primary/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+<div class="border-l border-wood-200 dark:border-white/5"></div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 z-40 w-full border-t border-wood-200 bg-white/95 backdrop-blur-xl dark:bg-wood-900/95 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+<div class="max-w-[1600px] mx-auto px-6 py-4">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-4">
+<h3 class="font-bold text-wood-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-wood-600">groups</span>
+                        RESSOURCEN-POOL
+                    </h3>
+<span class="bg-wood-100 dark:bg-white/10 text-wood-600 dark:text-wood-300 px-2 py-0.5 rounded text-xs font-bold border border-wood-200 dark:border-white/5">12 Verfügbar</span>
+</div>
+<div class="flex bg-wood-100 dark:bg-white/5 p-1 rounded-lg border border-wood-200 dark:border-white/5">
+<button class="px-4 py-1.5 bg-white dark:bg-white/10 shadow-sm rounded-md text-xs font-bold text-wood-900 dark:text-white ring-1 ring-black/5">Alle</button>
+<button class="px-4 py-1.5 text-xs font-medium text-wood-600 hover:text-wood-900 dark:text-wood-400 dark:hover:text-white transition-colors">Mitarbeiter</button>
+<button class="px-4 py-1.5 text-xs font-medium text-wood-600 hover:text-wood-900 dark:text-wood-400 dark:hover:text-white transition-colors">Fuhrpark</button>
+<button class="px-4 py-1.5 text-xs font-medium text-wood-600 hover:text-wood-900 dark:text-wood-400 dark:hover:text-white transition-colors">Geräte</button>
+</div>
+</div>
+<div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+<div class="flex-shrink-0 w-44 bg-wood-50 dark:bg-white/5 border-2 border-dashed border-wood-300 dark:border-white/10 rounded-xl p-3 opacity-50 grayscale">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-wood-200 dark:bg-white/10 flex items-center justify-center text-wood-500">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-700 dark:text-white">T. Müller</div>
+<div class="text-[10px] text-wood-500 font-medium">Zimmermann</div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+<div class="flex-shrink-0 w-44 bg-white dark:bg-[#2A221B] border border-wood-200 dark:border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:-translate-y-1">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-900 dark:text-white">A. Weber</div>
+<div class="text-[10px] text-wood-500 font-medium">Elektriker</div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-wood-200 dark:bg-white/20"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+<div class="flex-shrink-0 w-44 bg-white dark:bg-[#2A221B] border border-wood-200 dark:border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:-translate-y-1">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-900 dark:text-white">K. Wagner</div>
+<div class="text-[9px] text-red-600 font-bold flex items-center gap-0.5">
+                                🔴 Urlaub Di-Mi
+                            </div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-wood-200 dark:bg-white/20"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-wood-200 dark:bg-white/20"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+<div class="flex-shrink-0 w-44 bg-white dark:bg-[#2A221B] border border-wood-200 dark:border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:-translate-y-1">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-900 dark:text-white">L. Fischer</div>
+<div class="text-[10px] text-wood-500 font-medium">Bauleiter</div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-wood-200 dark:bg-white/20"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+<div class="flex-shrink-0 w-44 bg-white dark:bg-[#2A221B] border border-wood-200 dark:border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:-translate-y-1">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-900 dark:text-white">Sprinter 1</div>
+<div class="text-[10px] text-wood-500 font-medium">Transporter</div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+<div class="flex-shrink-0 w-44 bg-white dark:bg-[#2A221B] border border-wood-200 dark:border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:-translate-y-1">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-900 dark:text-white">Sprinter 2</div>
+<div class="text-[10px] text-wood-500 font-medium">Transporter</div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+<div class="flex-shrink-0 w-44 bg-white dark:bg-[#2A221B] border border-wood-200 dark:border-white/10 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:-translate-y-1">
+<div class="flex items-center gap-3 mb-2">
+<div class="size-9 rounded-full bg-stone-100 dark:bg-stone-500/10 flex items-center justify-center text-stone-600 dark:text-stone-400">
+<span class="material-symbols-outlined text-[20px]">precision_manufacturing</span>
+</div>
+<div class="flex flex-col">
+<div class="text-sm font-bold text-wood-900 dark:text-white">Crane 02</div>
+<div class="text-[10px] text-wood-500 font-medium">Mobilkran</div>
+</div>
+</div>
+<div class="mt-3 flex justify-between px-1">
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">M</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">D</span></div>
+<div class="flex flex-col items-center gap-1.5"><div class="size-2 rounded-full bg-primary"></div><span class="text-[9px] text-wood-400 font-bold">F</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed z-50 pointer-events-none" style="top: 310px; left: 35%; transform: rotate(2deg) scale(1.05);">
+<div class="bg-white dark:bg-zinc-800 rounded pl-1 pr-4 py-1.5 flex items-center gap-3 shadow-floating border border-primary/50 ring-4 ring-primary/10 w-fit">
+<span class="material-symbols-outlined text-wood-500 text-[20px] ml-1">person</span>
+<div class="flex flex-col gap-0.5">
+<span class="text-sm font-bold text-wood-900 dark:text-white">T. Müller</span>
+</div>
+</div>
+<div class="absolute -bottom-2 -right-2 drop-shadow-md">
+<svg fill="none" height="32" viewbox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 24L26 24C28 24 29 22 29 20V12C29 10 27 9 26 9H24V6C24 4 22 3 21 3C20 3 18 4 18 6V9H16V4C16 2 15 1 13 1C12 1 10 2 10 4V9H8V6C8 4 7 3 5 3C4 3 2 4 2 6V18C2 21.3137 4.68629 24 8 24H10Z" fill="white" stroke="#181411" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</main>
+</body></html>

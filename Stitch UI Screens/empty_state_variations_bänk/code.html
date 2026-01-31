@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - Empty State Variations</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-dark": "#d66e0d", "background-light": "#f8f8f5", "background-dark": "#231f0f", "wood-dark": "#181411", "wood-medium": "#897561", "wood-light": "#e6e0db", "card-dark": "#2c2219"}, fontFamily: {display: "Inter", body: ["Noto Sans", "sans-serif"]}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-wood-dark dark:text-gray-100 font-display transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-wood-light dark:border-stone-800 bg-white dark:bg-card-dark px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4 text-wood-dark dark:text-white">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-3xl">table_chart</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">bänk</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-wood-light dark:border-stone-700" data-alt="User profile avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB9AGfLKAxhjr1YAQEBNY5opX1yclnZs5uWGd_qWVGCDLC8jZTo1msSp6qZZcljW0EH9V7uT1sx1xDfHEKSYuFSZqXR5wgj2IrY_SoHi7RUWwbLnCcTndbeGxVptDmqw_2dU-4JLkWAZVJwGZWKtZfLZxK1W6Ms6nlSMjwQb_tpbWegZNcywk5LKVXNBYS6s6IOOTk5NmnbWGociDRgX87K5eIzU_Tw5ZzP01pnfVQ5Lv_DKcpZQHHCBKwsrfAU9bAviQHwKgvlvak");'></div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 py-8 md:px-10 lg:px-20 max-w-[1400px] mx-auto w-full">
+<!-- Page Heading -->
+<div class="flex flex-col gap-3 mb-12">
+<h1 class="text-wood-dark dark:text-white tracking-tight text-3xl md:text-4xl font-bold leading-tight">Empty State Variations</h1>
+<p class="text-wood-medium dark:text-stone-400 text-sm md:text-base font-normal leading-normal max-w-2xl">
+                    Visual showcase of empty states for various resource planning scenarios within the bänk application.
+                </p>
+</div>
+<!-- Grid Container -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+<!-- Card 1: No Projects -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-wood-light dark:border-stone-800 p-8 flex flex-col items-center justify-center text-center shadow-sm h-full min-h-[320px]">
+<div class="bg-background-light dark:bg-stone-800/50 p-6 rounded-full mb-6">
+<span class="material-symbols-outlined text-5xl text-wood-medium dark:text-stone-500">assignment</span>
+</div>
+<h3 class="text-wood-dark dark:text-white text-xl font-bold mb-2">Noch keine Projekte</h3>
+<p class="text-wood-medium dark:text-stone-400 text-sm mb-8 max-w-[320px]">
+                        Verbinde Asana, um deine Projekte automatisch zu synchronisieren.
+                    </p>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200 shadow-sm">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span>Asana verbinden</span>
+</button>
+</div>
+<!-- Card 2: Empty Planning Board -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-wood-light dark:border-stone-800 p-8 flex flex-col items-center justify-center text-center shadow-sm h-full min-h-[320px]">
+<!-- CSS Illustration of Planning Board -->
+<div class="relative w-full max-w-[280px] h-32 mb-6 opacity-80">
+<!-- Board Header -->
+<div class="absolute top-0 left-0 right-0 h-8 bg-background-light dark:bg-stone-800 rounded-t-lg border-b border-wood-light dark:border-stone-700 flex items-center px-2 gap-2">
+<div class="w-16 h-3 bg-wood-light/50 dark:bg-stone-700 rounded"></div>
+<div class="w-16 h-3 bg-wood-light/50 dark:bg-stone-700 rounded ml-auto"></div>
+</div>
+<!-- Board Grid (Dashed Drop Zone) -->
+<div class="absolute top-8 left-0 right-0 bottom-0 border-2 border-dashed border-wood-light dark:border-stone-700 bg-background-light/30 dark:bg-stone-800/20 rounded-b-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-wood-light dark:text-stone-600">drag_indicator</span>
+</div>
+<!-- Arrow pointing down -->
+<div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-card-dark rounded-full p-1 shadow-sm border border-wood-light dark:border-stone-700 z-10">
+<span class="material-symbols-outlined text-primary text-xl animate-bounce">arrow_downward</span>
+</div>
+</div>
+<h3 class="text-wood-dark dark:text-white text-xl font-bold mb-2">Plantafel leer</h3>
+<p class="text-wood-medium dark:text-stone-400 text-sm mb-6 max-w-[320px]">
+                        Ziehe Mitarbeiter aus dem Pool hierher, um sie einzuplanen.
+                    </p>
+</div>
+<!-- Card 3: No Search Results -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-wood-light dark:border-stone-800 p-8 flex flex-col items-center justify-center text-center shadow-sm h-full min-h-[320px]">
+<div class="bg-background-light dark:bg-stone-800/50 p-6 rounded-full mb-6">
+<span class="material-symbols-outlined text-5xl text-wood-medium dark:text-stone-500">search_off</span>
+</div>
+<h3 class="text-wood-dark dark:text-white text-xl font-bold mb-2">Keine Treffer</h3>
+<p class="text-wood-medium dark:text-stone-400 text-sm mb-8 max-w-[320px]">
+                        Für diesen Filter wurden keine Ergebnisse gefunden.
+                    </p>
+<button class="flex items-center gap-2 bg-background-light dark:bg-stone-800 hover:bg-wood-light dark:hover:bg-stone-700 text-wood-dark dark:text-white font-medium py-2.5 px-6 rounded-lg transition-colors duration-200 border border-transparent hover:border-wood-light dark:hover:border-stone-600">
+<span>Filter zurücksetzen</span>
+</button>
+</div>
+<!-- Card 4: No Employees -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-wood-light dark:border-stone-800 p-8 flex flex-col items-center justify-center text-center shadow-sm h-full min-h-[320px]">
+<div class="bg-background-light dark:bg-stone-800/50 p-6 rounded-full mb-6">
+<span class="material-symbols-outlined text-5xl text-primary">group_add</span>
+</div>
+<h3 class="text-wood-dark dark:text-white text-xl font-bold mb-2">Noch keine Mitarbeiter</h3>
+<p class="text-wood-medium dark:text-stone-400 text-sm mb-8 max-w-[320px]">
+                        Lege Mitarbeiter an, um sie in der Planung einzusetzen.
+                    </p>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200 shadow-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+<span>Mitarbeiter anlegen</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

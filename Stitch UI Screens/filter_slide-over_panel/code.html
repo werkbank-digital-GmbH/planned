@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Filter Slide-over Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>.custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #374151;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display overflow-hidden h-screen w-screen relative text-[#181411]">
+<div class="absolute inset-0 z-0 flex flex-col pointer-events-none select-none opacity-40 blur-[2px] transition-all bg-white dark:bg-[#111]">
+<div class="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center px-8 gap-6 bg-white dark:bg-[#181411]">
+<div class="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+<div class="ml-auto flex gap-3">
+<div class="h-8 w-24 rounded bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-8 w-8 rounded-full bg-primary/20"></div>
+</div>
+</div>
+<div class="flex-1 p-8 grid grid-cols-12 gap-6 bg-gray-50 dark:bg-black/20">
+<div class="col-span-2 space-y-4">
+<div class="h-10 w-full rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+<div class="h-64 w-full rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+</div>
+<div class="col-span-10">
+<div class="flex justify-between mb-6">
+<div class="h-8 w-48 rounded bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-8 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+</div>
+<div class="grid grid-cols-4 gap-4">
+<div class="h-40 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+<div class="h-40 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+<div class="h-40 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+<div class="h-40 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+<div class="h-40 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+<div class="h-40 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute inset-0 bg-black/20 z-10 backdrop-blur-[1px]"></div>
+<div class="absolute right-0 top-0 h-full w-full md:w-[480px] lg:w-[35vw] bg-white dark:bg-[#181411] shadow-2xl z-20 flex flex-col border-l border-gray-100 dark:border-gray-800 transform transition-transform duration-300 ease-in-out">
+<header class="flex items-center justify-between px-6 py-5 border-b border-[#f4f2f0] dark:border-gray-800 shrink-0 bg-white dark:bg-[#181411]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 28px;">tune</span>
+<h2 class="text-[#181411] dark:text-white text-xl font-bold tracking-tight">Filter Settings</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-sm font-semibold text-primary hover:text-[#d67211] transition-colors focus:outline-none focus:underline decoration-2 underline-offset-4">
+                    Reset all
+                </button>
+<button class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700">
+<span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+</button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-[#181411]">
+<div class="p-6 space-y-8">
+<div class="space-y-3">
+<p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Filters</p>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg group hover:bg-primary/20 transition-colors cursor-pointer select-none">
+<span class="text-xs font-bold text-primary">Produktion</span>
+<span class="material-symbols-outlined text-[16px] text-primary group-hover:text-[#d67211]">close</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg group hover:bg-primary/20 transition-colors cursor-pointer select-none">
+<span class="text-xs font-bold text-primary">T. Müller</span>
+<span class="material-symbols-outlined text-[16px] text-primary group-hover:text-[#d67211]">close</span>
+</div>
+</div>
+</div>
+<div class="h-px bg-[#f4f2f0] dark:bg-gray-800 w-full"></div>
+<div class="space-y-3">
+<h3 class="text-[#181411] dark:text-white text-base font-bold flex items-center gap-2">
+                        Bereich
+                    </h3>
+<div class="space-y-1">
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 transition-all cursor-pointer" type="checkbox"/>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Produktion</span>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 transition-all cursor-pointer" type="checkbox"/>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Montage</span>
+</label>
+</div>
+</div>
+<div class="h-px bg-[#f4f2f0] dark:bg-gray-800 w-full"></div>
+<div class="space-y-3">
+<h3 class="text-[#181411] dark:text-white text-base font-bold">Status</h3>
+<div class="space-y-1">
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 cursor-pointer" type="checkbox"/>
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]"></span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Aktiv</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 cursor-pointer" type="checkbox"/>
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_4px_rgba(96,165,250,0.4)]"></span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Geplant</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 cursor-pointer" type="checkbox"/>
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_4px_rgba(251,146,60,0.4)]"></span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Pausiert</span>
+</div>
+</label>
+</div>
+</div>
+<div class="h-px bg-[#f4f2f0] dark:bg-gray-800 w-full"></div>
+<div class="space-y-4">
+<h3 class="text-[#181411] dark:text-white text-base font-bold">Mitarbeiter</h3>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px] group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 dark:text-gray-200 placeholder-gray-400 shadow-sm" placeholder="Search employee..." type="text"/>
+</div>
+<div class="space-y-1 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar">
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input checked="" class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 shrink-0 cursor-pointer" type="checkbox"/>
+<div class="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-600">
+<img alt="Thomas Müller Avatar" class="h-full w-full object-cover" data-alt="Portrait of Thomas Müller" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ2xHhLv4mgcFNR-LFSknERUQ6G1quGlrQEvxwtww1y0otdjLex3pXc-hN-o0iRH1-qwNHSI9y4r_6Si8a16tBc3UcB6nRVIl15KVvSJZRFXUy10LvgjalZRWb9MKAV5JDs01-FfO30rF8_c78IUo3qm5pygJqwf1aDSICX8uSkKzRStvWQwk-r4bIgopCDjMadnRtBUyfpZJttj-h7xnQ2A8cX7-wP1rgv9k1eLz2xRD3WmfKc1Nh3bExRwlWjhjwo3Oe5zg3Eug"/>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white leading-none">Thomas Müller</span>
+<span class="text-[11px] text-gray-400 mt-1">Production Lead</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 shrink-0 cursor-pointer" type="checkbox"/>
+<div class="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-600">
+<div class="h-full w-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold text-xs">SS</div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white leading-none">Sabine Schmidt</span>
+<span class="text-[11px] text-gray-400 mt-1">Assembly</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 shrink-0 cursor-pointer" type="checkbox"/>
+<div class="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-600">
+<img alt="Jonas Weber Avatar" class="h-full w-full object-cover" data-alt="Portrait of Jonas Weber" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW7r8GguLYPSavyRlzgpDqskVPqgDKdbqix_ENJIqT_Cdkv2HpMdXMvxlH6PYl6CgnJNX4KgGP0aBWUxIcfHMDZsdxihC9uYxh4pQiylYzEv_sVQaGS_7i_WSt5x0YbMImtkP_DJ81l7UJ9pytSrWcL8j5i8b1VU9TezECodOK8yVcqGTsl9E-zoDNCagJNdMwr7IkCshJVbp-F5XkpDV4S9G357ORodk8fV9aLdvpsJhz0947wQqk_G6Jnao_59k86551dxXKYXU"/>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white leading-none">Jonas Weber</span>
+<span class="text-[11px] text-gray-400 mt-1">Technician</span>
+</div>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 shrink-0 cursor-pointer" type="checkbox"/>
+<div class="h-8 w-8 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 dark:border-gray-600">
+<div class="h-full w-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center text-orange-600 dark:text-orange-300 font-bold text-xs">LK</div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white leading-none">Lena Koch</span>
+<span class="text-[11px] text-gray-400 mt-1">Quality Assurance</span>
+</div>
+</label>
+</div>
+</div>
+<div class="h-px bg-[#f4f2f0] dark:bg-gray-800 w-full"></div>
+<div class="space-y-4">
+<h3 class="text-[#181411] dark:text-white text-base font-bold">Phase</h3>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px] group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 dark:text-gray-200 placeholder-gray-400 shadow-sm" placeholder="Search phase..." type="text"/>
+</div>
+<div class="space-y-1">
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 cursor-pointer" type="checkbox"/>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Vorbereitung</span>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 cursor-pointer" type="checkbox"/>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Rohbau</span>
+</label>
+<label class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+<input class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 dark:bg-transparent dark:border-gray-600 cursor-pointer" type="checkbox"/>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#181411] dark:group-hover:text-white">Finish</span>
+</label>
+</div>
+</div>
+<div class="h-4"></div>
+</div>
+</div>
+<div class="p-6 border-t border-[#f4f2f0] dark:border-gray-800 bg-white dark:bg-[#181411] shrink-0 z-30">
+<div class="flex gap-4">
+<button class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-[#181411] dark:text-white font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors focus:ring-2 focus:ring-gray-200">
+                    Cancel
+                </button>
+<button class="flex-1 px-4 py-2.5 rounded-lg bg-primary text-white font-bold text-sm shadow-md hover:bg-[#d67211] hover:shadow-lg transition-all focus:ring-4 focus:ring-primary/30">
+                    Apply Filters
+                </button>
+</div>
+</div>
+</div>
+</body></html>

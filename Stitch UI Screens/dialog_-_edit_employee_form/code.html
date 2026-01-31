@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Employee Dialog</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e4b90c",
+                        "primary-hover": "#cfaa0b",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221f10",
+                        "stone": {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        }
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for clean look */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-stone-200/50 font-display text-stone-900 h-screen overflow-hidden flex items-center justify-center p-4">
+<!-- Modal Overlay -->
+<div aria-hidden="true" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-40 transition-opacity"></div>
+<!-- Modal Content -->
+<div class="relative z-50 w-full max-w-[640px] max-h-[90vh] flex flex-col bg-white dark:bg-stone-900 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+<!-- Header -->
+<div class="flex items-center justify-between px-6 py-5 border-b border-stone-100 dark:border-stone-800">
+<h2 class="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Mitarbeiter bearbeiten</h2>
+<button class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors rounded-full p-1 hover:bg-stone-100 dark:hover:bg-stone-800">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Scrollable Body -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+<!-- Profile Section -->
+<div class="flex flex-col sm:flex-row gap-6 items-start">
+<div class="bg-stone-100 w-24 h-24 rounded-lg flex-shrink-0 bg-cover bg-center border border-stone-200 shadow-sm" data-alt="Default user avatar placeholder showing a generic silhouette" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAVSjn6j2xKnK2Gj1Usa-m6wMkTGbMccFOBdCV701h3eyQjOD9ILB5A1wSgDgWkKNFzmhLa9BTndj9cEZsAQqJmWgIgqgn7-ihLFCeH2VaOa2eSCjABEISIqkfj7C0eYonWg-UTz3xPJoniZDyfob6IbwHpb2Zz162A6B4XG7S7_r4QR7mEbInzGV8MxaJV7ki_jNbC5WbKcRQ-8FVa5GZ8f3fcX5Lda_dVlhjRxcMFfMmwpQg0LlUw2IGJtmRpplUIh-gbYpQKYo8');">
+</div>
+<div class="flex flex-col gap-2 pt-1">
+<h3 class="text-lg font-semibold text-stone-900 dark:text-stone-100">Profilbild</h3>
+<p class="text-sm text-stone-500 dark:text-stone-400">Laden Sie ein neues Bild hoch, um das Profil zu aktualisieren.</p>
+<button class="mt-1 w-fit px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-medium rounded-lg transition-colors border border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700 dark:hover:bg-stone-700">
+                        Foto ändern
+                    </button>
+</div>
+</div>
+<hr class="border-stone-100 dark:border-stone-800"/>
+<!-- Form Fields -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<!-- Name Row -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-stone-700 dark:text-stone-300" for="firstname">Vorname</label>
+<input class="h-10 px-3 rounded-lg border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none dark:bg-stone-800 dark:border-stone-700 dark:text-white" id="firstname" type="text" value="Thomas"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-stone-700 dark:text-stone-300" for="lastname">Nachname</label>
+<input class="h-10 px-3 rounded-lg border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none dark:bg-stone-800 dark:border-stone-700 dark:text-white" id="lastname" type="text" value="Müller"/>
+</div>
+<!-- Email Row -->
+<div class="flex flex-col gap-1.5 col-span-1 md:col-span-2">
+<label class="text-sm font-medium text-stone-700 dark:text-stone-300" for="email">E-Mail</label>
+<div class="relative">
+<input class="w-full h-10 pl-3 pr-10 rounded-lg border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none dark:bg-stone-800 dark:border-stone-700 dark:text-white" id="email" type="email" value="thomas.mueller@firma.de"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-stone-400">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+</div>
+</div>
+<!-- Role & Hours -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-stone-700 dark:text-stone-300" for="role">Rolle</label>
+<div class="relative">
+<select class="w-full h-10 pl-3 pr-10 rounded-lg border-stone-200 bg-white text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none dark:bg-stone-800 dark:border-stone-700 dark:text-white" id="role">
+<option selected="" value="Gewerblich">Gewerblich</option>
+<option value="Verwaltung">Verwaltung</option>
+<option value="Management">Management</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-stone-400">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-stone-700 dark:text-stone-300" for="hours">Wochenstunden</label>
+<input class="h-10 px-3 rounded-lg border-stone-200 bg-white text-stone-900 placeholder:text-stone-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none dark:bg-stone-800 dark:border-stone-700 dark:text-white" id="hours" type="number" value="40"/>
+</div>
+<!-- Integration -->
+<div class="flex flex-col gap-1.5 col-span-1 md:col-span-2">
+<label class="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-1" for="timetac">
+                        TimeTac Mitarbeiter-ID 
+                        <span class="material-symbols-outlined text-[16px] text-stone-400 cursor-help" title="Wird für die Synchronisation benötigt">help</span>
+</label>
+<input class="h-10 px-3 rounded-lg border-stone-200 bg-stone-50 text-stone-500 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-mono dark:bg-stone-800/50 dark:border-stone-700 dark:text-stone-400" id="timetac" type="text" value="12345"/>
+<p class="text-xs text-stone-500">Diese ID wird für die automatische Synchronisation mit der Zeiterfassung verwendet.</p>
+</div>
+</div>
+<hr class="border-stone-100 dark:border-stone-800"/>
+<!-- Status Section -->
+<div class="space-y-4">
+<label class="text-xs font-bold text-stone-500 tracking-wider uppercase">Status</label>
+<div class="flex gap-4">
+<label class="inline-flex items-center group cursor-pointer">
+<div class="relative flex items-center justify-center">
+<input checked="" class="peer appearance-none w-5 h-5 rounded-full border-2 border-stone-300 checked:border-primary transition-colors" name="status" type="radio" value="active"/>
+<div class="absolute w-2.5 h-2.5 rounded-full bg-primary scale-0 peer-checked:scale-100 transition-transform"></div>
+</div>
+<span class="ml-2 text-sm font-medium text-stone-900 dark:text-stone-200 group-hover:text-stone-700">Aktiv</span>
+</label>
+<label class="inline-flex items-center group cursor-pointer">
+<div class="relative flex items-center justify-center">
+<input class="peer appearance-none w-5 h-5 rounded-full border-2 border-stone-300 checked:border-stone-500 transition-colors" name="status" type="radio" value="inactive"/>
+<div class="absolute w-2.5 h-2.5 rounded-full bg-stone-500 scale-0 peer-checked:scale-100 transition-transform"></div>
+</div>
+<span class="ml-2 text-sm font-medium text-stone-900 dark:text-stone-200 group-hover:text-stone-700">Deaktiviert</span>
+</label>
+</div>
+<!-- Warning Alert -->
+<div class="flex gap-3 p-4 rounded-lg bg-orange-50 border border-orange-100 text-orange-900 dark:bg-orange-900/10 dark:border-orange-900/20 dark:text-orange-100 items-start">
+<span class="material-symbols-outlined text-orange-500 mt-0.5 icon-filled">warning</span>
+<div class="text-sm leading-relaxed">
+<span class="font-semibold block mb-0.5">Hinweis zur Deaktivierung</span>
+                        Deaktivierte Mitarbeiter erscheinen nicht im Ressourcen-Pool und können nicht eingeplant werden. Bestehende Planungen bleiben erhalten.
+                    </div>
+</div>
+</div>
+<!-- Danger Zone -->
+<div class="pt-2">
+<button class="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 -ml-3 rounded-lg transition-colors text-sm font-medium dark:hover:bg-red-900/20 dark:text-red-400" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+                    Mitarbeiter löschen
+                </button>
+</div>
+</div>
+<!-- Footer -->
+<div class="flex items-center justify-end gap-3 px-6 py-4 bg-background-light dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 rounded-b-xl">
+<button class="px-5 py-2.5 rounded-lg text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-200/50 transition-colors dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800">
+                Abbrechen
+            </button>
+<button class="px-5 py-2.5 rounded-lg text-sm font-bold bg-primary text-[#2c2605] shadow-sm hover:bg-primary-hover hover:shadow transition-all focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:ring-offset-stone-900">
+                Speichern
+            </button>
+</div>
+</div>
+</body></html>

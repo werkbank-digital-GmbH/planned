@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - MVP Manager Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f", "surface-light": "#ffffff", "surface-dark": "#2d241b"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#181411] dark:text-[#f4f2f0] font-display antialiased h-screen overflow-hidden flex">
+<aside class="w-64 bg-surface-light dark:bg-surface-dark border-r border-[#e6e0db] dark:border-[#3e342b] flex flex-col h-full shrink-0 transition-all duration-300 hidden md:flex z-20">
+<div class="p-6 flex items-center gap-3">
+<div class="relative flex items-center justify-center size-10 rounded-lg bg-primary text-white shadow-lg shadow-orange-500/20">
+<span class="material-symbols-outlined">forest</span>
+</div>
+<div>
+<h1 class="text-[#181411] dark:text-white text-lg font-bold leading-none tracking-tight">🔶 bänk</h1>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/10 text-primary dark:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined filled group-hover:scale-110 transition-transform">dashboard</span>
+<span class="text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-[#5c4d40] dark:text-[#b0a090] hover:bg-[#f4f2f0] dark:hover:bg-[#3e342b] transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#181411] dark:group-hover:text-white transition-colors">calendar_month</span>
+<span class="text-sm font-medium group-hover:text-[#181411] dark:group-hover:text-white transition-colors">Planung</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-[#5c4d40] dark:text-[#b0a090] hover:bg-[#f4f2f0] dark:hover:bg-[#3e342b] transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#181411] dark:group-hover:text-white transition-colors">folder_open</span>
+<span class="text-sm font-medium group-hover:text-[#181411] dark:group-hover:text-white transition-colors">Projekte</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-[#5c4d40] dark:text-[#b0a090] hover:bg-[#f4f2f0] dark:hover:bg-[#3e342b] transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-[#181411] dark:group-hover:text-white transition-colors">settings</span>
+<span class="text-sm font-medium group-hover:text-[#181411] dark:group-hover:text-white transition-colors">Einstellungen</span>
+</a>
+</nav>
+<div class="p-4 border-t border-[#e6e0db] dark:border-[#3e342b]">
+<button class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-[#5c4d40] dark:text-[#b0a090] hover:bg-[#f4f2f0] dark:hover:bg-[#3e342b] transition-colors">
+<div class="size-8 rounded-full bg-cover bg-center" data-alt="Portrait of Alex the manager" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAgH1GXakFWiw0PzDVgUOj6pE5YNRxpfr190tpOfSVC1HV0ib9KO_8FtgSvOZIQny-sne3TWs3jpb1CNEw0_45Gk88ILhr9HtuwwTH69hOM0GtCm_mz7V0qw6xKKm0W7E-JJJBSAxnNIPi5yqUXoSGJV2fATPJJcu75oKK_IncB0rKg-J_-L67qtZQw3T7hTvVBdhL64N3TN1buJahezFxuBXTLI3SHImbCwqN8Or61shB43ayH3LnfkptC6rSk7b4VLmfU3TuSLIU');"></div>
+<div class="flex flex-col items-start">
+<span class="text-xs font-semibold text-[#181411] dark:text-white">Alex Johnson</span>
+<span class="text-xs text-[#897561]">Log out</span>
+</div>
+</button>
+</div>
+</aside>
+<main class="flex-1 h-full overflow-y-auto bg-background-light dark:bg-background-dark relative">
+<div class="w-full max-w-[1200px] mx-auto p-4 md:p-8 flex flex-col gap-8">
+<header class="flex flex-wrap justify-between items-end gap-4">
+<div class="flex flex-col gap-1">
+<h1 class="text-[#181411] dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-tight">Good Morning, Alex</h1>
+<p class="text-[#897561] dark:text-[#a89580] text-base font-normal flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">today</span>
+                        Dienstag, 24. Oktober 2023
+                    </p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark border border-[#e6e0db] dark:border-[#3e342b] rounded-lg text-[#181411] dark:text-white text-sm font-medium shadow-sm hover:bg-[#f4f2f0] dark:hover:bg-[#3e342b] transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                        Export Report
+                    </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-orange-600 text-white rounded-lg text-sm font-medium shadow-md shadow-orange-500/20 transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+                        New Entry
+                    </button>
+</div>
+</header>
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+<div class="relative overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark p-6 shadow-[0_2px_8px_-2px_rgba(24,20,17,0.06)] border border-[#e6e0db] dark:border-[#3e342b] group">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-4">
+<p class="text-[#5c4d40] dark:text-[#b0a090] text-sm font-medium">Auslastung diese Woche</p>
+<span class="material-symbols-outlined text-primary/60">pie_chart</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-[#181411] dark:text-white text-3xl font-bold">78%</p>
+<span class="text-green-600 dark:text-green-400 text-xs font-medium flex items-center">
+<span class="material-symbols-outlined text-sm">trending_up</span> +2.4%
+                        </span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark p-6 shadow-[0_2px_8px_-2px_rgba(24,20,17,0.06)] border border-[#e6e0db] dark:border-[#3e342b] group">
+<div class="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
+<div class="flex justify-between items-start mb-4">
+<p class="text-[#5c4d40] dark:text-[#b0a090] text-sm font-medium">Aktive Projekte</p>
+<span class="material-symbols-outlined text-blue-600/60">construction</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-[#181411] dark:text-white text-3xl font-bold">12</p>
+<span class="text-[#897561] text-xs font-medium">Laufend</span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark p-6 shadow-[0_2px_8px_-2px_rgba(24,20,17,0.06)] border border-[#e6e0db] dark:border-[#3e342b] group">
+<div class="absolute top-0 left-0 w-full h-1 bg-green-600"></div>
+<div class="flex justify-between items-start mb-4">
+<p class="text-[#5c4d40] dark:text-[#b0a090] text-sm font-medium">Mitarbeiter verfügbar heute</p>
+<span class="material-symbols-outlined text-green-600/60">person_check</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-[#181411] dark:text-white text-3xl font-bold">8<span class="text-xl text-[#897561] font-medium">/10</span></p>
+<span class="text-[#897561] text-xs font-medium">Bereit</span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark p-6 shadow-[0_2px_8px_-2px_rgba(24,20,17,0.06)] border border-[#e6e0db] dark:border-[#3e342b] group">
+<div class="absolute top-0 left-0 w-full h-1 bg-red-600"></div>
+<div class="flex justify-between items-start mb-4">
+<p class="text-[#5c4d40] dark:text-[#b0a090] text-sm font-medium">Offene Warnungen</p>
+<span class="material-symbols-outlined text-red-600">warning</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-red-600 dark:text-red-400 text-3xl font-bold">3</p>
+<span class="text-red-600/70 dark:text-red-400/70 text-xs font-medium">Handlung erforderlich</span>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<section class="lg:col-span-2 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-[#181411] dark:text-white text-lg font-bold leading-tight tracking-tight">System Alerts</h3>
+<button class="text-sm text-primary font-medium hover:underline">Verlauf anzeigen</button>
+</div>
+<div class="flex flex-col gap-3">
+<div class="flex flex-col sm:flex-row gap-4 bg-red-50 dark:bg-red-900/10 px-5 py-4 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm transition-all hover:shadow-md">
+<div class="flex items-start gap-4 flex-1">
+<div class="text-red-600 dark:text-red-400 flex items-center justify-center rounded-lg bg-white dark:bg-red-900/20 shrink-0 size-10 shadow-sm">
+<span class="material-symbols-outlined">beach_access</span>
+</div>
+<div class="flex flex-col">
+<p class="text-[#181411] dark:text-red-50 text-base font-bold leading-tight">Urlaubskonflikt</p>
+<p class="text-[#5c4d40] dark:text-red-200/70 text-sm font-normal leading-normal mt-1">K. Wagner hat genehmigten Urlaub, ist aber für ein Projekt eingeplant.</p>
+</div>
+</div>
+<div class="sm:self-center shrink-0">
+<button class="w-full sm:w-auto cursor-pointer items-center justify-center rounded-lg h-9 px-4 bg-white dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors">
+                                    Lösen
+                                </button>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 bg-amber-50 dark:bg-amber-900/10 px-5 py-4 rounded-xl border border-amber-100 dark:border-amber-900/30 shadow-sm transition-all hover:shadow-md">
+<div class="flex items-start gap-4 flex-1">
+<div class="text-amber-600 dark:text-amber-400 flex items-center justify-center rounded-lg bg-white dark:bg-amber-900/20 shrink-0 size-10 shadow-sm">
+<span class="material-symbols-outlined">people</span>
+</div>
+<div class="flex flex-col">
+<p class="text-[#181411] dark:text-amber-50 text-base font-bold leading-tight">Mehrfach-Zuweisung</p>
+<p class="text-[#5c4d40] dark:text-amber-200/70 text-sm font-normal leading-normal mt-1">T. Müller ist heute um 12:00 Uhr doppelt gebucht.</p>
+</div>
+</div>
+<div class="sm:self-center shrink-0">
+<button class="w-full sm:w-auto cursor-pointer items-center justify-center rounded-lg h-9 px-4 bg-white dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-sm font-medium hover:bg-amber-50 dark:hover:bg-amber-900/50 transition-colors">
+                                    Prüfen
+                                </button>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 bg-blue-50 dark:bg-blue-900/10 px-5 py-4 rounded-xl border border-blue-100 dark:border-blue-900/30 shadow-sm transition-all hover:shadow-md">
+<div class="flex items-start gap-4 flex-1">
+<div class="text-blue-600 dark:text-blue-400 flex items-center justify-center rounded-lg bg-white dark:bg-blue-900/20 shrink-0 size-10 shadow-sm">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div class="flex flex-col">
+<p class="text-[#181411] dark:text-blue-50 text-base font-bold leading-tight">Phase endet bald</p>
+<p class="text-[#5c4d40] dark:text-blue-200/70 text-sm font-normal leading-normal mt-1">Projekt Schmidt: Aktuelle Phase endet in 24 Stunden.</p>
+</div>
+</div>
+<div class="sm:self-center shrink-0">
+<button class="w-full sm:w-auto cursor-pointer items-center justify-center rounded-lg h-9 px-4 bg-white dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/50 transition-colors">
+                                    Details
+                                </button>
+</div>
+</div>
+</div>
+</section>
+<aside class="flex flex-col gap-6">
+<div class="flex flex-col gap-4">
+<h3 class="text-[#181411] dark:text-white text-lg font-bold leading-tight tracking-tight">Quick Access</h3>
+<div class="grid grid-cols-1 gap-3">
+<button class="flex items-center gap-4 p-4 bg-surface-light dark:bg-surface-dark rounded-xl border border-[#e6e0db] dark:border-[#3e342b] shadow-sm hover:shadow-md hover:border-primary/50 transition-all group text-left">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">calendar_clock</span>
+</div>
+<div>
+<p class="text-[#181411] dark:text-white font-bold text-sm">Kapazitätsplanung</p>
+<p class="text-[#897561] text-xs mt-0.5">Team Zeitpläne verwalten</p>
+</div>
+</button>
+<button class="flex items-center gap-4 p-4 bg-surface-light dark:bg-surface-dark rounded-xl border border-[#e6e0db] dark:border-[#3e342b] shadow-sm hover:shadow-md hover:border-[#F06A6A]/50 transition-all group text-left">
+<div class="size-12 rounded-full bg-[#FCF6F6] dark:bg-[#3d2e2e] flex items-center justify-center text-[#F06A6A] group-hover:bg-[#F06A6A] group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">sync</span>
+</div>
+<div>
+<p class="text-[#181411] dark:text-white font-bold text-sm">Sync Asana</p>
+<p class="text-[#897561] text-xs mt-0.5">Projekt Aufgaben abgleichen</p>
+</div>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-[#181411] dark:text-white text-lg font-bold leading-tight tracking-tight">Letzter Sync</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-[#e6e0db] dark:border-[#3e342b] p-4 shadow-sm flex flex-col gap-4">
+<div class="flex gap-3 items-center">
+<div class="flex items-center justify-center size-8 rounded-full bg-red-50 text-red-500 border border-red-100">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div class="w-full">
+<p class="text-sm font-bold text-[#181411] dark:text-white">Asana</p>
+<p class="text-xs text-[#897561] mt-0.5">Heute 14:32 Uhr</p>
+</div>
+</div>
+<div class="flex gap-3 items-center pt-2 border-t border-[#e6e0db] dark:border-[#3e342b]">
+<div class="flex items-center justify-center size-8 rounded-full bg-blue-50 text-blue-500 border border-blue-100">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div class="w-full">
+<p class="text-sm font-bold text-[#181411] dark:text-white">TimeTac</p>
+<p class="text-xs text-[#897561] mt-0.5">Heute 14:00 Uhr</p>
+</div>
+</div>
+<button class="w-full text-center text-xs text-primary font-medium hover:underline mt-2">Jetzt synchronisieren</button>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TimeTac Configuration</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f", "text-main": "#181411", "text-secondary": "#897561", "border-color": "#e6e0db"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex items-center justify-center p-4">
+<!-- Modal Backdrop -->
+<div aria-hidden="true" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
+<!-- Modal Container -->
+<div class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-[#1a120b] shadow-2xl transition-all border border-[#e6e0db] dark:border-[#3a2e26]">
+<!-- Header -->
+<div class="flex items-center justify-between border-b border-border-color dark:border-[#3a2e26] px-6 py-4">
+<h2 class="text-xl font-bold text-text-main dark:text-white">TimeTac konfigurieren</h2>
+<button class="rounded-full p-1 text-text-secondary hover:bg-background-light dark:hover:bg-[#3a2e26] transition-colors">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="px-6 py-6 space-y-8">
+<!-- Info Box -->
+<div class="flex items-start gap-4 rounded-lg bg-primary/10 border border-primary/20 p-4">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div class="flex flex-col gap-1">
+<p class="text-sm font-bold text-text-main dark:text-white">Integration Info</p>
+<p class="text-sm text-text-main dark:text-gray-300 leading-relaxed">
+                        bänk verbindet sich mit TimeTac, um Abwesenheiten und IST-Stunden zu importieren.
+                    </p>
+</div>
+</div>
+<!-- Credentials Form -->
+<div class="space-y-5">
+<!-- Account Name -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-white" for="account-name">Account-Name</label>
+<input class="form-input w-full rounded-lg border-border-color dark:border-[#3a2e26] bg-white dark:bg-[#221910] text-text-main dark:text-white h-11 px-3 py-2 text-base shadow-sm focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary" id="account-name" type="text" value="zimmerei-mueller"/>
+</div>
+<!-- API Token -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-text-main dark:text-white" for="api-token">API Token</label>
+<div class="relative">
+<input class="form-input w-full rounded-lg border-border-color dark:border-[#3a2e26] bg-white dark:bg-[#221910] text-text-main dark:text-white h-11 px-3 py-2 text-base shadow-sm focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-text-secondary pr-10" id="api-token" type="password" value="supersecrettokenvalue"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-main dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Sync Options -->
+<div class="space-y-4 pt-2">
+<h3 class="text-xs font-bold uppercase tracking-wider text-text-secondary">Sync-Optionen</h3>
+<!-- Option 1 -->
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input checked="" class="peer h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-[#221910]" type="checkbox"/>
+</div>
+<div class="flex flex-col select-none">
+<span class="text-sm font-medium text-text-main dark:text-white group-hover:text-primary transition-colors">Abwesenheiten importieren</span>
+<span class="text-xs text-text-secondary mt-0.5">Urlaub, Krankheit, etc. (stündlich)</span>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="flex items-start gap-3 cursor-pointer group">
+<div class="relative flex items-center">
+<input checked="" class="peer h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600 dark:bg-[#221910]" type="checkbox"/>
+</div>
+<div class="flex flex-col select-none">
+<span class="text-sm font-medium text-text-main dark:text-white group-hover:text-primary transition-colors">IST-Stunden importieren</span>
+<span class="text-xs text-text-secondary mt-0.5">Gebuchte Arbeitszeiten (täglich)</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Footer -->
+<div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-border-color dark:border-[#3a2e26] px-6 py-4 bg-background-light dark:bg-[#221910]/50">
+<button class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-main dark:hover:text-white transition-colors rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
+                Abbrechen
+            </button>
+<div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+<button class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-text-main dark:text-white border border-border-color dark:border-gray-600 bg-white dark:bg-transparent rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors focus:ring-2 focus:ring-gray-200">
+                    Verbindung testen
+                </button>
+<button class="w-full sm:w-auto px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg shadow-md hover:bg-primary/90 focus:ring-2 focus:ring-primary/40 focus:outline-none transition-all">
+                    Speichern
+                </button>
+</div>
+</div>
+</div>
+</body></html>

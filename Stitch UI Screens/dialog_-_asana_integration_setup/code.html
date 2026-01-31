@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dialog - Asana Integration Setup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        /* Custom scrollbar for cleaner look if needed */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e6e0db;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d6cfc8;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#181411] dark:text-white antialiased">
+<!-- Background Layer (Simulating the app behind the modal) -->
+<div class="relative min-h-screen w-full overflow-hidden">
+<!-- Mock background content -->
+<div class="flex h-16 w-full items-center border-b border-[#e6e0db] dark:border-[#3a2e25] bg-white dark:bg-[#1a1a1a] px-8">
+<div class="h-8 w-8 rounded bg-primary/20"></div>
+<div class="ml-4 h-4 w-32 rounded bg-gray-200 dark:bg-[#3a2e25]"></div>
+</div>
+<div class="p-8">
+<div class="h-64 w-full rounded-xl bg-white dark:bg-[#1a1a1a] border border-[#e6e0db] dark:border-[#3a2e25] p-6 shadow-sm">
+<div class="mb-4 h-8 w-48 rounded bg-gray-100 dark:bg-[#3a2e25]"></div>
+<div class="space-y-3">
+<div class="h-4 w-full rounded bg-gray-50 dark:bg-[#2c221b]"></div>
+<div class="h-4 w-3/4 rounded bg-gray-50 dark:bg-[#2c221b]"></div>
+<div class="h-4 w-5/6 rounded bg-gray-50 dark:bg-[#2c221b]"></div>
+</div>
+</div>
+</div>
+<!-- Backdrop -->
+<div aria-hidden="true" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"></div>
+<!-- Modal Dialog -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+<div class="w-full max-w-[600px] transform overflow-hidden rounded-xl bg-white dark:bg-[#1a1a1a] shadow-2xl transition-all border border-[#e6e0db] dark:border-[#3a2e25] flex flex-col max-h-[90vh]">
+<!-- Modal Header -->
+<div class="flex items-center justify-between border-b border-[#e6e0db] dark:border-[#3a2e25] px-6 py-4">
+<h2 class="text-xl font-semibold tracking-tight text-[#181411] dark:text-white">Asana konfigurieren</h2>
+<button class="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#2c221b] transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<!-- Modal Content -->
+<div class="flex-1 overflow-y-auto p-6">
+<div class="flex flex-col gap-6">
+<!-- Section 1: Authentication -->
+<div class="space-y-3">
+<label class="block text-sm font-medium leading-none text-[#181411] dark:text-gray-200">
+                                Personal Access Token
+                            </label>
+<div class="relative flex w-full items-center">
+<input class="flex h-11 w-full rounded-lg border border-[#e6e0db] bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#221910] dark:border-[#3a2e25] dark:text-white dark:ring-offset-[#1a1a1a] dark:placeholder:text-gray-600 pr-10" placeholder="pat_..." type="password" value="••••••••••••••••••••••••"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" type="button">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</div>
+<a class="inline-flex items-center text-xs font-medium text-primary hover:underline hover:text-primary/80 gap-1" href="#">
+                                Hier Token erstellen
+                                <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+<!-- Section 2: Workspace -->
+<div class="space-y-3">
+<label class="block text-sm font-medium leading-none text-[#181411] dark:text-gray-200">
+                                Workspace
+                            </label>
+<div class="relative">
+<select class="flex h-11 w-full appearance-none rounded-lg border border-[#e6e0db] bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#221910] dark:border-[#3a2e25] dark:text-white dark:ring-offset-[#1a1a1a]">
+<option value="zimmerei-mueller">Zimmerei Müller GmbH</option>
+<option value="test-workspace">Test Workspace</option>
+</select>
+<span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</span>
+</div>
+</div>
+<!-- Divider -->
+<div class="relative py-2">
+<div class="absolute inset-0 flex items-center">
+<span class="w-full border-t border-[#e6e0db] dark:border-[#3a2e25]"></span>
+</div>
+</div>
+<!-- Section 3: Field Mapping -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Feld-Mapping</h3>
+<div class="h-px flex-1 bg-[#e6e0db] dark:bg-[#3a2e25]"></div>
+</div>
+<div class="grid gap-5">
+<!-- Mapping Row 1 -->
+<div class="grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr] sm:items-center">
+<label class="text-sm font-medium text-[#181411] dark:text-gray-300">Bereich</label>
+<div class="relative">
+<select class="flex h-10 w-full appearance-none rounded-lg border border-[#e6e0db] bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#221910] dark:border-[#3a2e25] dark:text-white dark:ring-offset-[#1a1a1a]">
+<option selected="">Custom Field: Bereich</option>
+<option>Custom Field: Abteilung</option>
+<option>Tag: Bereich</option>
+<option>None</option>
+</select>
+<span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</span>
+</div>
+</div>
+<!-- Mapping Row 2 -->
+<div class="grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr] sm:items-center">
+<label class="text-sm font-medium text-[#181411] dark:text-gray-300">Soll-Stunden</label>
+<div class="relative">
+<select class="flex h-10 w-full appearance-none rounded-lg border border-[#e6e0db] bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#221910] dark:border-[#3a2e25] dark:text-white dark:ring-offset-[#1a1a1a]">
+<option selected="">Custom Field: Budget Stunden</option>
+<option>Custom Field: Estimated Hours</option>
+<option>None</option>
+</select>
+<span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</span>
+</div>
+</div>
+<!-- Mapping Row 3 -->
+<div class="grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr] sm:items-center">
+<label class="text-sm font-medium text-[#181411] dark:text-gray-300">Projektadresse</label>
+<div class="relative">
+<select class="flex h-10 w-full appearance-none rounded-lg border border-[#e6e0db] bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#221910] dark:border-[#3a2e25] dark:text-white dark:ring-offset-[#1a1a1a]">
+<option selected="">Custom Field: Adresse</option>
+<option>Custom Field: Location</option>
+<option>Description</option>
+<option>None</option>
+</select>
+<span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+<span class="material-symbols-outlined text-lg">expand_more</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="flex flex-col-reverse justify-between gap-3 border-t border-[#e6e0db] bg-background-light/50 dark:bg-background-dark/30 px-6 py-4 sm:flex-row sm:items-center dark:border-[#3a2e25]">
+<button class="inline-flex h-10 items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 dark:text-gray-300 dark:hover:bg-[#2c221b] dark:hover:text-white">
+                        Abbrechen
+                    </button>
+<div class="flex flex-col gap-3 sm:flex-row">
+<button class="inline-flex h-10 items-center justify-center rounded-lg border border-[#e6e0db] bg-transparent px-4 py-2 text-sm font-medium text-[#181411] shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50 dark:border-[#3a2e25] dark:text-gray-200 dark:hover:bg-[#2c221b]">
+                            Verbindung testen
+                        </button>
+<button class="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:ring-offset-[#1a1a1a]">
+                            Speichern
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

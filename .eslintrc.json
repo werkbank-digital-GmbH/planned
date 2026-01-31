@@ -1,0 +1,76 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "import"
+  ],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
+
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          ["parent", "sibling"],
+          "index"
+        ],
+        "pathGroups": [
+          { "pattern": "@/domain/**", "group": "internal", "position": "before" },
+          { "pattern": "@/application/**", "group": "internal", "position": "before" },
+          { "pattern": "@/infrastructure/**", "group": "internal", "position": "before" },
+          { "pattern": "@/presentation/**", "group": "internal", "position": "before" },
+          { "pattern": "@/lib/**", "group": "internal", "position": "after" }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"],
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc" }
+      }
+    ],
+
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "./src/domain",
+            "from": "./src/application",
+            "message": "Domain darf Application nicht importieren!"
+          },
+          {
+            "target": "./src/domain",
+            "from": "./src/infrastructure",
+            "message": "Domain darf Infrastructure nicht importieren!"
+          },
+          {
+            "target": "./src/domain",
+            "from": "./src/presentation",
+            "message": "Domain darf Presentation nicht importieren!"
+          },
+          {
+            "target": "./src/application",
+            "from": "./src/infrastructure",
+            "message": "Application darf Infrastructure nicht importieren!"
+          },
+          {
+            "target": "./src/application",
+            "from": "./src/presentation",
+            "message": "Application darf Presentation nicht importieren!"
+          }
+        ]
+      }
+    ],
+
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "prefer-const": "error",
+    "no-var": "error"
+  }
+}

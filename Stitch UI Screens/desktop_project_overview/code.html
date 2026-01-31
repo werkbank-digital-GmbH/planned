@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - Projects Overview</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#181411] dark:text-white font-display overflow-hidden">
+<div class="flex h-screen w-full">
+<aside class="w-64 flex-shrink-0 bg-white dark:bg-[#1a120b] border-r border-[#e6e2de] dark:border-[#3a2e25] flex flex-col h-full z-20 transition-all duration-300">
+<div class="p-6 border-b border-[#e6e2de] dark:border-[#3a2e25]">
+<div class="flex items-center gap-2">
+<h1 class="text-[#181411] dark:text-white text-xl font-bold leading-normal tracking-tight">🔶 bänk</h1>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#5c4d40] dark:text-[#a3958a] hover:bg-[#f4f2f0] dark:hover:bg-[#2a2018] group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:text-[#181411] dark:group-hover:text-white">dashboard</span>
+<p class="text-sm font-medium leading-normal group-hover:text-[#181411] dark:group-hover:text-white">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#5c4d40] dark:text-[#a3958a] hover:bg-[#f4f2f0] dark:hover:bg-[#2a2018] group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:text-[#181411] dark:group-hover:text-white">calendar_month</span>
+<p class="text-sm font-medium leading-normal group-hover:text-[#181411] dark:group-hover:text-white">Planung</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined fill-1">assignment</span>
+<p class="text-sm font-bold leading-normal">Projekte</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#5c4d40] dark:text-[#a3958a] hover:bg-[#f4f2f0] dark:hover:bg-[#2a2018] group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:text-[#181411] dark:group-hover:text-white">settings</span>
+<p class="text-sm font-medium leading-normal group-hover:text-[#181411] dark:group-hover:text-white">Einstellungen</p>
+</a>
+</nav>
+<div class="p-4 border-t border-[#e6e2de] dark:border-[#3a2e25]">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-[#f4f2f0] dark:hover:bg-[#2a2018] cursor-pointer">
+<div class="size-9 rounded-full bg-gray-200 overflow-hidden" data-alt="User profile portrait of a smiling man" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCIyE9qyGagCi2GlmbQbNvMduwqNnbJRy3Y0YaUZmhw7-pfMzeZhzmA8QZ5kUcl81CtNtb22sAobAq8CFL5Bs2X7Lq_dZ4nS0hN9e463Wx77g_PvcApSEeLBhPIE995FKKIsTvLiwRILPZ6nUZqTDe1H_Bx_pIhebUXjU-wMXnAPPhBS6u-oOLliY6MOFnPnwthvY_I7e7m0mXhxHsEDXgXZeG1QDc1A0DaahikVSSkAIxKCKSsXUMOBd3lDzW-ZE76HQTi5tv3qVs"); background-size: cover; background-position: center;'></div>
+<div class="flex flex-col">
+<p class="text-sm font-medium text-[#181411] dark:text-white">Lukas Weber</p>
+<p class="text-xs text-[#897561]">Project Manager</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full relative overflow-hidden bg-background-light dark:bg-background-dark">
+<header class="flex-shrink-0 bg-white/80 dark:bg-[#1a120b]/80 backdrop-blur-md border-b border-[#e6e2de] dark:border-[#3a2e25] z-10">
+<div class="max-w-[1400px] mx-auto w-full px-6 py-5">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-5">
+<h1 class="text-[#181411] dark:text-white text-3xl font-black leading-tight tracking-[-0.02em]">Projekte</h1>
+<div class="flex items-center gap-3">
+<button class="hidden sm:flex h-10 px-4 items-center gap-2 rounded-lg border border-[#e6e2de] dark:border-[#3a2e25] bg-white dark:bg-[#2a2018] text-[#181411] dark:text-white text-sm font-bold hover:bg-[#f4f2f0] dark:hover:bg-[#3a2e25] transition-colors">
+<span class="material-symbols-outlined text-[20px]">file_upload</span>
+<span>Export</span>
+</button>
+<button class="flex h-10 px-4 items-center gap-2 rounded-lg bg-[#f4f2f0] dark:bg-[#2a2018] text-[#181411] dark:text-white text-sm font-bold hover:bg-[#e8e6e4] dark:hover:bg-[#3a2e25] transition-colors">
+<span class="material-symbols-outlined text-[20px] animate-spin-slow">sync</span>
+<span>Sync</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+<div class="w-full md:w-96">
+<label class="relative flex items-center w-full h-10 rounded-lg bg-white dark:bg-[#2a2018] border border-[#e6e2de] dark:border-[#3a2e25] focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all shadow-sm">
+<div class="absolute left-3 flex items-center justify-center text-[#897561]">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-sm text-[#181411] dark:text-white placeholder-[#897561] focus:ring-0 pl-10 pr-4 h-full rounded-lg" placeholder="Search by project name or address..." value=""/>
+</label>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#181411] dark:bg-white px-4 transition-transform active:scale-95">
+<p class="text-white dark:text-[#181411] text-sm font-medium leading-normal">All</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-[#2a2018] border border-[#e6e2de] dark:border-[#3a2e25] px-4 hover:bg-[#f4f2f0] dark:hover:bg-[#3a2e25] transition-colors">
+<div class="size-2 rounded-full bg-green-500"></div>
+<p class="text-[#5c4d40] dark:text-[#a3958a] text-sm font-medium leading-normal">Active</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-[#2a2018] border border-[#e6e2de] dark:border-[#3a2e25] px-4 hover:bg-[#f4f2f0] dark:hover:bg-[#3a2e25] transition-colors">
+<div class="size-2 rounded-full bg-blue-500"></div>
+<p class="text-[#5c4d40] dark:text-[#a3958a] text-sm font-medium leading-normal">Completed</p>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-[#2a2018] border border-[#e6e2de] dark:border-[#3a2e25] px-4 hover:bg-[#f4f2f0] dark:hover:bg-[#3a2e25] transition-colors">
+<div class="size-2 rounded-full bg-yellow-500"></div>
+<p class="text-[#5c4d40] dark:text-[#a3958a] text-sm font-medium leading-normal">On Hold</p>
+</button>
+</div>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto px-6 py-6 pb-20">
+<div class="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group flex flex-col rounded-xl bg-white dark:bg-[#1a120b] border border-[#e6e2de] dark:border-[#3a2e25] p-5 shadow-sm hover:shadow-md transition-all duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-lg text-[#181411] dark:text-white leading-tight group-hover:text-primary transition-colors cursor-pointer">Haus Müller</h3>
+<div class="flex items-start gap-1.5 text-sm text-[#897561] mt-1.5">
+<span class="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+<span class="line-clamp-1">Am Waldrand 4, Munich</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold uppercase tracking-wide">Active</span>
+</div>
+<div class="flex flex-col gap-2 mb-5">
+<div class="flex justify-between items-end text-sm">
+<span class="font-medium text-[#5c4d40] dark:text-[#a3958a]">Progress</span>
+<span class="text-[#181411] dark:text-white font-bold">53%</span>
+</div>
+<div class="h-2.5 w-full bg-[#f4f2f0] dark:bg-[#2a2018] rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[53%] rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Phases</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">4</span>
+<span class="text-xs text-[#897561]">/ 6</span>
+</div>
+</div>
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Hours (Ist / Soll)</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">120</span>
+<span class="text-xs text-[#897561]">/ 150h</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-[#f4f2f0] dark:border-[#3a2e25] mt-auto">
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAqCA2Cf9Ro7hMKgN2D7imfUBdWwo6AVGjC3QJ-hkT0T7-u7h0CVMD5TWWLvC8X_cy8zRP92hvZ0q6VZz_Y72Eq1JVgXYZ3H-F57j9DSc-Gpr0RuXcZ37MXEW1dYDiPxb4txiRxP2uNH4L1GfQ2bPuWBBzyaer6k0XxU3nyL_fNtz2G3jqW_ezB1KFwrC0kxAmvYejP-QQ916eUkAcwBST2-EZ-Wu0SfguQ627U5e-B_YTrEnTx8397BIU1S4U4UsEwZoqWIqZt3Ac");'></div>
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCPxUFmVNzs2eobg41jBBL-7SNXUE3Yq0DqZABykI2GTQ1QIOEDMG5YwM8v8bs52-SIMYWsu8w9-y-pNDTnxlCkjb0qnVzjT0A6d2Dk8gk33Ve7csEEo94-RdVsvb_dxNE39DfvCBotS87oTNvPdGc5NxdoZ2sSy953BouDYiQhwgOrwgoOY59BGGQVYOw-s8r61eFIdU1TgQXphpCC4LGZRt_yXJ-t02PHAkEHoeAtOBEvcaiSSayaibsYuPJrrIpE1tEJDlUVXA4");'></div>
+</div>
+<button class="text-sm font-semibold text-[#5c4d40] hover:text-primary dark:text-[#a3958a] dark:hover:text-primary flex items-center gap-1 transition-colors">
+                                Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl bg-white dark:bg-[#1a120b] border border-[#e6e2de] dark:border-[#3a2e25] p-5 shadow-sm hover:shadow-md transition-all duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-lg text-[#181411] dark:text-white leading-tight group-hover:text-primary transition-colors cursor-pointer">Projekt Schmidt</h3>
+<div class="flex items-start gap-1.5 text-sm text-[#897561] mt-1.5">
+<span class="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+<span class="line-clamp-1">Hauptstr 22, Berlin</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold uppercase tracking-wide">On Hold</span>
+</div>
+<div class="flex flex-col gap-2 mb-5">
+<div class="flex justify-between items-end text-sm">
+<span class="font-medium text-[#5c4d40] dark:text-[#a3958a]">Progress</span>
+<span class="text-[#181411] dark:text-white font-bold">12%</span>
+</div>
+<div class="h-2.5 w-full bg-[#f4f2f0] dark:bg-[#2a2018] rounded-full overflow-hidden">
+<div class="h-full bg-yellow-500 w-[12%] rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Phases</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">2</span>
+<span class="text-xs text-[#897561]">/ 12</span>
+</div>
+</div>
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Hours (Ist / Soll)</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">10</span>
+<span class="text-xs text-[#897561]">/ 400h</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-[#f4f2f0] dark:border-[#3a2e25] mt-auto">
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 3" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoC2u5FjEaX70EetU8Bh3YC8FmXyG2TGWcJ8gWbL9hyuXakNUUIDtkVSaT-xRJk-YjU9WWmB3hOvrYJ0V8h_G8o0YcWTE43nRd-YkrkRStfohCRqUl6uTMPjaxYC0EAWVLsPxlFUAouxD2Wk9nqSrKGvj6JTwVBBdmas4Ic1StXlS43Em4YyCJDl_zGQ9XiHA2a60aDzRVFUHo16_yNryEOAQsoCbH7uJzNU1BdwcsY_6pg1atlO6SASVkU7M109HzZwA_jbLi7lY");'></div>
+</div>
+<button class="text-sm font-semibold text-[#5c4d40] hover:text-primary dark:text-[#a3958a] dark:hover:text-primary flex items-center gap-1 transition-colors">
+                                Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl bg-white dark:bg-[#1a120b] border border-[#e6e2de] dark:border-[#3a2e25] p-5 shadow-sm hover:shadow-md transition-all duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-lg text-[#181411] dark:text-white leading-tight group-hover:text-primary transition-colors cursor-pointer">Villa Bergmann</h3>
+<div class="flex items-start gap-1.5 text-sm text-[#897561] mt-1.5">
+<span class="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+<span class="line-clamp-1">Seeufer 12, Konstanz</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold uppercase tracking-wide">Late</span>
+</div>
+<div class="flex flex-col gap-2 mb-5">
+<div class="flex justify-between items-end text-sm">
+<span class="font-medium text-[#5c4d40] dark:text-[#a3958a]">Progress</span>
+<span class="text-[#181411] dark:text-white font-bold">88%</span>
+</div>
+<div class="h-2.5 w-full bg-[#f4f2f0] dark:bg-[#2a2018] rounded-full overflow-hidden">
+<div class="h-full bg-red-500 w-[88%] rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Phases</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">7</span>
+<span class="text-xs text-[#897561]">/ 8</span>
+</div>
+</div>
+<div class="bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-100 dark:border-red-900/20">
+<p class="text-xs font-medium text-red-700 dark:text-red-400 mb-1">Hours (Over)</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-red-700 dark:text-red-400">320</span>
+<span class="text-xs text-red-600/70">/ 300h</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-[#f4f2f0] dark:border-[#3a2e25] mt-auto">
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 4" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDw3ipL5kM5BXMo-201JuEXtGZT4KIind-GPHYwi4Cj0wnft6Ynm59YeSW0WZJ95pMpK_KFepR60ZeUIt5PcPkg0LwkLPaP1s_yogv5bo4Oh21QrcmUbmEUhCgfr9JbkQId0tiy8eIjh6CIugo6VvC3rYFS-TZ4YOCBK6G_c15FJ5PAYyAwdmsjunu6xbYAYdFhTN4jkaYNjujf6KiCBMwTLykgiKDn3PoqlbHZfwdT9EnwV7_wutE6sJzugq60YxCmqDEh35Zqiao");'></div>
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDH4JI9x8ycKgz_Wp9prP8Jj6lHLRQYuaqMEAzo1QPVkdCNXo-_DtD0z4fZTLwzpZUg_7jjOKzWxBzSgRoXv6FQ0Cv_ms70EuTsXc6FO4pyqK60HemHy9bgBCVfbhrQQHE4poehq2Jk_i8BZ_tyL1p25nt0O3MNY28wxnczsdQC4dVr-rt_f_nobAyRq4hETNARFW_Kmz-h2Cy2tbkPkGkDSgyQOQF6iXurZIdToqXPFOd3DPrbZXuNS2zD90bP8t5nT0fpAByECh8");'></div>
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 6" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtqUWsgyqKsT0ou46h550jEiXNoilJxUe95FhTJ3tqnzui07xEPWogywKzHq1O5B75pwCSU-pjPUYExC-BAmPofwFNLw150fvrCPPvI2nrR2rEXL4MlMCu-yWoYZfJGxUglF2lMgymoZSpURlgWLjqw2h84HWfHbLubuPTGfYvuy2PJfXN0keB3BsS8nL9zLBOeQ7mMwu6xmfwYgg_SmFVlvi23J1caMnalKZfihxUs4uW33VRnyAJMpJsOsjupy0rtA5GCoOjlMs");'></div>
+</div>
+<button class="text-sm font-semibold text-[#5c4d40] hover:text-primary dark:text-[#a3958a] dark:hover:text-primary flex items-center gap-1 transition-colors">
+                                Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl bg-white dark:bg-[#1a120b] border border-[#e6e2de] dark:border-[#3a2e25] p-5 shadow-sm hover:shadow-md transition-all duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-lg text-[#181411] dark:text-white leading-tight group-hover:text-primary transition-colors cursor-pointer">Kindergarten Nord</h3>
+<div class="flex items-start gap-1.5 text-sm text-[#897561] mt-1.5">
+<span class="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+<span class="line-clamp-1">Kirchplatz 1, Hamburg</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold uppercase tracking-wide">Planning</span>
+</div>
+<div class="flex flex-col gap-2 mb-5">
+<div class="flex justify-between items-end text-sm">
+<span class="font-medium text-[#5c4d40] dark:text-[#a3958a]">Progress</span>
+<span class="text-[#181411] dark:text-white font-bold">5%</span>
+</div>
+<div class="h-2.5 w-full bg-[#f4f2f0] dark:bg-[#2a2018] rounded-full overflow-hidden">
+<div class="h-full bg-blue-500 w-[5%] rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Phases</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">0</span>
+<span class="text-xs text-[#897561]">/ 5</span>
+</div>
+</div>
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Hours (Ist / Soll)</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">0</span>
+<span class="text-xs text-[#897561]">/ 650h</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-[#f4f2f0] dark:border-[#3a2e25] mt-auto">
+<div class="flex items-center gap-2 text-sm text-[#897561]">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+<span>Unassigned</span>
+</div>
+<button class="text-sm font-semibold text-[#5c4d40] hover:text-primary dark:text-[#a3958a] dark:hover:text-primary flex items-center gap-1 transition-colors">
+                                Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl bg-white dark:bg-[#1a120b] border border-[#e6e2de] dark:border-[#3a2e25] p-5 shadow-sm hover:shadow-md transition-all duration-200 opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-lg text-[#181411] dark:text-white leading-tight group-hover:text-primary transition-colors cursor-pointer">Office Complex B2</h3>
+<div class="flex items-start gap-1.5 text-sm text-[#897561] mt-1.5">
+<span class="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+<span class="line-clamp-1">Industriestr. 88, Stuttgart</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs font-bold uppercase tracking-wide">Done</span>
+</div>
+<div class="flex flex-col gap-2 mb-5">
+<div class="flex justify-between items-end text-sm">
+<span class="font-medium text-[#5c4d40] dark:text-[#a3958a]">Progress</span>
+<span class="text-[#181411] dark:text-white font-bold">100%</span>
+</div>
+<div class="h-2.5 w-full bg-[#f4f2f0] dark:bg-[#2a2018] rounded-full overflow-hidden">
+<div class="h-full bg-green-500 w-[100%] rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Phases</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">12</span>
+<span class="text-xs text-[#897561]">/ 12</span>
+</div>
+</div>
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Hours (Ist / Soll)</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">1150</span>
+<span class="text-xs text-[#897561]">/ 1200h</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-[#f4f2f0] dark:border-[#3a2e25] mt-auto">
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 7" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDu-ysgzg2Mox5z9TLbawGWFREI3nHNF-uJrBeVrdTvA-sb0o6d-Hgp7SaFGxMwnhR-DGkrmlUsuZnsXnfRUOhRWQGb7CR9sARftysdMostWBt2UPHVshmQMIDH4i4k38F411F1t7-L2Gbjsp1XGpTIykLz6IE5xSJWi1uf887hGDHMz7ik8VmC1j78hoXUTUmAQkczEWt63aG6xugGT3buNLtuVTsFI4Z4mYCaqpVIoS_0HU7OIdugDY7HsNOJTFBys0gui57RS6M");'></div>
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 8" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAu1b9dWgm7RI_6ZMIRbDLYFP9NTMUAm2RBbb8xy1XE2IFIAmS4Afp158BR8A9aYP9n7zxjrOMr3WH0S38COEdXG4gZUcETAhPKR3_dV8p0_HfCxwHDLHF-GTECblF0-2twsMnuqs_Sn22TgfeBhrWES42TDZjvmr5AYrrCanmH1xvdFQOdywk8_G7kHYNE3_4x5PA2z7kLI4POjjYC1OlXmeXmyvxwivWIbSDKql9av98PU-YQ_neS50Bkwj0-gVeEJLLj5RCkQEo");'></div>
+</div>
+<button class="text-sm font-semibold text-[#5c4d40] hover:text-primary dark:text-[#a3958a] dark:hover:text-primary flex items-center gap-1 transition-colors">
+                                Archive <span class="material-symbols-outlined text-[16px]">archive</span>
+</button>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl bg-white dark:bg-[#1a120b] border border-[#e6e2de] dark:border-[#3a2e25] p-5 shadow-sm hover:shadow-md transition-all duration-200">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-lg text-[#181411] dark:text-white leading-tight group-hover:text-primary transition-colors cursor-pointer">Sporthalle West</h3>
+<div class="flex items-start gap-1.5 text-sm text-[#897561] mt-1.5">
+<span class="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+<span class="line-clamp-1">Sportplatzweg 9, Freiburg</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold uppercase tracking-wide">Active</span>
+</div>
+<div class="flex flex-col gap-2 mb-5">
+<div class="flex justify-between items-end text-sm">
+<span class="font-medium text-[#5c4d40] dark:text-[#a3958a]">Progress</span>
+<span class="text-[#181411] dark:text-white font-bold">42%</span>
+</div>
+<div class="h-2.5 w-full bg-[#f4f2f0] dark:bg-[#2a2018] rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[42%] rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-5">
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Phases</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">3</span>
+<span class="text-xs text-[#897561]">/ 6</span>
+</div>
+</div>
+<div class="bg-[#f8f7f6] dark:bg-[#221910] p-3 rounded-lg border border-transparent dark:border-[#3a2e25]">
+<p class="text-xs font-medium text-[#897561] mb-1">Hours (Ist / Soll)</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-[#181411] dark:text-white">340</span>
+<span class="text-xs text-[#897561]">/ 800h</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-[#f4f2f0] dark:border-[#3a2e25] mt-auto">
+<div class="flex -space-x-2 overflow-hidden">
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 9" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRF6wzhMFFljujqvBUB7gC1qC1kcG862TWKcnqvt6eC-K-s-CLvKPEp72J6Bn5L8d-J7MJMQmw6Gzsx3gINWoq0GGzbhaf5CIIxMv_KCuDs4_QtGnQLHK1VjSGAqV1loXm4XIhLcgA4BUkjvTgj5aL6nN6O5Qc1ya2SwVrjSKE6eude8FBy-I94oC3FRhvMkK-tp0ubFDLA6YLSJYwGcwYviDMU1L9KNjZJ-ylaU8OsD1MpeOhHE3V2NUbbEgCHEHHu57MofZ9kCQ");'></div>
+<div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-[#1a120b] bg-gray-300 bg-cover bg-center" data-alt="Portrait of team member 10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWG579EzKPzUuVJFktdileGWr_G1UXJyNtNWNg6xLvixy1NTXW3xfWSaS2WYvIBBC7GDoRo6yuKLgVsCm00mPoFRygEPruvsM7THPeCd9EQSxUCzVmSPGGPHcvSeMNIV83WxQ2w1OeEIwJzyEj-oj82P4ycTUsJRmou7ZHy9x1-MTluMCxBKEvD9aSQB_poXKjDQh5dU0UCu2hY9gIrrHy0aQjTVeX8oW2PFLsKIn-HnLNJwMeXa46MnUmq5EtvcrIsPYKpd50S0k");'></div>
+</div>
+<button class="text-sm font-semibold text-[#5c4d40] hover:text-primary dark:text-[#a3958a] dark:hover:text-primary flex items-center gap-1 transition-colors">
+                                Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - Tagesplanung</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-light": "#fdf1e6", "background-light": "#f8f8f5", "background-dark": "#231f0f", "neutral-border": "#e6e0db", "text-main": "#181411", "text-secondary": "#897561"}, fontFamily: {display: "Inter", body: ["Inter", "sans-serif"]}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light text-text-main h-screen overflow-hidden flex font-display">
+<!-- Sidebar -->
+<aside class="w-64 bg-white border-r border-neutral-border flex flex-col shrink-0 h-full z-20">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[28px]">token</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-text-main">bänk</h1>
+</div>
+<nav class="flex-1 px-4 flex flex-col gap-2 mt-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-neutral-100 transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-main">dashboard</span>
+<span class="text-sm font-medium group-hover:text-text-main">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined fill-1">calendar_month</span>
+<span class="text-sm font-medium">Planung</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-neutral-100 transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-main">folder_open</span>
+<span class="text-sm font-medium group-hover:text-text-main">Projekte</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-neutral-100 transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-text-main">settings</span>
+<span class="text-sm font-medium group-hover:text-text-main">Einstellungen</span>
+</a>
+</nav>
+<div class="p-4 border-t border-neutral-border">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-200 bg-center bg-cover" data-alt="User avatar placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBPKnkq-O85ulj1ae2y_ykyfru4o5Au5HvDdzBtaCgz2zWt7L6Xv_Emg1aqrRFxWu914YyWqPe1fzU6eWmzhjFiHjiSaV8fZaLTwvpzbVNK5gNqjAbOH5JwFllHPYmtd1a0DWTebXAta4qbDQlIzSeaqARgsimKio6-UBTiqF4Z1wd5Tak3aYjNOjFpaJv4qC0SyrTsorF937uAfXWH7GMBGxF-onnM_ybgB5q3uO5kqXdc9Sh8ojU7WdRhRR1SQGfScK1eNp-DnMk');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main">Max Mustermann</span>
+<span class="text-xs text-text-secondary">Bauleiter</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Header -->
+<header class="bg-white border-b border-neutral-border px-8 py-5 flex items-center justify-between shrink-0">
+<div class="flex flex-col gap-1">
+<h2 class="text-2xl font-bold tracking-tight text-text-main">TAGESPLANUNG</h2>
+<div class="flex items-center gap-2 text-text-secondary">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">chevron_left</span></button>
+<span class="text-sm font-medium tabular-nums">KW 06   05. - 11. Februar</span>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">chevron_right</span></button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Segmented Control -->
+<div class="bg-background-light p-1 rounded-lg flex h-9 border border-neutral-border">
+<button class="px-4 h-full rounded text-sm font-medium text-text-secondary hover:text-text-main transition-colors">Tag</button>
+<button class="px-4 h-full rounded bg-white text-primary shadow-sm text-sm font-medium">Woche</button>
+</div>
+<button class="flex items-center gap-2 h-9 px-4 rounded-lg border border-neutral-border hover:bg-background-light text-text-main transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Filter
+                </button>
+<button class="flex items-center justify-center size-9 rounded-lg bg-primary text-white hover:bg-opacity-90 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</header>
+<!-- Planning Grid -->
+<div class="flex-1 overflow-auto bg-background-light p-6">
+<div class="bg-white border border-neutral-border rounded-xl shadow-sm overflow-hidden min-w-[1000px]">
+<table class="w-full border-collapse">
+<thead>
+<tr class="bg-white border-b border-neutral-border">
+<th class="w-[320px] py-3 px-6 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider sticky left-0 bg-white z-10 border-r border-neutral-border/50">Projekt / Phase</th>
+<th class="py-3 px-4 text-left text-sm font-medium text-text-main border-r border-neutral-border/50 bg-background-light/30">Mo <span class="text-text-secondary font-normal ml-1">05.</span></th>
+<th class="py-3 px-4 text-left text-sm font-medium text-text-main border-r border-neutral-border/50 bg-background-light/30">Di <span class="text-text-secondary font-normal ml-1">06.</span></th>
+<th class="py-3 px-4 text-left text-sm font-medium text-text-main border-r border-neutral-border/50 bg-background-light/30">Mi <span class="text-text-secondary font-normal ml-1">07.</span></th>
+<th class="py-3 px-4 text-left text-sm font-medium text-text-main border-r border-neutral-border/50 bg-background-light/30">Do <span class="text-text-secondary font-normal ml-1">08.</span></th>
+<th class="py-3 px-4 text-left text-sm font-medium text-text-main bg-background-light/30">Fr <span class="text-text-secondary font-normal ml-1">09.</span></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-neutral-border">
+<!-- Project 1 Header (Expanded) -->
+<tr class="bg-slate-50/80 hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4 sticky left-0 bg-slate-50/80 group-hover:bg-slate-50 border-r border-neutral-border/50 z-10">
+<div class="flex items-center gap-2">
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">keyboard_arrow_down</span>
+</button>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">BVH 24-01: Neubau Weber</span>
+<span class="text-xs text-text-secondary">Hamburg, DE</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-4" colspan="5">
+<!-- Gantt bar representation or summary could go here -->
+<div class="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-3/4 rounded-full"></div>
+</div>
+</td>
+</tr>
+<!-- Project 1 Sub-row 1 -->
+<tr class="bg-white hover:bg-slate-50/50 transition-colors">
+<td class="py-3 px-4 pl-12 sticky left-0 bg-white hover:bg-slate-50/50 border-r border-neutral-border/50 z-10">
+<div class="flex flex-col gap-1.5">
+<span class="text-sm font-medium text-text-main">Elementierung</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 w-fit tracking-wide">PRODUKTION</span>
+</div>
+</td>
+<td class="p-2 border-r border-neutral-border/50 align-top">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">person</span>
+</div>
+<span class="text-xs font-medium truncate">M. Bauer</span>
+</div>
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">precision_manufacturing</span>
+</div>
+<span class="text-xs font-medium truncate">Kran 02</span>
+</div>
+</div>
+</td>
+<td class="p-2 border-r border-neutral-border/50 align-top">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">person</span>
+</div>
+<span class="text-xs font-medium truncate">M. Bauer</span>
+</div>
+</div>
+</td>
+<td class="p-2 border-r border-neutral-border/50 align-top"></td>
+<td class="p-2 border-r border-neutral-border/50 align-top"></td>
+<td class="p-2 align-top"></td>
+</tr>
+<!-- Project 1 Sub-row 2 -->
+<tr class="bg-white hover:bg-slate-50/50 transition-colors">
+<td class="py-3 px-4 pl-12 sticky left-0 bg-white hover:bg-slate-50/50 border-r border-neutral-border/50 z-10">
+<div class="flex flex-col gap-1.5">
+<span class="text-sm font-medium text-text-main">Montage</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 w-fit tracking-wide">VOR ORT</span>
+</div>
+</td>
+<td class="p-2 border-r border-neutral-border/50 align-top"></td>
+<td class="p-2 border-r border-neutral-border/50 align-top"></td>
+<td class="p-2 border-r border-neutral-border/50 align-top">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+</div>
+<span class="text-xs font-medium truncate">Sprinter</span>
+</div>
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">person</span>
+</div>
+<span class="text-xs font-medium truncate">L. Fischer</span>
+</div>
+</div>
+</td>
+<td class="p-2 border-r border-neutral-border/50 align-top">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+</div>
+<span class="text-xs font-medium truncate">Sprinter</span>
+</div>
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">person</span>
+</div>
+<span class="text-xs font-medium truncate">T. Müller</span>
+</div>
+</div>
+</td>
+<td class="p-2 align-top">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-white border border-neutral-border rounded p-1.5 shadow-sm hover:border-primary cursor-move group/chip">
+<div class="size-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 shrink-0">
+<span class="material-symbols-outlined text-[14px]">person</span>
+</div>
+<span class="text-xs font-medium truncate">T. Müller</span>
+</div>
+</div>
+</td>
+</tr>
+<!-- Project 2 (Collapsed) -->
+<tr class="bg-slate-50/80 hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4 sticky left-0 bg-slate-50/80 group-hover:bg-slate-50 border-r border-neutral-border/50 z-10">
+<div class="flex items-center gap-2">
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">BVH 23-45: Sanierung Altbau</span>
+</div>
+<span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 tracking-wide">GEPLANT</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-text-secondary italic bg-opacity-40" colspan="5">
+                                4 Ressourcen zugewiesen
+                            </td>
+</tr>
+<!-- Project 3 (Collapsed) -->
+<tr class="bg-slate-50/80 hover:bg-slate-50 transition-colors group">
+<td class="py-3 px-4 sticky left-0 bg-slate-50/80 group-hover:bg-slate-50 border-r border-neutral-border/50 z-10">
+<div class="flex items-center gap-2">
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">BVH 24-05: Dachstuhl</span>
+</div>
+<span class="ml-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 tracking-wide">GEPLANT</span>
+</div>
+</td>
+<td class="py-3 px-4 text-xs text-text-secondary italic bg-opacity-40" colspan="5">
+                                2 Ressourcen zugewiesen
+                            </td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Resource Pool (Collapsible Drawer style) -->
+<div class="bg-white border-t border-neutral-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-30 shrink-0">
+<!-- Handle/Header -->
+<div class="px-6 py-3 border-b border-neutral-border flex items-center justify-between">
+<div class="flex items-center gap-4">
+<h3 class="text-text-main font-bold text-sm uppercase tracking-wide">Ressourcen-Pool</h3>
+<span class="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">12 Verfügbar</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 rounded-full bg-text-main text-white text-xs font-medium">Alle</button>
+<button class="px-3 py-1 rounded-full bg-background-light text-text-secondary hover:text-text-main hover:bg-neutral-200 transition-colors text-xs font-medium">Mitarbeiter</button>
+<button class="px-3 py-1 rounded-full bg-background-light text-text-secondary hover:text-text-main hover:bg-neutral-200 transition-colors text-xs font-medium">Fuhrpark</button>
+<div class="w-px h-4 bg-neutral-border mx-2"></div>
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Cards -->
+<div class="p-4 overflow-x-auto">
+<div class="flex gap-4 min-w-max pb-2">
+<!-- Card 1: T. Müller -->
+<div class="w-48 bg-white border border-neutral-border rounded-lg p-3 hover:border-primary hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-text-main group-hover:text-primary">T. Müller</span>
+<span class="text-[10px] text-text-secondary">Montage</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-neutral-300 text-lg">drag_indicator</span>
+</div>
+<div class="flex justify-between items-center px-1">
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full border border-neutral-300"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">F</span></div>
+</div>
+</div>
+<!-- Card 2: L. Fischer -->
+<div class="w-48 bg-white border border-neutral-border rounded-lg p-3 hover:border-primary hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-text-main group-hover:text-primary">L. Fischer</span>
+<span class="text-[10px] text-text-secondary">Vorarbeiter</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-neutral-300 text-lg">drag_indicator</span>
+</div>
+<div class="flex justify-between items-center px-1">
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">F</span></div>
+</div>
+</div>
+<!-- Card 3: K. Wagner (Urlaub) -->
+<div class="w-48 bg-white border border-neutral-border rounded-lg p-3 opacity-60 hover:opacity-100 hover:border-red-300 transition-all cursor-not-allowed group relative">
+<div class="absolute top-2 right-2 bg-red-100 text-red-600 text-[9px] font-bold px-1.5 py-0.5 rounded">URLAUB</div>
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center grayscale">
+<span class="material-symbols-outlined text-lg">person_off</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-text-secondary">K. Wagner</span>
+<span class="text-[10px] text-text-secondary">Montage</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center px-1">
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-red-400"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-red-400"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-red-400"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-red-400"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-red-400"></div><span class="text-[8px] text-text-secondary">F</span></div>
+</div>
+</div>
+<!-- Card 4: Sprinter -->
+<div class="w-48 bg-white border border-neutral-border rounded-lg p-3 hover:border-primary hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-text-main group-hover:text-primary">S-K 204</span>
+<span class="text-[10px] text-text-secondary">Sprinter</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-neutral-300 text-lg">drag_indicator</span>
+</div>
+<div class="flex justify-between items-center px-1">
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full border border-neutral-300"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full border border-neutral-300"></div><span class="text-[8px] text-text-secondary">F</span></div>
+</div>
+</div>
+<!-- Card 5: Kran -->
+<div class="w-48 bg-white border border-neutral-border rounded-lg p-3 hover:border-primary hover:shadow-md transition-all cursor-grab active:cursor-grabbing group">
+<div class="flex items-start justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">precision_manufacturing</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-text-main group-hover:text-primary">Kran 02</span>
+<span class="text-[10px] text-text-secondary">Mobilkran</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-neutral-300 text-lg">drag_indicator</span>
+</div>
+<div class="flex justify-between items-center px-1">
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full border border-neutral-300"></div><span class="text-[8px] text-text-secondary">M</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full border border-neutral-300"></div><span class="text-[8px] text-text-secondary">D</span></div>
+<div class="flex flex-col items-center gap-0.5"><div class="size-2 rounded-full bg-green-500"></div><span class="text-[8px] text-text-secondary">F</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

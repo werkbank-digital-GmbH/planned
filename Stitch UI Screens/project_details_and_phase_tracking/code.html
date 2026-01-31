@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="light" lang="de"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - Project Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#e4b90c",
+              "primary-dark": "#c29d0a",
+              "background-light": "#f8f8f5",
+              "background-dark": "#221f10",
+              "slate-850": "#1e293b",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen flex overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-[#1a1a1a] border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen fixed left-0 top-0 z-10 hidden md:flex">
+<div class="p-6">
+<h1 class="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">grid_view</span>
+                bänk
+            </h1>
+</div>
+<nav class="flex-1 px-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary-dark dark:text-primary font-medium" href="#">
+<span class="material-symbols-outlined fill-1">folder</span>
+<span>Projekte</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">group</span>
+<span>Ressourcen</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">bar_chart</span>
+<span>Berichte</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 px-2">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">MK</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Max Kraus</p>
+<p class="text-xs text-slate-500">Bauleiter</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 h-screen overflow-y-auto bg-[#f8f8f5] dark:bg-[#0f0f0f]">
+<div class="max-w-6xl mx-auto px-6 py-8">
+<!-- Breadcrumb -->
+<div class="mb-6">
+<a class="text-slate-500 hover:text-primary text-sm font-medium flex items-center gap-1 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+                    Zurück zu Projekte
+                </a>
+</div>
+<!-- Project Header Card -->
+<div class="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
+<div class="h-32 bg-slate-800 relative">
+<div class="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1534237710431-e2fc698436d0?q=80&amp;w=2500&amp;auto=format&amp;fit=crop')] bg-cover bg-center" data-alt="Wood architecture detail"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>
+</div>
+<div class="px-8 pb-8 -mt-12 relative z-10 flex flex-col md:flex-row justify-between items-end gap-6">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide border border-green-200 dark:border-green-800">[AKTIV]</span>
+<span class="text-white/80 text-sm font-medium">#24-01</span>
+</div>
+<h1 class="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">BVH 24-01: Neubau Fam. Weber</h1>
+<p class="text-white/90 flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined text-primary text-lg">location_on</span>
+                            Münchener Str. 12, 86150 Augsburg
+                        </p>
+</div>
+<div class="flex gap-3">
+<button class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">edit</span>
+                            Bearbeiten
+                        </button>
+</div>
+</div>
+</div>
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+<!-- Progress KPI -->
+<div class="bg-white dark:bg-[#1a1a1a] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-slate-500 text-sm font-medium mb-1">Gesamtfortschritt</p>
+<p class="text-3xl font-bold text-slate-900 dark:text-white">53%</p>
+</div>
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400">
+<span class="material-symbols-outlined">timelapse</span>
+</div>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 53%"></div>
+</div>
+</div>
+<!-- Soll KPI -->
+<div class="bg-white dark:bg-[#1a1a1a] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium mb-1">Soll-Stunden</p>
+<p class="text-3xl font-bold text-slate-900 dark:text-white">150<span class="text-lg text-slate-400 font-normal ml-1">h</span></p>
+</div>
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+</div>
+<p class="text-xs text-slate-400 mt-4">Geplant laut Angebot</p>
+</div>
+<!-- IST KPI -->
+<div class="bg-white dark:bg-[#1a1a1a] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium mb-1">IST-Stunden</p>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-bold text-slate-900 dark:text-white">120<span class="text-lg text-slate-400 font-normal ml-1">h</span></p>
+<span class="text-sm font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">80%</span>
+</div>
+</div>
+<div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400">
+<span class="material-symbols-outlined">history</span>
+</div>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 mt-4">
+<div class="bg-slate-800 dark:bg-slate-400 h-2 rounded-full" style="width: 80%"></div>
+</div>
+</div>
+</div>
+<!-- Phases Section -->
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">layers</span>
+                    PHASEN
+                </h2>
+<button class="text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 text-sm font-medium flex items-center gap-1.5 transition-colors">
+<img alt="Asana" class="w-4 h-4 grayscale opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVfA8YT6xtMDr-PQthFj8sKvqM23E4upUjA_iv6y6n0dZgyiiwTu-qzOosHTQVw6QjXYHihUMlPGQK9ga5faFkWaEaGwaXcTCb0fuDVQEeRDk0nPBQanm7p0Tz66kAxUH84bqMbE5Jw1YzYFkCn7eHezF5uu53UVip-DRkYnHHNvVwmKCPilkYn4XaHHtzJ42Jcz-6xz0e3vfmCHW3Aj7LGRvLL1anWzeJQHlNcNxUtPPuDp9HUqU1jF6elSTInUciKlMjgjiapps"/>
+                    In Asana öffnen
+                </button>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Phase Card 1: Elementierung -->
+<div class="bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-primary/50 transition-colors shadow-sm group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500">
+<span class="material-symbols-outlined">factory</span>
+</div>
+<div>
+<h3 class="font-bold text-lg text-slate-900 dark:text-white">Elementierung</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900">PRODUKTION</span>
+<span class="text-xs text-slate-500 font-medium">01.02. - 15.02.2024</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end min-w-[200px]">
+<div class="flex justify-between w-full mb-1">
+<span class="text-xs font-medium text-slate-500">Fortschritt</span>
+<span class="text-xs font-bold text-slate-900 dark:text-white">80%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 80%"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+<!-- Stats Mini Grid -->
+<div class="flex gap-6">
+<div>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Soll</p>
+<p class="font-bold text-slate-700 dark:text-slate-300">60h</p>
+</div>
+<div>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Ist</p>
+<p class="font-bold text-slate-900 dark:text-white">48h</p>
+</div>
+<div>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Diff</p>
+<p class="font-bold text-green-600 dark:text-green-400">-12h</p>
+</div>
+</div>
+<!-- Resources -->
+<div class="flex flex-wrap justify-start md:justify-end items-center gap-2">
+<div class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600">MB</div>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">M. Bauer</span>
+</div>
+<div class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600">TM</div>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">T. Müller</span>
+</div>
+<div class="px-2 py-1 bg-amber-50 dark:bg-amber-900/10 rounded-md border border-amber-100 dark:border-amber-800 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-500">precision_manufacturing</span>
+<span class="text-xs font-medium text-amber-700 dark:text-amber-500">Kran 02</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Phase Card 2: Montage Dachstuhl -->
+<div class="bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-primary/50 transition-colors shadow-sm group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500">
+<span class="material-symbols-outlined">roofing</span>
+</div>
+<div>
+<h3 class="font-bold text-lg text-slate-900 dark:text-white">Montage Dachstuhl</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">VOR ORT</span>
+<span class="text-xs text-slate-500 font-medium">16.02. - 28.02.2024</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end min-w-[200px]">
+<div class="flex justify-between w-full mb-1">
+<span class="text-xs font-medium text-slate-500">Fortschritt</span>
+<span class="text-xs font-bold text-slate-900 dark:text-white">80%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 80%"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex gap-6">
+<div>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Soll</p>
+<p class="font-bold text-slate-700 dark:text-slate-300">90h</p>
+</div>
+<div>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Ist</p>
+<p class="font-bold text-slate-900 dark:text-white">72h</p>
+</div>
+<div>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium mb-1">Diff</p>
+<p class="font-bold text-green-600 dark:text-green-400">-18h</p>
+</div>
+</div>
+<div class="flex flex-wrap justify-start md:justify-end items-center gap-2">
+<div class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600">TM</div>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">T. Müller</span>
+</div>
+<div class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-600">LF</div>
+<span class="text-xs font-medium text-slate-700 dark:text-slate-300">L. Fischer</span>
+</div>
+<div class="px-2 py-1 bg-amber-50 dark:bg-amber-900/10 rounded-md border border-amber-100 dark:border-amber-800 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-500">local_shipping</span>
+<span class="text-xs font-medium text-amber-700 dark:text-amber-500">Sprinter</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Phase Card 3: Fassade -->
+<div class="bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm opacity-90 group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-400">
+<span class="material-symbols-outlined">foundation</span>
+</div>
+<div>
+<h3 class="font-bold text-lg text-slate-900 dark:text-white">Fassade</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">VOR ORT</span>
+<span class="text-xs text-slate-500 font-medium">01.03. - 15.03.2024</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end min-w-[200px]">
+<div class="flex justify-between w-full mb-1">
+<span class="text-xs font-medium text-slate-500">Noch nicht gestartet</span>
+<span class="text-xs font-bold text-slate-400">0%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
+<div class="bg-slate-300 dark:bg-slate-600 h-2 rounded-full" style="width: 0%"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center">
+<p class="text-sm text-slate-400 italic">Keine Ressourcen zugewiesen</p>
+</div>
+<div class="flex justify-start md:justify-end">
+<a class="text-sm font-medium text-primary hover:text-primary-dark transition-colors flex items-center gap-1" href="#">
+                                In Planung öffnen
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

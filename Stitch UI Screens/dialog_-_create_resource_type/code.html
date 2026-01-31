@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dialog - Create Resource Type</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "background-light": "#f8f8f5", "background-dark": "#231f0f"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+    /* Custom Scrollbar for better aesthetics in modal content */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display flex items-center justify-center min-h-screen p-4">
+<!-- Modal Overlay -->
+<div aria-hidden="true" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"></div>
+<!-- Modal Container -->
+<div class="relative z-50 w-full max-w-lg bg-white dark:bg-[#1a1614] rounded-xl shadow-2xl transform transition-all overflow-hidden border border-[#e6e0db] dark:border-[#3a2e25]">
+<!-- Modal Header -->
+<div class="flex items-center justify-between px-6 py-5 border-b border-[#e6e0db] dark:border-[#3a2e25] bg-white dark:bg-[#1a1614]">
+<h3 class="text-[#181411] dark:text-white text-xl font-bold leading-tight">Ressourcen-Typ anlegen</h3>
+<button class="text-[#897561] hover:text-[#181411] dark:text-[#a09080] dark:hover:text-white transition-colors p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<!-- Modal Content -->
+<div class="px-6 py-6 space-y-6">
+<!-- Name Input -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181411] dark:text-[#e0dcd9] text-sm font-medium leading-normal">Name</label>
+<input class="form-input w-full rounded-lg border border-[#e6e0db] dark:border-[#3a2e25] bg-white dark:bg-[#2c241e] text-[#181411] dark:text-white h-12 px-4 text-base focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-[#897561] transition-all shadow-sm" type="text" value="Fahrzeug"/>
+</div>
+<!-- Description Textarea -->
+<div class="flex flex-col gap-2">
+<label class="text-[#181411] dark:text-[#e0dcd9] text-sm font-medium leading-normal">Beschreibung</label>
+<textarea class="form-textarea w-full rounded-lg border border-[#e6e0db] dark:border-[#3a2e25] bg-white dark:bg-[#2c241e] text-[#181411] dark:text-white min-h-[120px] p-4 text-base focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-[#897561] resize-y transition-all shadow-sm">Fuhrpark, Logistik &amp; Transport</textarea>
+</div>
+<!-- Color Selection -->
+<div class="flex flex-col gap-3">
+<label class="text-[#181411] dark:text-[#e0dcd9] text-sm font-medium leading-normal">Farbe</label>
+<div class="flex flex-wrap gap-4">
+<!-- Amber/Orange (Selected) -->
+<label class="relative group cursor-pointer">
+<input checked="" class="peer sr-only" name="color-select" type="radio"/>
+<div class="size-10 rounded-full bg-[#ec7f13] shadow-sm ring-2 ring-offset-2 ring-offset-white dark:ring-offset-[#1a1614] ring-[#ec7f13] transition-transform peer-checked:scale-110 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl font-bold opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+</div>
+</label>
+<!-- Blue -->
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="color-select" type="radio"/>
+<div class="size-10 rounded-full bg-[#3b82f6] shadow-sm hover:ring-2 hover:ring-offset-2 hover:ring-offset-white dark:hover:ring-offset-[#1a1614] hover:ring-[#3b82f6]/50 transition-all peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-[#3b82f6] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl font-bold opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+</div>
+</label>
+<!-- Green -->
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="color-select" type="radio"/>
+<div class="size-10 rounded-full bg-[#22c55e] shadow-sm hover:ring-2 hover:ring-offset-2 hover:ring-offset-white dark:hover:ring-offset-[#1a1614] hover:ring-[#22c55e]/50 transition-all peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-[#22c55e] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl font-bold opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+</div>
+</label>
+<!-- Purple -->
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="color-select" type="radio"/>
+<div class="size-10 rounded-full bg-[#a855f7] shadow-sm hover:ring-2 hover:ring-offset-2 hover:ring-offset-white dark:hover:ring-offset-[#1a1614] hover:ring-[#a855f7]/50 transition-all peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-[#a855f7] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl font-bold opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+</div>
+</label>
+<!-- Red -->
+<label class="relative group cursor-pointer">
+<input class="peer sr-only" name="color-select" type="radio"/>
+<div class="size-10 rounded-full bg-[#ef4444] shadow-sm hover:ring-2 hover:ring-offset-2 hover:ring-offset-white dark:hover:ring-offset-[#1a1614] hover:ring-[#ef4444]/50 transition-all peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-[#ef4444] flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl font-bold opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="flex items-center justify-end gap-3 px-6 py-4 bg-[#fcfbf9] dark:bg-[#251f1a] border-t border-[#e6e0db] dark:border-[#3a2e25]">
+<button class="px-5 py-2.5 rounded-lg text-sm font-medium text-[#181411] dark:text-white bg-white dark:bg-[#3a2e25] border border-[#e6e0db] dark:border-[#4a3e35] hover:bg-gray-50 dark:hover:bg-[#4a3e35] transition-colors focus:ring-2 focus:ring-gray-200">
+        Abbrechen
+      </button>
+<button class="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-primary hover:bg-[#d66f0d] transition-colors shadow-sm focus:ring-2 focus:ring-primary/40 focus:ring-offset-1 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">save</span>
+        Speichern
+      </button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm test:run:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(timeout 15 pnpm dev:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm add:*)",
+      "Bash(timeout 10 pnpm dev:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(pnpm lint:fix:*)",
+      "Bash(npm run test:*)",
+      "Bash(timeout 30 npx vitest:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run lint)",
+      "Bash(supabase link:*)",
+      "Bash(supabase db push:*)",
+      "Bash(npm test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run lint:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm build:*)",
+      "Bash(ls:*)",
+      "Bash(node -e \"\nconst url = ''https://milrzueagevxkupjfbxx.supabase.co'';\nconst key = ''sb_publishable_7MnMlIAmyz8Yj4uGncoxTA_Ssi8LUs0'';\n\nfetch\\(url + ''/rest/v1/'', {\n  headers: {\n    ''apikey'': key,\n    ''Authorization'': ''Bearer '' + key\n  }\n}\\).then\\(r => {\n  console.log\\(''Status:'', r.status\\);\n  console.log\\(''OK:'', r.ok\\);\n  if \\(!r.ok\\) {\n    return r.text\\(\\).then\\(t => console.log\\(''Response:'', t\\)\\);\n  }\n  console.log\\(''✅ Supabase Verbindung erfolgreich!''\\);\n}\\).catch\\(e => console.error\\(''❌ Fehler:'', e.message\\)\\);\n\")",
+      "Bash(node:*)",
+      "Bash(cd:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

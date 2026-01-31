@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="light" lang="de"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>🔶 bänk - Einstellungen</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-hover": "#d56e0c", "background-light": "#f8f8f5", "background-dark": "#231f0f", "surface-light": "#ffffff", "surface-dark": "#2c2219", "text-main": "#181411", "text-secondary": "#897561", "border-color": "#e6e0db"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased overflow-hidden h-screen flex w-full">
+<aside class="w-[280px] bg-white dark:bg-surface-dark border-r border-border-color h-full flex flex-col shrink-0 transition-all duration-300">
+<div class="p-6 pb-2 flex-1 flex flex-col">
+<div class="mb-8 px-2">
+<h1 class="text-text-main dark:text-white text-xl font-bold tracking-tight">🔶 bänk</h1>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-primary transition-colors">dashboard</span>
+<p class="text-text-main dark:text-gray-200 text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-primary transition-colors">calendar_month</span>
+<p class="text-text-main dark:text-gray-200 text-sm font-medium">Planung</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-primary transition-colors">folder_open</span>
+<p class="text-text-main dark:text-gray-200 text-sm font-medium">Projekte</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary" href="#">
+<span class="material-symbols-outlined font-variation-fill">settings</span>
+<p class="text-primary text-sm font-bold">Einstellungen</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-background-light dark:hover:bg-white/5 transition-colors group mt-auto" href="#">
+<span class="material-symbols-outlined text-text-secondary group-hover:text-primary transition-colors">help</span>
+<p class="text-text-main dark:text-gray-200 text-sm font-medium">Hilfe</p>
+</a>
+</nav>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<header class="h-auto shrink-0 px-8 py-6 bg-background-light dark:bg-background-dark border-b border-transparent z-10">
+<div class="max-w-5xl mx-auto w-full">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="text-text-main dark:text-white text-3xl font-black tracking-tight">Einstellungen</h2>
+<p class="text-text-secondary mt-1 text-base">Verwalten Sie Ihre Firmendaten und Grundeinstellungen.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-surface-dark rounded-full border border-border-color shadow-sm">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="text-xs font-medium text-text-secondary">System Online</span>
+</div>
+</div>
+</div>
+<div class="flex border-b border-border-color gap-8">
+<a class="flex items-center gap-2 border-b-[3px] border-primary text-text-main dark:text-white pb-3 pt-1 px-1" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary">business</span>
+<span class="text-sm font-bold">Firma</span>
+</a>
+<a class="flex items-center gap-2 border-b-[3px] border-transparent text-text-secondary hover:text-text-main hover:border-gray-300 dark:hover:text-gray-300 transition-all pb-3 pt-1 px-1" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="text-sm font-medium">Mitarbeiter</span>
+</a>
+<a class="flex items-center gap-2 border-b-[3px] border-transparent text-text-secondary hover:text-text-main hover:border-gray-300 dark:hover:text-gray-300 transition-all pb-3 pt-1 px-1" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="text-sm font-medium">Ressourcen</span>
+</a>
+<a class="flex items-center gap-2 border-b-[3px] border-transparent text-text-secondary hover:text-text-main hover:border-gray-300 dark:hover:text-gray-300 transition-all pb-3 pt-1 px-1" href="#">
+<span class="material-symbols-outlined text-[20px]">integration_instructions</span>
+<span class="text-sm font-medium">Integrationen</span>
+</a>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto px-8 py-6">
+<div class="max-w-5xl mx-auto w-full pb-10">
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-border-color p-8">
+<div class="flex flex-col gap-8">
+<div class="flex items-center justify-between pb-4 border-b border-border-color">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Firmendaten</h3>
+<button class="text-primary text-sm font-semibold hover:underline">Öffentliches Profil ansehen</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="md:col-span-12 flex flex-col gap-2 mb-2">
+<label class="text-sm font-medium text-text-main dark:text-gray-200">Firmenlogo</label>
+<div class="flex items-center gap-6">
+<div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 border border-dashed border-gray-300 flex items-center justify-center overflow-hidden relative group cursor-pointer">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">add_photo_alternate</span>
+<div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white text-xs font-medium">Ändern</div>
+</div>
+<div class="flex flex-col gap-1">
+<button class="px-4 py-2 bg-white dark:bg-white/5 border border-border-color rounded-lg text-sm font-medium text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors self-start">Hochladen</button>
+<p class="text-xs text-text-secondary">Empfohlen: 400x400px, JPG oder PNG.</p>
+</div>
+</div>
+</div>
+<div class="md:col-span-12 lg:col-span-8">
+<label class="block text-sm font-medium text-text-main dark:text-gray-200 mb-2">Firmenname</label>
+<input class="w-full h-12 px-4 rounded-lg border border-border-color bg-white dark:bg-white/5 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-shadow" placeholder="Ihr Firmenname" type="text" value="Zimmerei Müller GmbH"/>
+</div>
+<div class="md:col-span-12 lg:col-span-4">
+<label class="block text-sm font-medium text-text-main dark:text-gray-200 mb-2">Rechtsform</label>
+<div class="relative">
+<select class="w-full h-12 px-4 pr-10 rounded-lg border border-border-color bg-white dark:bg-white/5 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none cursor-pointer">
+<option>GmbH</option>
+<option>AG</option>
+<option>KG</option>
+<option>GbR</option>
+<option>Einzelunternehmen</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-12">
+<label class="block text-sm font-medium text-text-main dark:text-gray-200 mb-2">Straße &amp; Hausnummer</label>
+<input class="w-full h-12 px-4 rounded-lg border border-border-color bg-white dark:bg-white/5 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-shadow" placeholder="Straße 123" type="text" value="Hauptstraße 42"/>
+</div>
+<div class="md:col-span-4">
+<label class="block text-sm font-medium text-text-main dark:text-gray-200 mb-2">PLZ</label>
+<input class="w-full h-12 px-4 rounded-lg border border-border-color bg-white dark:bg-white/5 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-shadow" placeholder="12345" type="text" value="80331"/>
+</div>
+<div class="md:col-span-8">
+<label class="block text-sm font-medium text-text-main dark:text-gray-200 mb-2">Ort</label>
+<input class="w-full h-12 px-4 rounded-lg border border-border-color bg-white dark:bg-white/5 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-shadow" placeholder="Stadtname" type="text" value="München"/>
+</div>
+<div class="md:col-span-12">
+<label class="block text-sm font-medium text-text-main dark:text-gray-200 mb-2">E-Mail für Rechnungen</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-[20px]">mail</span>
+<input class="w-full h-12 pl-10 pr-4 rounded-lg border border-border-color bg-white dark:bg-white/5 text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-shadow" placeholder="email@firma.de" type="email" value="buchhaltung@zimmerei-mueller.de"/>
+</div>
+<p class="text-xs text-text-secondary mt-1 ml-1">An diese Adresse werden alle automatischen Systemrechnungen gesendet.</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 mt-10 pt-6 border-t border-border-color">
+<button class="px-6 py-2.5 rounded-lg text-text-secondary hover:text-text-main hover:bg-gray-100 dark:hover:bg-white/5 font-medium transition-colors">Abbrechen</button>
+<button class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary-hover text-white font-bold shadow-sm transition-all transform active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">save</span>
+                            Speichern
+                        </button>
+</div>
+</div>
+<div class="mt-8 p-6 rounded-xl border border-red-100 bg-red-50/50 dark:bg-red-900/10 dark:border-red-900/30">
+<div class="flex justify-between items-center">
+<div>
+<h4 class="text-red-700 dark:text-red-400 font-bold text-sm mb-1">Konto löschen</h4>
+<p class="text-red-600/70 dark:text-red-400/70 text-sm">Diese Aktion kann nicht rückgängig gemacht werden. Alle Daten werden unwiderruflich gelöscht.</p>
+</div>
+<button class="px-4 py-2 bg-white dark:bg-transparent border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            Konto löschen
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

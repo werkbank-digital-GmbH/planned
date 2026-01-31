@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>bänk - Resource Management</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#ebbd04", "primary-hover": "#d56e0d", "background-light": "#f8f8f5", "background-dark": "#231f0f", "text-main": "#181411", "text-secondary": "#897561", "border-color": "#e6e0db"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main min-h-screen flex flex-col w-full antialiased">
+<header class="bg-white dark:bg-[#1a1a1a] border-b border-border-color sticky top-0 z-50">
+<div class="max-w-[1100px] mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
+<div class="flex items-center gap-12 h-full">
+<div class="flex items-center gap-2">
+<h1 class="text-text-main text-lg font-bold tracking-tight">🔶 bänk</h1>
+</div>
+<nav class="hidden md:flex h-full gap-8">
+<a class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-text-secondary hover:text-text-main hover:border-border-color transition-colors h-full" href="#">
+                        Firma
+                    </a>
+<a class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-text-secondary hover:text-text-main hover:border-border-color transition-colors h-full" href="#">
+                        Mitarbeiter
+                    </a>
+<a class="inline-flex items-center border-b-2 border-primary px-1 pt-1 text-sm font-bold text-text-main h-full" href="#">
+                        Ressourcen
+                    </a>
+<a class="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-text-secondary hover:text-text-main hover:border-border-color transition-colors h-full" href="#">
+                        Integrationen
+                    </a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-text-secondary hover:text-text-main rounded-full hover:bg-background-light transition-colors" title="Abmelden">
+<span class="material-symbols-outlined">logout</span>
+</button>
+<div class="w-8 h-8 bg-center bg-no-repeat bg-cover rounded-full border border-border-color" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB4y0-CWKuMNrkaydBZFhEWpyxwtlpyNcMXHqwKmEn2U8RIE4pXwlS3RTGdpoP-U3jYp1SFU9I-o0HOTSso7qeqPoxWGJwgsD6QWUByjVGTvu9z2GRmj2fk8T9TvSoobDVHSMzccAdLSZ6VtehIdtL5t3CfQ_fUShUCxRv3b6o-7aBqcFZzOzE7P_66NdWaQdr1DD3Q4ZbqkD8tB4cfWuBn9wkeZJbvcn9keog5m26Ff6jBzNhQa5luTnG8HxoU5SeRVRAWgBPxtM4");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full">
+<div class="max-w-[1100px] mx-auto px-6 py-8 md:px-12 md:py-10 flex flex-col gap-10">
+<header class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-text-secondary text-sm mb-2">
+<span>Einstellungen</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-text-main font-medium">Ressourcen</span>
+</div>
+<h1 class="text-text-main tracking-tight text-3xl md:text-4xl font-bold leading-tight">Ressourcenverwaltung</h1>
+<p class="text-text-secondary text-base font-normal leading-normal max-w-2xl">
+                    Verwalten Sie Ihre Ressourcen-Kategorien und das Inventar für Ihre Bauprojekte an einem Ort.
+                </p>
+</header>
+<section class="flex flex-col gap-6">
+<div class="flex flex-wrap items-center justify-between gap-4 border-b border-border-color pb-4">
+<div class="flex flex-col">
+<h2 class="text-text-main text-xl font-bold leading-tight">Ressourcen-Typen</h2>
+<p class="text-text-secondary text-sm mt-1">Definierte Kategorien für Ausrüstung</p>
+</div>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-white border border-border-color hover:border-primary hover:text-primary transition-colors text-text-main text-sm font-bold shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Neuer Typ</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="flex flex-col gap-3 rounded-xl border border-border-color bg-white p-5 shadow-sm hover:shadow-md transition-shadow group cursor-pointer relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-orange-50 rounded-lg text-orange-600">
+<span class="material-symbols-outlined text-[28px]">local_shipping</span>
+</div>
+<button class="text-text-secondary hover:text-text-main p-1 rounded-full hover:bg-gray-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex flex-col gap-1 mt-1">
+<h3 class="text-text-main text-lg font-bold leading-tight">Fahrzeug</h3>
+<p class="text-text-secondary text-sm">Fuhrpark, Logistik &amp; Transport</p>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<div class="h-2 w-2 rounded-full bg-orange-500"></div>
+<span class="text-xs font-medium text-text-secondary">3 Einheiten aktiv</span>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-border-color bg-white p-5 shadow-sm hover:shadow-md transition-shadow group cursor-pointer relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-blue-50 rounded-lg text-blue-600">
+<span class="material-symbols-outlined text-[28px]">precision_manufacturing</span>
+</div>
+<button class="text-text-secondary hover:text-text-main p-1 rounded-full hover:bg-gray-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex flex-col gap-1 mt-1">
+<h3 class="text-text-main text-lg font-bold leading-tight">Maschine Produktion</h3>
+<p class="text-text-secondary text-sm">Fertigungsanlagen &amp; CNC</p>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<div class="h-2 w-2 rounded-full bg-blue-500"></div>
+<span class="text-xs font-medium text-text-secondary">8 Einheiten aktiv</span>
+</div>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-border-color bg-white p-5 shadow-sm hover:shadow-md transition-shadow group cursor-pointer relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+<span class="material-symbols-outlined text-[28px]">handyman</span>
+</div>
+<button class="text-text-secondary hover:text-text-main p-1 rounded-full hover:bg-gray-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex flex-col gap-1 mt-1">
+<h3 class="text-text-main text-lg font-bold leading-tight">Maschine Montage</h3>
+<p class="text-text-secondary text-sm">Baustellengeräte &amp; Handwerkzeug</p>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<div class="h-2 w-2 rounded-full bg-emerald-500"></div>
+<span class="text-xs font-medium text-text-secondary">12 Einheiten aktiv</span>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-6 pb-12">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-col">
+<h2 class="text-text-main text-xl font-bold leading-tight">Ressourcen Inventar</h2>
+<p class="text-text-secondary text-sm mt-1">Verwalten Sie Ihre individuellen Geräte und Maschinen</p>
+</div>
+<div class="flex gap-3">
+<button class="hidden md:flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-transparent border border-border-color text-text-secondary hover:text-text-main hover:bg-white transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+<span>Filter</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary hover:bg-primary-hover text-white text-sm font-bold shadow-md transition-all active:scale-95">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Neue Ressource</span>
+</button>
+</div>
+</div>
+<div class="bg-white border border-border-color rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-background-light border-b border-border-color">
+<th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-16">Typ</th>
+<th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Bezeichnung</th>
+<th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Kategorie</th>
+<th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Aktionen</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-color">
+<tr class="group hover:bg-background-light/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center justify-center h-10 w-10 rounded-full bg-orange-100 text-orange-600">
+<span class="material-symbols-outlined text-[20px]">directions_car</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">Sprinter 1</span>
+<span class="text-xs text-text-secondary">K-HB 2023</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background-light border border-border-color text-xs font-medium text-text-main">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                                            Fahrzeug
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Aktiv
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-background-light/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-600">
+<span class="material-symbols-outlined text-[20px]">precision_manufacturing</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">Abbundanlage K2</span>
+<span class="text-xs text-text-secondary">Halle A - Sektor 3</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background-light border border-border-color text-xs font-medium text-text-main">
+<div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                            Maschine Produktion
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Aktiv
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-background-light/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100 text-emerald-600">
+<span class="material-symbols-outlined text-[20px]">handyman</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">Baukran Liebherr</span>
+<span class="text-xs text-text-secondary">Leasing #99201</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background-light border border-border-color text-xs font-medium text-text-main">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                            Maschine Montage
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            Inaktiv
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-background-light/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center justify-center h-10 w-10 rounded-full bg-orange-100 text-orange-600">
+<span class="material-symbols-outlined text-[20px]">forklift</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">Stapler E4</span>
+<span class="text-xs text-text-secondary">Lager 1</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background-light border border-border-color text-xs font-medium text-text-main">
+<div class="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                                            Fahrzeug
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Aktiv
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="group hover:bg-background-light/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100 text-emerald-600">
+<span class="material-symbols-outlined text-[20px]">construction</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-text-main">Handsäge Set Festool</span>
+<span class="text-xs text-text-secondary">Montage-Team 2</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background-light border border-border-color text-xs font-medium text-text-main">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                            Maschine Montage
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Aktiv
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="border-t border-border-color bg-white px-6 py-3 flex items-center justify-between">
+<span class="text-xs text-text-secondary">Zeige 1 bis 5 von 12 Einträgen</span>
+<div class="flex gap-1">
+<button class="px-3 py-1 text-sm border border-border-color rounded hover:bg-background-light text-text-secondary disabled:opacity-50" disabled="">Zurück</button>
+<button class="px-3 py-1 text-sm border border-border-color rounded hover:bg-background-light text-text-main font-medium">1</button>
+<button class="px-3 py-1 text-sm border border-transparent rounded hover:bg-background-light text-text-secondary">2</button>
+<button class="px-3 py-1 text-sm border border-transparent rounded hover:bg-background-light text-text-secondary">3</button>
+<button class="px-3 py-1 text-sm border border-border-color rounded hover:bg-background-light text-text-secondary">Weiter</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>
