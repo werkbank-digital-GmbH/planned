@@ -350,9 +350,12 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
     const endISO = endDate.toISOString().split('T')[0];
 
     // Phasen laden, die im Zeitraum aktiv sind:
-    // - startDate <= endOfRange AND endDate >= startOfRange (Überlappung)
-    // - ODER keine Datumsangaben (werden immer gezeigt)
-    // - Nur aktive Projekte (nicht completed/cancelled)
+    // Eine Phase überlappt mit dem Zeitraum wenn:
+    // - (start_date IS NULL OR start_date <= endOfRange) AND (end_date IS NULL OR end_date >= startOfRange)
+    // - Nur aktive Phasen und Projekte (nicht completed/cancelled)
+    //
+    // WICHTIG: Wir laden erst alle aktiven Phasen und filtern dann in JavaScript,
+    // da Supabase .or() nicht korrekt mit mehreren AND-verknüpften OR-Bedingungen funktioniert
     const { data, error } = await this.supabase
       .from('project_phases')
       .select(`
@@ -375,16 +378,32 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
       `)
       .eq('projects.tenant_id', tenantId)
       .eq('status', 'active')
-      .in('projects.status', ['planning', 'active'])
-      .or(`start_date.is.null,start_date.lte.${endISO}`)
-      .or(`end_date.is.null,end_date.gte.${startISO}`);
+      .in('projects.status', ['planning', 'active']);
+
+    console.log('[SupabaseProjectPhaseRepository] Query for tenant:', tenantId, 'range:', startISO, '-', endISO, 'total phases loaded:', data?.length ?? 0);
 
     if (error || !data) {
       console.error('[SupabaseProjectPhaseRepository] Error:', error);
       return [];
     }
 
-    return data.map((row) => {
+    // Filter in JavaScript: Phase überlappt mit Zeitraum wenn
+    // (start_date IS NULL OR start_date <= endOfRange) AND (end_date IS NULL OR end_date >= startOfRange)
+    const filteredData = data.filter((row) => {
+      const phaseStart = row.start_date ? new Date(row.start_date) : null;
+      const phaseEnd = row.end_date ? new Date(row.end_date) : null;
+      const rangeStart = new Date(startISO);
+      const rangeEnd = new Date(endISO);
+
+      const startsBeforeOrDuringRange = phaseStart === null || phaseStart <= rangeEnd;
+      const endsAfterOrDuringRange = phaseEnd === null || phaseEnd >= rangeStart;
+
+      return startsBeforeOrDuringRange && endsAfterOrDuringRange;
+    });
+
+    console.log('[SupabaseProjectPhaseRepository] After date filter:', filteredData.length, 'phases match range', startISO, '-', endISO);
+
+    return filteredData.map((row) => {
       const project = row.projects as unknown as {
         id: string;
         name: string;
