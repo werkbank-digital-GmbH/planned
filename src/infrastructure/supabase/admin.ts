@@ -45,11 +45,11 @@ import { env } from '@/lib/env';
  * - Datenbank-Migrationen
  */
 export function createAdminSupabaseClient() {
-  if (!env.SUPABASE_SECRET_KEY) {
-    throw new Error('SUPABASE_SECRET_KEY ist erforderlich für den Admin-Client');
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY ist erforderlich für den Admin-Client');
   }
 
-  return createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
+  return createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: {
       // Admin-Client verwendet keine Session-Persistenz
       autoRefreshToken: false,

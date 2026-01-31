@@ -13,7 +13,7 @@ import { z } from 'zod';
  */
 const serverEnvSchema = z.object({
   // Supabase (Server-only)
-  SUPABASE_SECRET_KEY: z.string().min(1, 'SUPABASE_SECRET_KEY is required'),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
 
   // Encryption (für API-Token-Verschlüsselung)
   ENCRYPTION_KEY: z.string().optional(),
@@ -60,7 +60,7 @@ export type Env = z.infer<typeof envSchema>;
 function validateEnv(): Env {
   const parsed = envSchema.safeParse({
     // Server
-    SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
     ASANA_CLIENT_ID: process.env.ASANA_CLIENT_ID,
@@ -87,7 +87,7 @@ function validateEnv(): Env {
     console.warn('⚠️ Running with missing environment variables in development mode');
 
     return {
-      SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY || '',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
       ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
       CRON_SECRET: process.env.CRON_SECRET,
       ASANA_CLIENT_ID: process.env.ASANA_CLIENT_ID,
