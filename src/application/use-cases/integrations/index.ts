@@ -14,3 +14,8 @@ export {
   type UnlinkProjectOutput,
   type UnlinkProjectResult,
 } from './UnlinkProjectUseCase';
+export {
+  UpdateAsanaPhaseUseCase,
+  type UpdateAsanaPhaseRequest,
+  type UpdateAsanaPhaseResult,
+} from './UpdateAsanaPhaseUseCase';

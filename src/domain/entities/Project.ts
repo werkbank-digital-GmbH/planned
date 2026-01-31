@@ -12,6 +12,7 @@ export interface CreateProjectProps {
   address?: string;
   status: ProjectStatus;
   asanaGid?: string;
+  driveFolderUrl?: string;
   syncedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -52,6 +53,7 @@ export class Project {
     public readonly address: string | undefined,
     public readonly status: ProjectStatus,
     public readonly asanaGid: string | undefined,
+    public readonly driveFolderUrl: string | undefined,
     public readonly syncedAt: Date | undefined,
     public readonly createdAt: Date,
     public readonly updatedAt: Date
@@ -79,6 +81,7 @@ export class Project {
       props.address?.trim(),
       props.status,
       props.asanaGid,
+      props.driveFolderUrl?.trim(),
       props.syncedAt,
       props.createdAt,
       props.updatedAt
@@ -102,6 +105,7 @@ export class Project {
       this.address,
       status,
       this.asanaGid,
+      this.driveFolderUrl,
       this.syncedAt,
       this.createdAt,
       new Date()
@@ -121,6 +125,7 @@ export class Project {
       props.address !== undefined ? props.address.trim() : this.address,
       this.status,
       this.asanaGid,
+      this.driveFolderUrl,
       this.syncedAt,
       this.createdAt,
       new Date()
@@ -140,6 +145,7 @@ export class Project {
       this.address,
       this.status,
       this.asanaGid,
+      this.driveFolderUrl,
       syncedAt,
       this.createdAt,
       new Date()
@@ -160,7 +166,28 @@ export class Project {
       this.address,
       this.status,
       undefined, // asanaGid entfernt
+      this.driveFolderUrl,
       undefined, // syncedAt entfernt
+      this.createdAt,
+      new Date()
+    );
+  }
+
+  /**
+   * Aktualisiert die Drive-Folder URL.
+   * Gibt eine neue Project-Instanz zurück (Immutability).
+   */
+  withDriveFolderUrl(driveFolderUrl: string | undefined): Project {
+    return new Project(
+      this.id,
+      this.tenantId,
+      this.name,
+      this.clientName,
+      this.address,
+      this.status,
+      this.asanaGid,
+      driveFolderUrl?.trim(),
+      this.syncedAt,
       this.createdAt,
       new Date()
     );

@@ -98,6 +98,42 @@ export interface AsanaTokenResponse {
 }
 
 /**
+ * Asana Webhook Response
+ */
+export interface AsanaWebhook {
+  gid: string;
+  resource: {
+    gid: string;
+    name: string;
+  };
+  target: string;
+  active: boolean;
+}
+
+/**
+ * Asana Webhook Event
+ */
+export interface AsanaWebhookEvent {
+  user?: { gid: string };
+  created_at: string;
+  action: 'added' | 'changed' | 'removed' | 'deleted' | 'undeleted';
+  resource: {
+    gid: string;
+    resource_type: 'project' | 'section' | 'task';
+    name?: string;
+  };
+  parent?: {
+    gid: string;
+    resource_type: string;
+  };
+  change?: {
+    field: string;
+    action: string;
+    new_value?: unknown;
+  };
+}
+
+/**
  * Interface für Asana API Service.
  *
  * Abstrahiert die Kommunikation mit der Asana API.
@@ -155,4 +191,51 @@ export interface IAsanaService {
    * Mappt eine Asana-Section auf interne Phasendaten.
    */
   mapSectionToPhase(section: AsanaSection, config?: AsanaSyncConfig): MappedPhaseData;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // WRITE OPERATIONS (für bidirektionale Sync)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Aktualisiert eine Section in Asana.
+   */
+  updateSection(
+    sectionGid: string,
+    data: { name?: string },
+    accessToken: string
+  ): Promise<AsanaSection>;
+
+  /**
+   * Setzt einen Custom Field Wert auf einem Projekt.
+   */
+  updateProjectCustomField(
+    projectGid: string,
+    fieldGid: string,
+    value: string | number,
+    accessToken: string
+  ): Promise<void>;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // WEBHOOKS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Erstellt einen Webhook für einen Workspace.
+   * Gibt GID und Secret zurück.
+   */
+  createWebhook(
+    resourceGid: string,
+    targetUrl: string,
+    accessToken: string
+  ): Promise<{ gid: string; secret: string }>;
+
+  /**
+   * Löscht einen Webhook.
+   */
+  deleteWebhook(webhookGid: string, accessToken: string): Promise<void>;
+
+  /**
+   * Verifiziert die Webhook-Signatur.
+   */
+  verifyWebhookSignature(body: string, signature: string, secret: string): boolean;
 }

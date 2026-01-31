@@ -21,7 +21,16 @@ import type {
 
 import { getProjectWeekDataAction } from '@/presentation/actions/allocations';
 
-import { formatDateISO, getMonday } from '@/lib/date-utils';
+import {
+  addMonths,
+  formatDateISO,
+  getFirstOfMonth,
+  getLastOfMonth,
+  getMonday,
+  getMonthDates,
+  getMonthName,
+  getWeekDates as getWeekDatesUtil,
+} from '@/lib/date-utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -40,6 +49,8 @@ interface PlanningFilters {
   userId?: string;
 }
 
+export type ViewMode = 'week' | 'month';
+
 interface PlanningContextValue {
   // State
   weekStart: Date;
@@ -49,12 +60,18 @@ interface PlanningContextValue {
   isLoading: boolean;
   error: string | null;
   filters: PlanningFilters;
+  viewMode: ViewMode;
 
   // Navigation
   goToNextWeek: () => void;
   goToPreviousWeek: () => void;
   goToToday: () => void;
   goToWeek: (date: Date) => void;
+  goToNextPeriod: () => void;
+  goToPreviousPeriod: () => void;
+
+  // View Mode
+  setViewMode: (mode: ViewMode) => void;
 
   // Filters
   setFilters: (filters: PlanningFilters) => void;
@@ -63,6 +80,12 @@ interface PlanningContextValue {
   projectRows: ProjectRowData[];
   poolItems: PoolItem[];
   summary: WeekSummary | null;
+
+  // Computed - Period-based (for Month View)
+  periodStart: Date;
+  periodEnd: Date;
+  periodDates: Date[];
+  periodLabel: string;
 
   // Computed - Legacy (für Rückwärtskompatibilität)
   userRows: UserRowData[];
@@ -105,6 +128,7 @@ export function PlanningProvider({
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<PlanningFilters>({});
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<ViewMode>('week');
 
   // Load week data
   const loadWeekData = useCallback(async () => {
@@ -168,6 +192,31 @@ export function PlanningProvider({
     setWeekStart(getMonday(date));
   }, []);
 
+  // Period-based navigation (depends on viewMode)
+  const goToNextPeriod = useCallback(() => {
+    if (viewMode === 'week') {
+      setWeekStart((prev) => {
+        const next = new Date(prev);
+        next.setDate(next.getDate() + 7);
+        return getMonday(next);
+      });
+    } else {
+      setWeekStart((prev) => getFirstOfMonth(addMonths(prev, 1)));
+    }
+  }, [viewMode]);
+
+  const goToPreviousPeriod = useCallback(() => {
+    if (viewMode === 'week') {
+      setWeekStart((prev) => {
+        const next = new Date(prev);
+        next.setDate(next.getDate() - 7);
+        return getMonday(next);
+      });
+    } else {
+      setWeekStart((prev) => getFirstOfMonth(addMonths(prev, -1)));
+    }
+  }, [viewMode]);
+
   // Toggle Projekt aufklappen/zuklappen
   const toggleProjectExpanded = useCallback((projectId: string) => {
     setExpandedProjects((prev) => {
@@ -194,6 +243,42 @@ export function PlanningProvider({
   const poolItems = useMemo((): PoolItem[] => {
     return weekData?.poolItems ?? [];
   }, [weekData]);
+
+  // Computed: Period-based values (for Month View)
+  const periodStart = useMemo((): Date => {
+    if (viewMode === 'week') {
+      return weekStart;
+    }
+    return getFirstOfMonth(weekStart);
+  }, [viewMode, weekStart]);
+
+  const periodEnd = useMemo((): Date => {
+    if (viewMode === 'week') {
+      // Friday
+      const friday = new Date(weekStart);
+      friday.setDate(friday.getDate() + 4);
+      return friday;
+    }
+    return getLastOfMonth(weekStart);
+  }, [viewMode, weekStart]);
+
+  const periodDates = useMemo((): Date[] => {
+    if (viewMode === 'week') {
+      return getWeekDatesUtil(weekStart);
+    }
+    return getMonthDates(weekStart);
+  }, [viewMode, weekStart]);
+
+  const periodLabel = useMemo((): string => {
+    if (viewMode === 'week') {
+      const cw = weekData?.calendarWeek ?? 1;
+      const year = weekStart.getUTCFullYear();
+      return `KW ${cw} / ${year}`;
+    }
+    const monthName = getMonthName(weekStart);
+    const year = weekStart.getUTCFullYear();
+    return `${monthName} ${year}`;
+  }, [viewMode, weekStart, weekData?.calendarWeek]);
 
   // Computed: Group allocations by user (Legacy-Unterstützung)
   const userRows = useMemo((): UserRowData[] => {
@@ -322,13 +407,21 @@ export function PlanningProvider({
     isLoading,
     error,
     filters,
+    viewMode,
     goToNextWeek,
     goToPreviousWeek,
     goToToday,
     goToWeek,
+    goToNextPeriod,
+    goToPreviousPeriod,
+    setViewMode,
     setFilters,
     projectRows,
     poolItems,
+    periodStart,
+    periodEnd,
+    periodDates,
+    periodLabel,
     userRows,
     days,
     summary: weekData?.summary ?? null,

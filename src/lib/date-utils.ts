@@ -150,3 +150,115 @@ export function getDayNameShort(dayIndex: number): string {
   const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
   return days[dayIndex] ?? '';
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MONTH UTILITIES (for Month View)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Gibt alle Tage eines Monats zurück.
+ *
+ * @param date - Ein beliebiges Datum im gewünschten Monat
+ * @returns Array mit allen Date-Objekten des Monats (1. bis letzter Tag)
+ */
+export function getMonthDates(date: Date): Date[] {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+
+  const firstDay = new Date(Date.UTC(year, month, 1));
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)); // 0 = letzter Tag des Vormonats
+
+  const dates: Date[] = [];
+  const current = new Date(firstDay);
+
+  while (current <= lastDay) {
+    dates.push(new Date(current));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
+  return dates;
+}
+
+/**
+ * Gibt den deutschen Monatsnamen zurück.
+ *
+ * @param date - Das Datum
+ * @returns Deutscher Monatsname (z.B. "Januar")
+ */
+export function getMonthName(date: Date): string {
+  return date.toLocaleDateString('de-DE', { month: 'long' });
+}
+
+/**
+ * Gibt den kurzen deutschen Monatsnamen zurück.
+ *
+ * @param date - Das Datum
+ * @returns Kurzer Monatsname (z.B. "Jan")
+ */
+export function getMonthNameShort(date: Date): string {
+  return date.toLocaleDateString('de-DE', { month: 'short' });
+}
+
+/**
+ * Gibt den ersten Tag des Monats zurück.
+ *
+ * @param date - Ein beliebiges Datum
+ * @returns Erster Tag des Monats (UTC Mitternacht)
+ */
+export function getFirstOfMonth(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+}
+
+/**
+ * Gibt den letzten Tag des Monats zurück.
+ *
+ * @param date - Ein beliebiges Datum
+ * @returns Letzter Tag des Monats (UTC Mitternacht)
+ */
+export function getLastOfMonth(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0));
+}
+
+/**
+ * Addiert oder subtrahiert Monate von einem Datum.
+ *
+ * @param date - Das Ausgangsdatum
+ * @param months - Anzahl der Monate (positiv oder negativ)
+ * @returns Neues Datum
+ */
+export function addMonths(date: Date, months: number): Date {
+  const result = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1));
+  return result;
+}
+
+/**
+ * Prüft ob ein Datum ein Wochenende ist (Samstag oder Sonntag).
+ *
+ * @param date - Das zu prüfende Datum
+ * @returns true wenn Samstag (6) oder Sonntag (0)
+ */
+export function isWeekend(date: Date): boolean {
+  const day = date.getUTCDay();
+  return day === 0 || day === 6;
+}
+
+/**
+ * Gibt den Wochentag eines Datums zurück (0=Sonntag, 6=Samstag).
+ *
+ * @param date - Das Datum
+ * @returns Wochentag (0-6)
+ */
+export function getDayOfWeek(date: Date): number {
+  return date.getUTCDay();
+}
+
+/**
+ * Gibt den deutschen Namen für alle Wochentage zurück (inkl. Wochenende).
+ *
+ * @param dayOfWeek - 0=Sonntag, 1=Montag, ..., 6=Samstag
+ * @returns Kurzer Wochentag (z.B. "Mo", "Sa", "So")
+ */
+export function getWeekdayShort(dayOfWeek: number): string {
+  const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  return days[dayOfWeek] ?? '';
+}

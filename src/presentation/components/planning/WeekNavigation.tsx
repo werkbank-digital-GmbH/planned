@@ -7,28 +7,36 @@ import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
 import {
   formatDateDE,
-  getCalendarWeek,
-  getFriday,
   getMonday,
 } from '@/lib/date-utils';
 
 /**
- * Wochennavigation für die Planungsansicht.
+ * Perioden-Navigation für die Planungsansicht.
  *
- * Zeigt die aktuelle Kalenderwoche und ermöglicht
- * Navigation zwischen Wochen.
+ * Zeigt die aktuelle Kalenderwoche oder den Monat und ermöglicht
+ * Navigation zwischen Perioden (Wochen oder Monaten).
  */
 export function WeekNavigation() {
-  const { weekStart, goToNextWeek, goToPreviousWeek, goToToday, isLoading } =
-    usePlanning();
+  const {
+    viewMode,
+    periodStart,
+    periodEnd,
+    periodLabel,
+    goToNextPeriod,
+    goToPreviousPeriod,
+    goToToday,
+    isLoading,
+  } = usePlanning();
 
-  const friday = getFriday(weekStart);
-  const calendarWeek = getCalendarWeek(weekStart);
-  const year = weekStart.getUTCFullYear();
+  // Prüfe ob die aktuelle Woche/Periode angezeigt wird
+  const isCurrentPeriod =
+    viewMode === 'week'
+      ? getMonday(new Date()).getTime() === periodStart.getTime()
+      : periodStart.getMonth() === new Date().getMonth() &&
+        periodStart.getFullYear() === new Date().getFullYear();
 
-  // Prüfe ob die aktuelle Woche angezeigt wird
-  const isCurrentWeek =
-    getMonday(new Date()).getTime() === weekStart.getTime();
+  const ariaLabelPrevious = viewMode === 'week' ? 'Vorherige Woche' : 'Vorheriger Monat';
+  const ariaLabelNext = viewMode === 'week' ? 'Nächste Woche' : 'Nächster Monat';
 
   return (
     <div className="flex items-center gap-4">
@@ -37,9 +45,9 @@ export function WeekNavigation() {
         <Button
           variant="outline"
           size="icon"
-          onClick={goToPreviousWeek}
+          onClick={goToPreviousPeriod}
           disabled={isLoading}
-          aria-label="Vorherige Woche"
+          aria-label={ariaLabelPrevious}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -48,7 +56,7 @@ export function WeekNavigation() {
           variant="outline"
           size="sm"
           onClick={goToToday}
-          disabled={isLoading || isCurrentWeek}
+          disabled={isLoading || isCurrentPeriod}
           className="px-3"
         >
           Heute
@@ -57,22 +65,22 @@ export function WeekNavigation() {
         <Button
           variant="outline"
           size="icon"
-          onClick={goToNextWeek}
+          onClick={goToNextPeriod}
           disabled={isLoading}
-          aria-label="Nächste Woche"
+          aria-label={ariaLabelNext}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Week Display */}
+      {/* Period Display */}
       <div className="flex items-center gap-2">
         <Calendar className="h-4 w-4 text-muted-foreground" />
         <span className="font-semibold">
-          KW {calendarWeek} / {year}
+          {periodLabel}
         </span>
         <span className="text-muted-foreground">
-          {formatDateDE(weekStart)} - {formatDateDE(friday)}
+          {formatDateDE(periodStart)} - {formatDateDE(periodEnd)}
         </span>
       </div>
     </div>

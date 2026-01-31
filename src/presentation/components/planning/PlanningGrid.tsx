@@ -7,6 +7,7 @@ import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { getDayNameShort, isToday } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
+import { MonthGrid } from './MonthGrid';
 import { ProjectRow } from './ProjectRow';
 import { ResourcePool } from './ResourcePool';
 
@@ -75,11 +76,26 @@ export function PlanningGrid() {
     poolItems,
     isLoading,
     error,
+    viewMode,
     getWeekDates,
     toggleProjectExpanded,
   } = usePlanning();
 
   const weekDates = getWeekDates();
+
+  // Monatsansicht - separate Komponente
+  if (viewMode === 'month') {
+    return (
+      <div className="space-y-4">
+        <MonthGrid />
+
+        {/* Ressourcen-Pool - Sticky am unteren Bildschirmrand */}
+        <div className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pt-4 -mx-6 px-6 -mb-6 pb-6">
+          <ResourcePool poolItems={poolItems} weekDates={weekDates} />
+        </div>
+      </div>
+    );
+  }
 
   // Fehler-Anzeige
   if (error) {
@@ -131,8 +147,10 @@ export function PlanningGrid() {
         )}
       </div>
 
-      {/* Ressourcen-Pool */}
-      <ResourcePool poolItems={poolItems} weekDates={weekDates} />
+      {/* Ressourcen-Pool - Sticky am unteren Bildschirmrand */}
+      <div className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pt-4 -mx-6 px-6 -mb-6 pb-6">
+        <ResourcePool poolItems={poolItems} weekDates={weekDates} />
+      </div>
     </div>
   );
 }

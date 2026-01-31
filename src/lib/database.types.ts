@@ -391,6 +391,7 @@ export type Database = {
           asana_gid: string | null
           client_name: string | null
           created_at: string | null
+          drive_folder_url: string | null
           id: string
           name: string
           status: Database["public"]["Enums"]["project_status"] | null
@@ -403,6 +404,7 @@ export type Database = {
           asana_gid?: string | null
           client_name?: string | null
           created_at?: string | null
+          drive_folder_url?: string | null
           id?: string
           name: string
           status?: Database["public"]["Enums"]["project_status"] | null
@@ -415,6 +417,7 @@ export type Database = {
           asana_gid?: string | null
           client_name?: string | null
           created_at?: string | null
+          drive_folder_url?: string | null
           id?: string
           name?: string
           status?: Database["public"]["Enums"]["project_status"] | null

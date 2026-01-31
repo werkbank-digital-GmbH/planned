@@ -63,7 +63,7 @@ export function ResourcePool({ poolItems, weekDates }: ResourcePoolProps) {
   ).length;
 
   return (
-    <Card className="mt-4 bg-gray-50">
+    <Card className="bg-gray-50">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-sm">

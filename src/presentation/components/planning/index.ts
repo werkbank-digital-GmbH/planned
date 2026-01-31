@@ -24,6 +24,8 @@ export { UndoToolbar } from './UndoToolbar';
 export { UserResourceSelector } from './UserResourceSelector';
 export { UserRow } from './UserRow';
 export { WeekNavigation } from './WeekNavigation';
+export { ViewModeToggle } from './ViewModeToggle';
+export { MonthGrid } from './MonthGrid';
 
 // Types
 export * from './types/dnd';
