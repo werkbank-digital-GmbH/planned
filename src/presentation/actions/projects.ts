@@ -277,19 +277,27 @@ export async function getProjectsOverviewAction(): Promise<
 
     // DTOs erstellen
     const today = new Date();
+
+    // Phase type für bessere Typisierung
+    type PhaseData = {
+      id: string;
+      status: string | null;
+      budget_hours: number | null;
+      actual_hours: number | null;
+      end_date: string | null;
+    };
+
     const projectDTOs: ProjectOverviewDTO[] = (projectsData ?? []).map((project) => {
-      const phases = project.project_phases ?? [];
-      const activePhases = phases.filter(
-        (p: { status: string }) => p.status === 'active'
-      );
+      const phases = (project.project_phases ?? []) as PhaseData[];
+      const activePhases = phases.filter((p) => p.status === 'active');
 
       // Stunden aggregieren
       const budgetHours = activePhases.reduce(
-        (sum: number, p: { budget_hours?: number }) => sum + (p.budget_hours ?? 0),
+        (sum, p) => sum + (p.budget_hours ?? 0),
         0
       );
       const actualHours = activePhases.reduce(
-        (sum: number, p: { actual_hours?: number }) => sum + (p.actual_hours ?? 0),
+        (sum, p) => sum + (p.actual_hours ?? 0),
         0
       );
 
@@ -298,7 +306,7 @@ export async function getProjectsOverviewAction(): Promise<
         budgetHours > 0 ? Math.round((actualHours / budgetHours) * 100) : 0;
 
       // Überfällig prüfen (Phasen mit end_date vor heute)
-      const isLate = activePhases.some((p: { end_date?: string }) => {
+      const isLate = activePhases.some((p) => {
         if (!p.end_date) return false;
         return new Date(p.end_date) < today;
       });
@@ -314,9 +322,7 @@ export async function getProjectsOverviewAction(): Promise<
         address: project.address ?? undefined,
         status: project.status as ProjectOverviewDTO['status'],
         phasesTotal: phases.length,
-        phasesCompleted: phases.filter(
-          (p: { status: string }) => p.status === 'deleted'
-        ).length,
+        phasesCompleted: phases.filter((p) => p.status === 'deleted').length,
         budgetHours,
         actualHours,
         progressPercent,

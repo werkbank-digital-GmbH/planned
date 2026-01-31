@@ -59,7 +59,18 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
       id: string;
       name: string;
       bereich: string;
-      project: { id: string; name: string; projectNumber?: string };
+      startDate?: Date;
+      endDate?: Date;
+      budgetHours?: number;
+      plannedHours?: number;
+      actualHours?: number;
+      project: {
+        id: string;
+        name: string;
+        projectNumber?: string;
+        status?: string;
+        address?: string;
+      };
     }>
   > {
     if (ids.length === 0) {
@@ -72,10 +83,17 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         id,
         name,
         bereich,
+        start_date,
+        end_date,
+        budget_hours,
+        planned_hours,
+        actual_hours,
         projects!inner(
           id,
           name,
-          project_number
+          project_number,
+          status,
+          address
         )
       `)
       .in('id', ids);
@@ -89,15 +107,24 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         id: string;
         name: string;
         project_number: string | null;
+        status: string | null;
+        address: string | null;
       };
       return {
         id: row.id,
         name: row.name,
         bereich: row.bereich,
+        startDate: row.start_date ? new Date(row.start_date) : undefined,
+        endDate: row.end_date ? new Date(row.end_date) : undefined,
+        budgetHours: row.budget_hours ?? undefined,
+        plannedHours: row.planned_hours ?? undefined,
+        actualHours: row.actual_hours ?? undefined,
         project: {
           id: project.id,
           name: project.name,
           projectNumber: project.project_number ?? undefined,
+          status: project.status ?? undefined,
+          address: project.address ?? undefined,
         },
       };
     });

@@ -23,6 +23,7 @@ import { Result, type ActionResult } from '@/application/common';
 import {
   GetAllocationsForWeekQuery,
   type WeekAllocationData,
+  type WeekProjectData,
 } from '@/application/queries';
 import { AbsenceConflictChecker } from '@/application/services';
 import {
@@ -528,6 +529,64 @@ export async function getAllocationsForWeekAction(input: {
     );
 
     const result = await query.execute({
+      tenantId: currentUser.tenantId,
+      weekStart: new Date(validatedFields.data.weekStart),
+      projectId: validatedFields.data.projectId,
+      userId: validatedFields.data.userId,
+    });
+
+    return Result.ok(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET PROJECT-CENTRIC WEEK DATA ACTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Lädt projekt-zentrierte Wochendaten für das neue Planungs-Grid.
+ *
+ * Im Gegensatz zu getAllocationsForWeekAction gibt diese Action
+ * Daten zurück, die nach Projekten und Phasen gruppiert sind.
+ *
+ * @param input - Die Query-Parameter
+ * @returns Projekt-Zeilen, Pool-Items und Zusammenfassung
+ */
+export async function getProjectWeekDataAction(input: {
+  weekStart: string;
+  projectId?: string;
+  userId?: string;
+}): Promise<ActionResult<WeekProjectData>> {
+  const validatedFields = getAllocationsForWeekSchema.safeParse(input);
+
+  if (!validatedFields.success) {
+    return Result.fail('VALIDATION_ERROR', validatedFields.error.errors[0].message);
+  }
+
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+    const supabase = await createActionSupabaseClient();
+
+    // Repositories erstellen
+    const allocationRepo = new SupabaseAllocationRepository(supabase);
+    const userRepo = new SupabaseUserRepository(supabase);
+    const phaseRepo = new SupabaseProjectPhaseRepository(supabase);
+    const timeEntryRepo = new SupabaseTimeEntryRepository(supabase);
+    const absenceRepo = new SupabaseAbsenceRepository(supabase);
+
+    // Query erstellen und ausführen
+    const query = new GetAllocationsForWeekQuery(
+      allocationRepo,
+      userRepo,
+      phaseRepo,
+      timeEntryRepo,
+      absenceRepo
+    );
+
+    const result = await query.executeProjectCentric({
       tenantId: currentUser.tenantId,
       weekStart: new Date(validatedFields.data.weekStart),
       projectId: validatedFields.data.projectId,

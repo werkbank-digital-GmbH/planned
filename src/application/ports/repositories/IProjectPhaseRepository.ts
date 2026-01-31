@@ -29,7 +29,18 @@ export interface IProjectPhaseRepository {
       id: string;
       name: string;
       bereich: string;
-      project: { id: string; name: string; projectNumber?: string };
+      startDate?: Date;
+      endDate?: Date;
+      budgetHours?: number;
+      plannedHours?: number;
+      actualHours?: number;
+      project: {
+        id: string;
+        name: string;
+        projectNumber?: string;
+        status?: string;
+        address?: string;
+      };
     }>
   >;
 

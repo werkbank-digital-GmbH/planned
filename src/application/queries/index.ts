@@ -2,6 +2,7 @@ export { GetAllocationsForWeekQuery } from './GetAllocationsForWeekQuery';
 export type {
   GetAllocationsForWeekRequest,
   WeekAllocationData,
+  WeekProjectData,
   DayData,
   AllocationWithDetails,
   WeekSummary,
@@ -9,6 +10,12 @@ export type {
   ResourceSummary,
   ProjectPhaseSummary,
   ProjectSummary,
+  // Project-centric types
+  ProjectRowData,
+  PhaseRowData,
+  PoolItem,
+  DayAvailability,
+  AvailabilityStatus,
 } from './GetAllocationsForWeekQuery';
 
 export { GetDashboardDataQuery } from './GetDashboardDataQuery';

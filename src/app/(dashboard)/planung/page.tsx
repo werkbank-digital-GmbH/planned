@@ -1,12 +1,9 @@
 import { Suspense } from 'react';
 
-import { getProjectsListAction } from '@/presentation/actions/projects';
-import { getUsersAction } from '@/presentation/actions/users';
 import {
   PlanningDndProvider,
   PlanningGrid,
   PlanningKeyboardHandler,
-  PlanningSidebar,
   UndoToolbar,
   WeekNavigation,
 } from '@/presentation/components/planning';
@@ -16,24 +13,15 @@ import { SelectionProvider } from '@/presentation/contexts/SelectionContext';
 import { UndoProvider } from '@/presentation/contexts/UndoContext';
 
 /**
- * Planungsseite
+ * Planungsseite (Projekt-zentriert)
  *
  * Hauptseite für die Wochenplanung mit:
  * - Wochennavigation
- * - Grid mit Mitarbeitern und Zuweisungen
- * - Sidebar mit Filtern und Zusammenfassung
+ * - Grid mit Projekten/Phasen und Mitarbeiter-Zuweisungen
+ * - Ressourcen-Pool für Drag & Drop
  * - Keyboard Shortcuts für Power-User
  */
 export default async function PlanungPage() {
-  // Lade initiale Daten parallel
-  const [usersResult, projectsResult] = await Promise.all([
-    getUsersAction(true), // Nur aktive User
-    getProjectsListAction(),
-  ]);
-
-  const users = usersResult.success ? usersResult.data : [];
-  const projects = projectsResult.success ? projectsResult.data : [];
-
   return (
     <TooltipProvider>
       <PlanningProvider>
@@ -50,27 +38,16 @@ export default async function PlanungPage() {
                   </div>
                 </div>
 
-                {/* Main Content */}
-                <div className="flex gap-6">
-                  {/* Grid */}
-                  <div className="relative min-w-0 flex-1">
-                    <Suspense
-                      fallback={
-                        <div className="flex h-[400px] items-center justify-center rounded-lg border">
-                          <span className="text-muted-foreground">Lade Planung...</span>
-                        </div>
-                      }
-                    >
-                      <PlanningGrid />
-                    </Suspense>
-                  </div>
-
-                  {/* Sidebar */}
-                  <PlanningSidebar
-                    projects={projects}
-                    users={users.map((u) => ({ id: u.id, fullName: u.fullName }))}
-                  />
-                </div>
+                {/* Main Content - Volle Breite (keine Sidebar mehr) */}
+                <Suspense
+                  fallback={
+                    <div className="flex h-[400px] items-center justify-center rounded-lg border">
+                      <span className="text-gray-500">Lade Planung...</span>
+                    </div>
+                  }
+                >
+                  <PlanningGrid />
+                </Suspense>
               </div>
 
               {/* Keyboard Shortcuts Handler */}
