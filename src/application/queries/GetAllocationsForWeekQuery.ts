@@ -538,19 +538,17 @@ export class GetAllocationsForWeekQuery {
       { projectId: request.projectId, userId: request.userId }
     );
 
-    // 2. IDs sammeln
+    // 2. IDs sammeln für zusätzliche Daten
     const userIds = [...new Set(allocations.filter((a) => a.userId).map((a) => a.userId!))];
-    const phaseIds = [...new Set(allocations.map((a) => a.projectPhaseId))];
 
     // 3. Verknüpfte Entitäten laden (zuerst alle User für Absenzen)
     const allUsers = await this.userRepository.findActiveByTenant(tenantId);
     const allUserIds = allUsers.map((u) => u.id);
 
+    // 4. WICHTIG: Alle Phasen im Zeitraum laden, nicht nur die mit Allocations
     const [users, phases, timeEntries, absences] = await Promise.all([
       userIds.length > 0 ? this.userRepository.findByIds(userIds) : Promise.resolve([]),
-      phaseIds.length > 0
-        ? this.projectPhaseRepository.findByIdsWithProject(phaseIds)
-        : Promise.resolve([]),
+      this.projectPhaseRepository.findByTenantAndDateRange(tenantId, monday, friday),
       userIds.length > 0
         ? this.timeEntryRepository.findByUserIdsAndDateRange(userIds, monday, friday)
         : Promise.resolve([]),

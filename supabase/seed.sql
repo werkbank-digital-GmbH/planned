@@ -36,41 +36,36 @@ DECLARE
     v_project3_id UUID;
     v_project4_id UUID;
     v_project5_id UUID;
-    -- Phasen Projekt 1 (Neubau Fam. Weber)
-    v_p1_abbund UUID;
-    v_p1_zuschnitt UUID;
-    v_p1_elementfertigung UUID;
-    v_p1_fensterbau UUID;
-    v_p1_holzbaumontage UUID;
-    v_p1_montageneben UUID;
-    v_p1_dachdeckerarbeiten UUID;
-    v_p1_elektro UUID;
-    v_p1_heizung UUID;
-    v_p1_sanitaer UUID;
-    v_p1_trockenbau UUID;
-    v_p1_estrich UUID;
-    v_p1_boden UUID;
-    -- Phasen Projekt 2 (Anbau Garage)
-    v_p2_abbund UUID;
-    v_p2_elementfertigung UUID;
-    v_p2_holzbaumontage UUID;
-    v_p2_dachdeckerarbeiten UUID;
-    -- Phasen Projekt 3 (Modulhaus)
-    v_p3_modulbau UUID;
-    v_p3_holzbaumontage UUID;
-    v_p3_elektro UUID;
-    -- Phasen Projekt 4 (Sanierung Schmidt)
-    v_p4_abbund UUID;
-    v_p4_elementfertigung UUID;
-    v_p4_holzbaumontage UUID;
-    v_p4_fassade UUID;
-    v_p4_innenausbau UUID;
-    -- Phasen Projekt 5 (Holzrahmenbau Kita)
-    v_p5_planung UUID;
-    v_p5_abbund UUID;
-    v_p5_elementfertigung UUID;
-    v_p5_holzbaumontage UUID;
-    v_p5_dach UUID;
+    -- Phasen Projekt 1 (Neubau Fam. Weber) - 5 Phasen
+    v_p1_phase1 UUID;
+    v_p1_phase2 UUID;
+    v_p1_phase3 UUID;
+    v_p1_phase4 UUID;
+    v_p1_phase5 UUID;
+    -- Phasen Projekt 2 (Anbau Garage) - 5 Phasen
+    v_p2_phase1 UUID;
+    v_p2_phase2 UUID;
+    v_p2_phase3 UUID;
+    v_p2_phase4 UUID;
+    v_p2_phase5 UUID;
+    -- Phasen Projekt 3 (Modulhaus) - 5 Phasen
+    v_p3_phase1 UUID;
+    v_p3_phase2 UUID;
+    v_p3_phase3 UUID;
+    v_p3_phase4 UUID;
+    v_p3_phase5 UUID;
+    -- Phasen Projekt 4 (Sanierung Schmidt) - 5 Phasen
+    v_p4_phase1 UUID;
+    v_p4_phase2 UUID;
+    v_p4_phase3 UUID;
+    v_p4_phase4 UUID;
+    v_p4_phase5 UUID;
+    -- Phasen Projekt 5 (Holzrahmenbau Kita) - 5 Phasen
+    v_p5_phase1 UUID;
+    v_p5_phase2 UUID;
+    v_p5_phase3 UUID;
+    v_p5_phase4 UUID;
+    v_p5_phase5 UUID;
 BEGIN
     -- ===============================================================
     -- TENANT
@@ -174,7 +169,8 @@ BEGIN
     RETURNING id INTO v_resource4_id;
 
     -- ===============================================================
-    -- PROJECTS (Feste Datumsangaben: Dezember 2025 - April 2026)
+    -- PROJECTS (5 Projekte mit je 5 Phasen)
+    -- Zeitraum: Dezember 2025 - März 2026
     -- ===============================================================
 
     -- Projekt 1: Großes EFH (aktiv, gestartet Dezember 2025)
@@ -189,7 +185,7 @@ BEGIN
     )
     RETURNING id INTO v_project1_id;
 
-    -- Projekt 2: Kleines Projekt (aktiv, startet Januar 2026)
+    -- Projekt 2: Anbau Garage (aktiv, startet Januar 2026)
     INSERT INTO projects (tenant_id, name, client_name, address, status, asana_gid)
     VALUES (
         v_tenant_id,
@@ -225,7 +221,7 @@ BEGIN
     )
     RETURNING id INTO v_project4_id;
 
-    -- Projekt 5: Kita (in Planung, startet März 2026)
+    -- Projekt 5: Kita (in Planung, startet Februar 2026)
     INSERT INTO projects (tenant_id, name, client_name, address, status, asana_gid)
     VALUES (
         v_tenant_id,
@@ -239,161 +235,153 @@ BEGIN
 
     -- ===============================================================
     -- PROJECT PHASES - Projekt 1 (Neubau Fam. Weber)
-    -- Zeitraum: 15.12.2025 - 28.02.2026
+    -- Zeitraum: 15.12.2025 - 28.02.2026 (5 Phasen)
     -- ===============================================================
 
-    -- PRODUKTION: Abbund (ABU) - 15.12. - 20.12.2025 (abgeschlossen)
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'ABU: Abbund', 'produktion', '2025-12-15'::DATE, '2025-12-20'::DATE, 40, 1, 'asana_phase_p1_01')
-    RETURNING id INTO v_p1_abbund;
+    -- Phase 1: PRODUKTION - Abbund (15.12. - 20.12.2025)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project1_id, 'ABU: Abbund', 'produktion', '2025-12-15'::DATE, '2025-12-20'::DATE, 40, 1, 'asana_phase_p1_01')
+    RETURNING id INTO v_p1_phase1;
 
-    -- PRODUKTION: Zuschnitt (ZUS) - 16.12. - 19.12.2025 (abgeschlossen)
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'ZUS: Zuschnitt', 'produktion', '2025-12-16'::DATE, '2025-12-19'::DATE, 24, 2, 'asana_phase_p1_02')
-    RETURNING id INTO v_p1_zuschnitt;
+    -- Phase 2: PRODUKTION - Elementfertigung (06.01. - 17.01.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project1_id, 'ELMT: Elementfertigung', 'produktion', '2026-01-06'::DATE, '2026-01-17'::DATE, 64, 2, 'asana_phase_p1_02')
+    RETURNING id INTO v_p1_phase2;
 
-    -- PRODUKTION: Elementfertigung (ELMT) - 06.01. - 17.01.2026 (abgeschlossen)
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'ELMT: Elementfertigung', 'produktion', '2026-01-06'::DATE, '2026-01-17'::DATE, 64, 3, 'asana_phase_p1_03')
-    RETURNING id INTO v_p1_elementfertigung;
+    -- Phase 3: MONTAGE - Holzbaumontage (20.01. - 31.01.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project1_id, 'HOBM: Holzbaumontage', 'montage', '2026-01-20'::DATE, '2026-01-31'::DATE, 80, 3, 'asana_phase_p1_03')
+    RETURNING id INTO v_p1_phase3;
 
-    -- PRODUKTION: Fensterbau (FEB) - 13.01. - 17.01.2026 (abgeschlossen)
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'FEB: Fensterbau', 'produktion', '2026-01-13'::DATE, '2026-01-17'::DATE, 32, 4, 'asana_phase_p1_04')
-    RETURNING id INTO v_p1_fensterbau;
+    -- Phase 4: MONTAGE - Dachdeckerarbeiten (03.02. - 14.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project1_id, 'DADE: Dachdeckerarbeiten', 'montage', '2026-02-03'::DATE, '2026-02-14'::DATE, 48, 4, 'asana_phase_p1_04')
+    RETURNING id INTO v_p1_phase4;
 
-    -- MONTAGE: Holzbaumontage (HOBM) - 20.01. - 31.01.2026 (AKTIV)
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'HOBM: Holzbaumontage', 'montage', '2026-01-20'::DATE, '2026-01-31'::DATE, 80, 5, 'asana_phase_p1_05')
-    RETURNING id INTO v_p1_holzbaumontage;
-
-    -- MONTAGE: Montagenebenarbeiten (MNA) - 27.01. - 07.02.2026 (AKTIV)
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'MNA: Montagenebenarbeiten', 'montage', '2026-01-27'::DATE, '2026-02-07'::DATE, 24, 6, 'asana_phase_p1_06')
-    RETURNING id INTO v_p1_montageneben;
-
-    -- MONTAGE: Dachdeckerarbeiten (DADE) - 03.02. - 10.02.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'DADE: Dachdeckerarbeiten', 'montage', '2026-02-03'::DATE, '2026-02-10'::DATE, 40, 7, 'asana_phase_p1_07')
-    RETURNING id INTO v_p1_dachdeckerarbeiten;
-
-    -- EXTERNES GEWERK: Elektroinstallationen (ELT) - 10.02. - 21.02.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'ELT: Elektroinstallationen', 'externes_gewerk', '2026-02-10'::DATE, '2026-02-21'::DATE, 48, 8, 'asana_phase_p1_08')
-    RETURNING id INTO v_p1_elektro;
-
-    -- EXTERNES GEWERK: Heizungsinstallationen (HEIZ) - 10.02. - 17.02.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'HEIZ: Heizungsinstallationen', 'externes_gewerk', '2026-02-10'::DATE, '2026-02-17'::DATE, 40, 9, 'asana_phase_p1_09')
-    RETURNING id INTO v_p1_heizung;
-
-    -- EXTERNES GEWERK: Sanitärinstallationen (SAN) - 16.02. - 21.02.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'SAN: Sanitärinstallationen', 'externes_gewerk', '2026-02-16'::DATE, '2026-02-21'::DATE, 32, 10, 'asana_phase_p1_10')
-    RETURNING id INTO v_p1_sanitaer;
-
-    -- EXTERNES GEWERK: Trockenbauarbeiten (TRO) - 23.02. - 28.02.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'TRO: Trockenbauarbeiten', 'externes_gewerk', '2026-02-23'::DATE, '2026-02-28'::DATE, 56, 11, 'asana_phase_p1_11')
-    RETURNING id INTO v_p1_trockenbau;
-
-    -- EXTERNES GEWERK: Estricharbeiten (EST) - 02.03. - 06.03.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'EST: Estricharbeiten', 'externes_gewerk', '2026-03-02'::DATE, '2026-03-06'::DATE, 16, 12, 'asana_phase_p1_12')
-    RETURNING id INTO v_p1_estrich;
-
-    -- EXTERNES GEWERK: Bodenbelagsarbeiten (BOD) - 16.03. - 20.03.2026
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project1_id, 'BOD: Bodenbelagsarbeiten', 'externes_gewerk', '2026-03-16'::DATE, '2026-03-20'::DATE, 24, 13, 'asana_phase_p1_13')
-    RETURNING id INTO v_p1_boden;
+    -- Phase 5: EXTERNES GEWERK - Elektroinstallationen (17.02. - 28.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project1_id, 'ELT: Elektroinstallationen', 'externes_gewerk', '2026-02-17'::DATE, '2026-02-28'::DATE, 56, 5, 'asana_phase_p1_05')
+    RETURNING id INTO v_p1_phase5;
 
     -- ===============================================================
     -- PROJECT PHASES - Projekt 2 (Anbau Garage Schmitt)
-    -- Zeitraum: 19.01.2026 - 13.02.2026
+    -- Zeitraum: 05.01.2026 - 20.02.2026 (5 Phasen)
     -- ===============================================================
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project2_id, 'ABU: Abbund', 'produktion', '2026-01-19'::DATE, '2026-01-23'::DATE, 16, 1, 'asana_phase_p2_01')
-    RETURNING id INTO v_p2_abbund;
+    -- Phase 1: PRODUKTION - Abbund (05.01. - 10.01.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project2_id, 'ABU: Abbund', 'produktion', '2026-01-05'::DATE, '2026-01-10'::DATE, 24, 1, 'asana_phase_p2_01')
+    RETURNING id INTO v_p2_phase1;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project2_id, 'ELMT: Elementfertigung', 'produktion', '2026-01-26'::DATE, '2026-01-30'::DATE, 24, 2, 'asana_phase_p2_02')
-    RETURNING id INTO v_p2_elementfertigung;
+    -- Phase 2: PRODUKTION - Elementfertigung (13.01. - 24.01.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project2_id, 'ELMT: Elementfertigung', 'produktion', '2026-01-13'::DATE, '2026-01-24'::DATE, 40, 2, 'asana_phase_p2_02')
+    RETURNING id INTO v_p2_phase2;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project2_id, 'HOBM: Holzbaumontage', 'montage', '2026-02-02'::DATE, '2026-02-06'::DATE, 32, 3, 'asana_phase_p2_03')
-    RETURNING id INTO v_p2_holzbaumontage;
+    -- Phase 3: MONTAGE - Holzbaumontage (27.01. - 07.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project2_id, 'HOBM: Holzbaumontage', 'montage', '2026-01-27'::DATE, '2026-02-07'::DATE, 48, 3, 'asana_phase_p2_03')
+    RETURNING id INTO v_p2_phase3;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project2_id, 'DADE: Dachdeckerarbeiten', 'montage', '2026-02-09'::DATE, '2026-02-13'::DATE, 16, 4, 'asana_phase_p2_04')
-    RETURNING id INTO v_p2_dachdeckerarbeiten;
+    -- Phase 4: MONTAGE - Dachdeckerarbeiten (10.02. - 14.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project2_id, 'DADE: Dachdeckerarbeiten', 'montage', '2026-02-10'::DATE, '2026-02-14'::DATE, 24, 4, 'asana_phase_p2_04')
+    RETURNING id INTO v_p2_phase4;
+
+    -- Phase 5: EXTERNES GEWERK - Garagentor & Elektrik (17.02. - 20.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project2_id, 'ELT: Garagentor & Elektrik', 'externes_gewerk', '2026-02-17'::DATE, '2026-02-20'::DATE, 16, 5, 'asana_phase_p2_05')
+    RETURNING id INTO v_p2_phase5;
 
     -- ===============================================================
     -- PROJECT PHASES - Projekt 3 (Modulhaus Meier - in Planung)
-    -- Zeitraum: 16.02.2026 - 15.04.2026
+    -- Zeitraum: 02.02.2026 - 27.03.2026 (5 Phasen)
     -- ===============================================================
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project3_id, 'MOD: Modulbau', 'produktion', '2026-02-16'::DATE, '2026-03-13'::DATE, 120, 1, 'asana_phase_p3_01')
-    RETURNING id INTO v_p3_modulbau;
+    -- Phase 1: PRODUKTION - Modulplanung (02.02. - 06.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project3_id, 'PLAN: Modulplanung', 'produktion', '2026-02-02'::DATE, '2026-02-06'::DATE, 24, 1, 'asana_phase_p3_01')
+    RETURNING id INTO v_p3_phase1;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project3_id, 'HOBM: Holzbaumontage', 'montage', '2026-03-16'::DATE, '2026-03-27'::DATE, 40, 2, 'asana_phase_p3_02')
-    RETURNING id INTO v_p3_holzbaumontage;
+    -- Phase 2: PRODUKTION - Modulbau (09.02. - 28.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project3_id, 'MOD: Modulbau', 'produktion', '2026-02-09'::DATE, '2026-02-28'::DATE, 120, 2, 'asana_phase_p3_02')
+    RETURNING id INTO v_p3_phase2;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project3_id, 'ELT: Elektroinstallationen', 'externes_gewerk', '2026-03-30'::DATE, '2026-04-15'::DATE, 32, 3, 'asana_phase_p3_03')
-    RETURNING id INTO v_p3_elektro;
+    -- Phase 3: MONTAGE - Modulmontage (02.03. - 13.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project3_id, 'HOBM: Modulmontage', 'montage', '2026-03-02'::DATE, '2026-03-13'::DATE, 56, 3, 'asana_phase_p3_03')
+    RETURNING id INTO v_p3_phase3;
+
+    -- Phase 4: MONTAGE - Dacharbeiten (16.03. - 20.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project3_id, 'DADE: Dacharbeiten', 'montage', '2026-03-16'::DATE, '2026-03-20'::DATE, 32, 4, 'asana_phase_p3_04')
+    RETURNING id INTO v_p3_phase4;
+
+    -- Phase 5: EXTERNES GEWERK - Elektroinstallationen (23.03. - 27.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project3_id, 'ELT: Elektroinstallationen', 'externes_gewerk', '2026-03-23'::DATE, '2026-03-27'::DATE, 40, 5, 'asana_phase_p3_05')
+    RETURNING id INTO v_p3_phase5;
 
     -- ===============================================================
     -- PROJECT PHASES - Projekt 4 (Sanierung Schmidt)
-    -- Zeitraum: 06.01.2026 - 27.02.2026
+    -- Zeitraum: 08.12.2025 - 27.02.2026 (5 Phasen)
     -- ===============================================================
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project4_id, 'ABU: Abbund', 'produktion', '2026-01-06'::DATE, '2026-01-10'::DATE, 24, 1, 'asana_phase_p4_01')
-    RETURNING id INTO v_p4_abbund;
+    -- Phase 1: PRODUKTION - Bestandsaufnahme (08.12. - 12.12.2025)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project4_id, 'BEST: Bestandsaufnahme', 'produktion', '2025-12-08'::DATE, '2025-12-12'::DATE, 24, 1, 'asana_phase_p4_01')
+    RETURNING id INTO v_p4_phase1;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project4_id, 'ELMT: Elementfertigung', 'produktion', '2026-01-13'::DATE, '2026-01-24'::DATE, 48, 2, 'asana_phase_p4_02')
-    RETURNING id INTO v_p4_elementfertigung;
+    -- Phase 2: PRODUKTION - Elementfertigung (06.01. - 17.01.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project4_id, 'ELMT: Elementfertigung', 'produktion', '2026-01-06'::DATE, '2026-01-17'::DATE, 48, 2, 'asana_phase_p4_02')
+    RETURNING id INTO v_p4_phase2;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project4_id, 'HOBM: Holzbaumontage', 'montage', '2026-01-27'::DATE, '2026-02-06'::DATE, 56, 3, 'asana_phase_p4_03')
-    RETURNING id INTO v_p4_holzbaumontage;
+    -- Phase 3: MONTAGE - Holzbaumontage (20.01. - 07.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project4_id, 'HOBM: Holzbaumontage', 'montage', '2026-01-20'::DATE, '2026-02-07'::DATE, 72, 3, 'asana_phase_p4_03')
+    RETURNING id INTO v_p4_phase3;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project4_id, 'FAS: Fassade', 'montage', '2026-02-09'::DATE, '2026-02-13'::DATE, 32, 4, 'asana_phase_p4_04')
-    RETURNING id INTO v_p4_fassade;
+    -- Phase 4: MONTAGE - Fassadenarbeiten (10.02. - 20.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project4_id, 'FAS: Fassadenarbeiten', 'montage', '2026-02-10'::DATE, '2026-02-20'::DATE, 48, 4, 'asana_phase_p4_04')
+    RETURNING id INTO v_p4_phase4;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project4_id, 'IAB: Innenausbau', 'montage', '2026-02-16'::DATE, '2026-02-27'::DATE, 64, 5, 'asana_phase_p4_05')
-    RETURNING id INTO v_p4_innenausbau;
+    -- Phase 5: EXTERNES GEWERK - Innenausbau (23.02. - 27.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project4_id, 'IAB: Innenausbau', 'externes_gewerk', '2026-02-23'::DATE, '2026-02-27'::DATE, 40, 5, 'asana_phase_p4_05')
+    RETURNING id INTO v_p4_phase5;
 
     -- ===============================================================
     -- PROJECT PHASES - Projekt 5 (Holzrahmenbau Kita)
-    -- Zeitraum: 02.03.2026 - 30.04.2026
+    -- Zeitraum: 16.02.2026 - 31.03.2026 (5 Phasen)
     -- ===============================================================
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project5_id, 'PLAN: Planungsphase', 'produktion', '2026-03-02'::DATE, '2026-03-06'::DATE, 16, 1, 'asana_phase_p5_01')
-    RETURNING id INTO v_p5_planung;
+    -- Phase 1: PRODUKTION - Planungsphase (16.02. - 20.02.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project5_id, 'PLAN: Planungsphase', 'produktion', '2026-02-16'::DATE, '2026-02-20'::DATE, 32, 1, 'asana_phase_p5_01')
+    RETURNING id INTO v_p5_phase1;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project5_id, 'ABU: Abbund', 'produktion', '2026-03-09'::DATE, '2026-03-20'::DATE, 48, 2, 'asana_phase_p5_02')
-    RETURNING id INTO v_p5_abbund;
+    -- Phase 2: PRODUKTION - Abbund (23.02. - 06.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project5_id, 'ABU: Abbund', 'produktion', '2026-02-23'::DATE, '2026-03-06'::DATE, 56, 2, 'asana_phase_p5_02')
+    RETURNING id INTO v_p5_phase2;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project5_id, 'ELMT: Elementfertigung', 'produktion', '2026-03-23'::DATE, '2026-04-10'::DATE, 96, 3, 'asana_phase_p5_03')
-    RETURNING id INTO v_p5_elementfertigung;
+    -- Phase 3: PRODUKTION - Elementfertigung (09.03. - 20.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project5_id, 'ELMT: Elementfertigung', 'produktion', '2026-03-09'::DATE, '2026-03-20'::DATE, 80, 3, 'asana_phase_p5_03')
+    RETURNING id INTO v_p5_phase3;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project5_id, 'HOBM: Holzbaumontage', 'montage', '2026-04-13'::DATE, '2026-04-24'::DATE, 80, 4, 'asana_phase_p5_04')
-    RETURNING id INTO v_p5_holzbaumontage;
+    -- Phase 4: MONTAGE - Holzbaumontage (23.03. - 27.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project5_id, 'HOBM: Holzbaumontage', 'montage', '2026-03-23'::DATE, '2026-03-27'::DATE, 64, 4, 'asana_phase_p5_04')
+    RETURNING id INTO v_p5_phase4;
 
-    INSERT INTO project_phases (project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
-    VALUES (v_project5_id, 'DADE: Dachdeckerarbeiten', 'montage', '2026-04-27'::DATE, '2026-04-30'::DATE, 32, 5, 'asana_phase_p5_05')
-    RETURNING id INTO v_p5_dach;
+    -- Phase 5: MONTAGE - Dachdeckerarbeiten (30.03. - 31.03.2026)
+    INSERT INTO project_phases (tenant_id, project_id, name, bereich, start_date, end_date, budget_hours, sort_order, asana_gid)
+    VALUES (v_tenant_id, v_project5_id, 'DADE: Dachdeckerarbeiten', 'montage', '2026-03-30'::DATE, '2026-03-31'::DATE, 16, 5, 'asana_phase_p5_05')
+    RETURNING id INTO v_p5_phase5;
 
     -- ===============================================================
     -- ALLOCATIONS - Aktuelle Woche (KW 05: 27.01. - 31.01.2026)
@@ -405,85 +393,85 @@ BEGIN
     -- Max Bauer: Ganze Woche auf Holzbaumontage
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-27'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-28'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-30'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-31'::DATE);
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-31'::DATE);
 
-    -- Stefan Huber: Mo-Mi auf Holzbaumontage, Do-Fr auf Montagenebenarbeiten
+    -- Stefan Huber: Mo-Fr auf Holzbaumontage
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich4_id, v_p1_holzbaumontage, '2026-01-27'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p1_holzbaumontage, '2026-01-28'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p1_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p1_montageneben, '2026-01-30'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p1_montageneben, '2026-01-31'::DATE);
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase3, '2026-01-31'::DATE);
 
     -- Klaus Wagner: Holzbaumontage Mo-Fr
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-27'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-28'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-30'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-31'::DATE);
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-31'::DATE);
 
-    -- === Projekt 2: Elementfertigung (26.01. - 30.01.2026) ===
+    -- === Projekt 2: Holzbaumontage (27.01. - 07.02.2026) ===
 
-    -- Lisa Weber: Mo-Fr auf Elementfertigung (Projekt 2)
+    -- Lisa Weber: Mo-Fr auf Holzbaumontage (Projekt 2)
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich2_id, v_p2_elementfertigung, '2026-01-27'::DATE),
-        (v_tenant_id, v_gewerblich2_id, v_p2_elementfertigung, '2026-01-28'::DATE),
-        (v_tenant_id, v_gewerblich2_id, v_p2_elementfertigung, '2026-01-29'::DATE),
-        (v_tenant_id, v_gewerblich2_id, v_p2_elementfertigung, '2026-01-30'::DATE);
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase3, '2026-01-30'::DATE);
 
-    -- Andreas Fischer: Mo-Fr auf Elementfertigung (Projekt 2)
+    -- Andreas Fischer: Mo-Fr auf Holzbaumontage (Projekt 2)
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich5_id, v_p2_elementfertigung, '2026-01-27'::DATE),
-        (v_tenant_id, v_gewerblich5_id, v_p2_elementfertigung, '2026-01-28'::DATE),
-        (v_tenant_id, v_gewerblich5_id, v_p2_elementfertigung, '2026-01-29'::DATE),
-        (v_tenant_id, v_gewerblich5_id, v_p2_elementfertigung, '2026-01-30'::DATE);
+        (v_tenant_id, v_gewerblich5_id, v_p2_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_gewerblich5_id, v_p2_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_gewerblich5_id, v_p2_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_gewerblich5_id, v_p2_phase3, '2026-01-30'::DATE);
 
-    -- === Projekt 4: Holzbaumontage (27.01. - 06.02.2026) ===
+    -- === Projekt 4: Holzbaumontage (20.01. - 07.02.2026) ===
 
     -- Michael Braun: Ganze Woche auf Holzbaumontage Sanierung
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich7_id, v_p4_holzbaumontage, '2026-01-27'::DATE),
-        (v_tenant_id, v_gewerblich7_id, v_p4_holzbaumontage, '2026-01-28'::DATE),
-        (v_tenant_id, v_gewerblich7_id, v_p4_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_gewerblich7_id, v_p4_holzbaumontage, '2026-01-30'::DATE),
-        (v_tenant_id, v_gewerblich7_id, v_p4_holzbaumontage, '2026-01-31'::DATE);
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase3, '2026-01-31'::DATE);
 
     -- === Ressourcen-Zuweisungen ===
 
     -- Sprinter 1: Projekt 1 Holzbaumontage
     INSERT INTO allocations (tenant_id, resource_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_resource1_id, v_p1_holzbaumontage, '2026-01-27'::DATE),
-        (v_tenant_id, v_resource1_id, v_p1_holzbaumontage, '2026-01-28'::DATE),
-        (v_tenant_id, v_resource1_id, v_p1_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_resource1_id, v_p1_holzbaumontage, '2026-01-30'::DATE),
-        (v_tenant_id, v_resource1_id, v_p1_holzbaumontage, '2026-01-31'::DATE);
+        (v_tenant_id, v_resource1_id, v_p1_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_resource1_id, v_p1_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_resource1_id, v_p1_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_resource1_id, v_p1_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_resource1_id, v_p1_phase3, '2026-01-31'::DATE);
 
     -- Sprinter 2: Projekt 4 Holzbaumontage
     INSERT INTO allocations (tenant_id, resource_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_resource2_id, v_p4_holzbaumontage, '2026-01-27'::DATE),
-        (v_tenant_id, v_resource2_id, v_p4_holzbaumontage, '2026-01-28'::DATE),
-        (v_tenant_id, v_resource2_id, v_p4_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_resource2_id, v_p4_holzbaumontage, '2026-01-30'::DATE),
-        (v_tenant_id, v_resource2_id, v_p4_holzbaumontage, '2026-01-31'::DATE);
+        (v_tenant_id, v_resource2_id, v_p4_phase3, '2026-01-27'::DATE),
+        (v_tenant_id, v_resource2_id, v_p4_phase3, '2026-01-28'::DATE),
+        (v_tenant_id, v_resource2_id, v_p4_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_resource2_id, v_p4_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_resource2_id, v_p4_phase3, '2026-01-31'::DATE);
 
     -- Autokran: Projekt 1 Holzbaumontage Mi-Fr
     INSERT INTO allocations (tenant_id, resource_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_resource3_id, v_p1_holzbaumontage, '2026-01-29'::DATE),
-        (v_tenant_id, v_resource3_id, v_p1_holzbaumontage, '2026-01-30'::DATE),
-        (v_tenant_id, v_resource3_id, v_p1_holzbaumontage, '2026-01-31'::DATE);
+        (v_tenant_id, v_resource3_id, v_p1_phase3, '2026-01-29'::DATE),
+        (v_tenant_id, v_resource3_id, v_p1_phase3, '2026-01-30'::DATE),
+        (v_tenant_id, v_resource3_id, v_p1_phase3, '2026-01-31'::DATE);
 
     -- ===============================================================
     -- ALLOCATIONS - Kommende Woche (KW 06: 02.02. - 06.02.2026)
@@ -492,30 +480,30 @@ BEGIN
     -- Projekt 1: Dachdeckerarbeiten starten (03.02.)
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich1_id, v_p1_dachdeckerarbeiten, '2026-02-03'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_dachdeckerarbeiten, '2026-02-04'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_dachdeckerarbeiten, '2026-02-05'::DATE),
-        (v_tenant_id, v_gewerblich1_id, v_p1_dachdeckerarbeiten, '2026-02-06'::DATE);
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase4, '2026-02-03'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase4, '2026-02-04'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase4, '2026-02-05'::DATE),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase4, '2026-02-06'::DATE);
 
     -- Projekt 2: Holzbaumontage (02.02. - 06.02.)
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich4_id, v_p2_holzbaumontage, '2026-02-02'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p2_holzbaumontage, '2026-02-03'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p2_holzbaumontage, '2026-02-04'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p2_holzbaumontage, '2026-02-05'::DATE),
-        (v_tenant_id, v_gewerblich4_id, v_p2_holzbaumontage, '2026-02-06'::DATE);
+        (v_tenant_id, v_gewerblich4_id, v_p2_phase3, '2026-02-02'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p2_phase3, '2026-02-03'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p2_phase3, '2026-02-04'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p2_phase3, '2026-02-05'::DATE),
+        (v_tenant_id, v_gewerblich4_id, v_p2_phase3, '2026-02-06'::DATE);
 
     INSERT INTO allocations (tenant_id, user_id, project_phase_id, date)
     VALUES
-        (v_tenant_id, v_gewerblich6_id, v_p2_holzbaumontage, '2026-02-02'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p2_holzbaumontage, '2026-02-03'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p2_holzbaumontage, '2026-02-04'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p2_holzbaumontage, '2026-02-05'::DATE),
-        (v_tenant_id, v_gewerblich6_id, v_p2_holzbaumontage, '2026-02-06'::DATE);
+        (v_tenant_id, v_gewerblich6_id, v_p2_phase3, '2026-02-02'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p2_phase3, '2026-02-03'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p2_phase3, '2026-02-04'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p2_phase3, '2026-02-05'::DATE),
+        (v_tenant_id, v_gewerblich6_id, v_p2_phase3, '2026-02-06'::DATE);
 
     -- ===============================================================
-    -- ABSENCES (Dezember 2025 - April 2026)
+    -- ABSENCES (Dezember 2025 - März 2026)
     -- ===============================================================
 
     -- Tom Schneider: Urlaub 27.01. - 31.01.2026 (aktuelle Woche)
@@ -565,80 +553,85 @@ BEGIN
     -- TIME ENTRIES (IST-Stunden vergangene Wochen)
     -- ===============================================================
 
-    -- Dezember 2025: Abbund und Zuschnitt
+    -- Dezember 2025: Abbund Projekt 1
     INSERT INTO time_entries (tenant_id, user_id, project_phase_id, date, hours)
     VALUES
         -- Abbund 15.-20.12.
-        (v_tenant_id, v_gewerblich1_id, v_p1_abbund, '2025-12-15'::DATE, 8),
-        (v_tenant_id, v_gewerblich1_id, v_p1_abbund, '2025-12-16'::DATE, 8),
-        (v_tenant_id, v_gewerblich1_id, v_p1_abbund, '2025-12-17'::DATE, 7.5),
-        (v_tenant_id, v_gewerblich1_id, v_p1_abbund, '2025-12-18'::DATE, 8),
-        (v_tenant_id, v_gewerblich1_id, v_p1_abbund, '2025-12-19'::DATE, 8),
-        -- Zuschnitt 16.-19.12.
-        (v_tenant_id, v_gewerblich2_id, v_p1_zuschnitt, '2025-12-16'::DATE, 6.4),
-        (v_tenant_id, v_gewerblich2_id, v_p1_zuschnitt, '2025-12-17'::DATE, 6.4),
-        (v_tenant_id, v_gewerblich2_id, v_p1_zuschnitt, '2025-12-18'::DATE, 6.4),
-        (v_tenant_id, v_gewerblich2_id, v_p1_zuschnitt, '2025-12-19'::DATE, 6.4);
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase1, '2025-12-15'::DATE, 8),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase1, '2025-12-16'::DATE, 8),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase1, '2025-12-17'::DATE, 7.5),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase1, '2025-12-18'::DATE, 8),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase1, '2025-12-19'::DATE, 8);
 
-    -- Januar 2026: Elementfertigung
+    -- Dezember 2025: Bestandsaufnahme Projekt 4
+    INSERT INTO time_entries (tenant_id, user_id, project_phase_id, date, hours)
+    VALUES
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase1, '2025-12-08'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase1, '2025-12-09'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase1, '2025-12-10'::DATE, 8);
+
+    -- Januar 2026: Elementfertigung Projekt 1
     INSERT INTO time_entries (tenant_id, user_id, project_phase_id, date, hours)
     VALUES
         -- Elementfertigung KW 02 (06.-10.01.)
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-06'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-07'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-08'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-09'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-10'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-06'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-07'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-08'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-09'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-10'::DATE, 8),
         -- Elementfertigung KW 03 (13.-17.01.)
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-13'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-14'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-15'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-16'::DATE, 8),
-        (v_tenant_id, v_gewerblich4_id, v_p1_elementfertigung, '2026-01-17'::DATE, 8);
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-13'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-14'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-15'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-16'::DATE, 8),
+        (v_tenant_id, v_gewerblich4_id, v_p1_phase2, '2026-01-17'::DATE, 8);
 
-    -- Januar 2026: Holzbaumontage (erste Woche 20.-24.01.)
+    -- Januar 2026: Holzbaumontage Projekt 1 (erste Woche 20.-24.01.)
     INSERT INTO time_entries (tenant_id, user_id, project_phase_id, date, hours)
     VALUES
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-20'::DATE, 8),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-21'::DATE, 9),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-22'::DATE, 8.5),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-23'::DATE, 8),
-        (v_tenant_id, v_gewerblich1_id, v_p1_holzbaumontage, '2026-01-24'::DATE, 8),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-20'::DATE, 8),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-21'::DATE, 8),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-22'::DATE, 8),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-23'::DATE, 8),
-        (v_tenant_id, v_gewerblich6_id, v_p1_holzbaumontage, '2026-01-24'::DATE, 8);
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-20'::DATE, 8),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-21'::DATE, 9),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-22'::DATE, 8.5),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-23'::DATE, 8),
+        (v_tenant_id, v_gewerblich1_id, v_p1_phase3, '2026-01-24'::DATE, 8),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-20'::DATE, 8),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-21'::DATE, 8),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-22'::DATE, 8),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-23'::DATE, 8),
+        (v_tenant_id, v_gewerblich6_id, v_p1_phase3, '2026-01-24'::DATE, 8);
 
-    -- Projekt 4: Abbund und Elementfertigung
+    -- Projekt 4: Elementfertigung
     INSERT INTO time_entries (tenant_id, user_id, project_phase_id, date, hours)
     VALUES
-        -- Abbund P4 (06.-10.01.)
-        (v_tenant_id, v_gewerblich7_id, v_p4_abbund, '2026-01-06'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_abbund, '2026-01-07'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_abbund, '2026-01-08'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_abbund, '2026-01-09'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_abbund, '2026-01-10'::DATE, 8),
-        -- Elementfertigung P4 (13.-24.01.)
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-13'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-14'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-15'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-16'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-17'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-20'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-21'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-22'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-23'::DATE, 8),
-        (v_tenant_id, v_gewerblich7_id, v_p4_elementfertigung, '2026-01-24'::DATE, 8);
+        -- Elementfertigung P4 (06.-17.01.)
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-06'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-07'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-08'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-09'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-10'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-13'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-14'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-15'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-16'::DATE, 8),
+        (v_tenant_id, v_gewerblich7_id, v_p4_phase2, '2026-01-17'::DATE, 8);
+
+    -- Projekt 2: Abbund (05.-10.01.)
+    INSERT INTO time_entries (tenant_id, user_id, project_phase_id, date, hours)
+    VALUES
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase1, '2026-01-06'::DATE, 6.4),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase1, '2026-01-07'::DATE, 6.4),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase1, '2026-01-08'::DATE, 6.4),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase1, '2026-01-09'::DATE, 6.4),
+        (v_tenant_id, v_gewerblich2_id, v_p2_phase1, '2026-01-10'::DATE, 6.4);
 
     RAISE NOTICE 'Seed Data erfolgreich erstellt!';
     RAISE NOTICE 'Tenant ID: %', v_tenant_id;
     RAISE NOTICE 'Admin User ID: %', v_admin_id;
-    RAISE NOTICE '=== PROJEKTE ===';
-    RAISE NOTICE 'Projekt 1 (Neubau Fam. Weber): % - 13 Phasen, 15.12.2025-20.03.2026', v_project1_id;
-    RAISE NOTICE 'Projekt 2 (Garage Schmitt): % - 4 Phasen, 19.01.-13.02.2026', v_project2_id;
-    RAISE NOTICE 'Projekt 3 (Modulhaus Meier): % - 3 Phasen, 16.02.-15.04.2026', v_project3_id;
-    RAISE NOTICE 'Projekt 4 (Sanierung Schmidt): % - 5 Phasen, 06.01.-27.02.2026', v_project4_id;
-    RAISE NOTICE 'Projekt 5 (Kita Friedberg): % - 5 Phasen, 02.03.-30.04.2026', v_project5_id;
+    RAISE NOTICE '=== PROJEKTE (je 5 Phasen) ===';
+    RAISE NOTICE 'Projekt 1 (Neubau Fam. Weber): % - 15.12.2025 bis 28.02.2026', v_project1_id;
+    RAISE NOTICE 'Projekt 2 (Garage Schmitt): % - 05.01.2026 bis 20.02.2026', v_project2_id;
+    RAISE NOTICE 'Projekt 3 (Modulhaus Meier): % - 02.02.2026 bis 27.03.2026', v_project3_id;
+    RAISE NOTICE 'Projekt 4 (Sanierung Schmidt): % - 08.12.2025 bis 27.02.2026', v_project4_id;
+    RAISE NOTICE 'Projekt 5 (Kita Friedberg): % - 16.02.2026 bis 31.03.2026', v_project5_id;
 
 END $$;

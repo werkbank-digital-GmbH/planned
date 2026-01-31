@@ -322,4 +322,93 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
       throw new Error(`Fehler beim Löschen der Phasen: ${error.message}`);
     }
   }
+
+  async findByTenantAndDateRange(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      bereich: string;
+      startDate?: Date;
+      endDate?: Date;
+      budgetHours?: number;
+      plannedHours?: number;
+      actualHours?: number;
+      project: {
+        id: string;
+        name: string;
+        projectNumber?: string;
+        status?: string;
+        address?: string;
+      };
+    }>
+  > {
+    const startISO = startDate.toISOString().split('T')[0];
+    const endISO = endDate.toISOString().split('T')[0];
+
+    // Phasen laden, die im Zeitraum aktiv sind:
+    // - startDate <= endOfRange AND endDate >= startOfRange (Überlappung)
+    // - ODER keine Datumsangaben (werden immer gezeigt)
+    // - Nur aktive Projekte (nicht completed/cancelled)
+    const { data, error } = await this.supabase
+      .from('project_phases')
+      .select(`
+        id,
+        name,
+        bereich,
+        start_date,
+        end_date,
+        budget_hours,
+        planned_hours,
+        actual_hours,
+        projects!inner(
+          id,
+          name,
+          project_number,
+          status,
+          address,
+          tenant_id
+        )
+      `)
+      .eq('projects.tenant_id', tenantId)
+      .eq('status', 'active')
+      .in('projects.status', ['planning', 'active'])
+      .or(`start_date.is.null,start_date.lte.${endISO}`)
+      .or(`end_date.is.null,end_date.gte.${startISO}`);
+
+    if (error || !data) {
+      console.error('[SupabaseProjectPhaseRepository] Error:', error);
+      return [];
+    }
+
+    return data.map((row) => {
+      const project = row.projects as unknown as {
+        id: string;
+        name: string;
+        project_number: string | null;
+        status: string | null;
+        address: string | null;
+      };
+      return {
+        id: row.id,
+        name: row.name,
+        bereich: row.bereich,
+        startDate: row.start_date ? new Date(row.start_date) : undefined,
+        endDate: row.end_date ? new Date(row.end_date) : undefined,
+        budgetHours: row.budget_hours ?? undefined,
+        plannedHours: row.planned_hours ?? undefined,
+        actualHours: row.actual_hours ?? undefined,
+        project: {
+          id: project.id,
+          name: project.name,
+          projectNumber: project.project_number ?? undefined,
+          status: project.status ?? undefined,
+          address: project.address ?? undefined,
+        },
+      };
+    });
+  }
 }

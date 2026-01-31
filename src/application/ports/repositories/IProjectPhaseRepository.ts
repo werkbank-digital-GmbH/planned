@@ -101,4 +101,34 @@ export interface IProjectPhaseRepository {
    * Bulk-Delete für Cleanup (Phasen > 90 Tage gelöscht).
    */
   deleteMany(ids: string[]): Promise<void>;
+
+  /**
+   * Findet alle Phasen eines Tenants, die in einem Zeitraum aktiv sind.
+   * Eine Phase ist aktiv wenn:
+   * - startDate <= endOfRange UND endDate >= startOfRange
+   * - Oder keine Datumsangaben gesetzt sind
+   */
+  findByTenantAndDateRange(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      bereich: string;
+      startDate?: Date;
+      endDate?: Date;
+      budgetHours?: number;
+      plannedHours?: number;
+      actualHours?: number;
+      project: {
+        id: string;
+        name: string;
+        projectNumber?: string;
+        status?: string;
+        address?: string;
+      };
+    }>
+  >;
 }
