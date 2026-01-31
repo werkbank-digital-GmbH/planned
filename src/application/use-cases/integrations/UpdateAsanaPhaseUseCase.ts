@@ -92,17 +92,11 @@ export class UpdateAsanaPhaseUseCase {
       const phase = await this.phaseRepository.findById(phaseId);
 
       if (!phase) {
-        return Result.failure({
-          code: 'PHASE_NOT_FOUND',
-          message: 'Phase nicht gefunden',
-        });
+        return Result.fail('PHASE_NOT_FOUND', 'Phase nicht gefunden');
       }
 
       if (phase.tenantId !== tenantId) {
-        return Result.failure({
-          code: 'UNAUTHORIZED',
-          message: 'Keine Berechtigung für diese Phase',
-        });
+        return Result.fail('UNAUTHORIZED', 'Keine Berechtigung für diese Phase');
       }
 
       // 2. Lokale DB aktualisieren
@@ -114,14 +108,14 @@ export class UpdateAsanaPhaseUseCase {
       // 3. Asana-Sync (wenn verbunden)
       if (!phase.asanaGid) {
         // Keine Asana-Verbindung für diese Phase
-        return Result.success({ synced: false });
+        return Result.ok({ synced: false });
       }
 
       const credentials = await this.credentialsRepository.findByTenantId(tenantId);
 
       if (!credentials?.asanaAccessToken) {
         // Keine Asana-Credentials vorhanden
-        return Result.success({ synced: false, asanaGid: phase.asanaGid });
+        return Result.ok({ synced: false, asanaGid: phase.asanaGid });
       }
 
       // Access Token prüfen/erneuern
@@ -130,7 +124,7 @@ export class UpdateAsanaPhaseUseCase {
       if (credentials.asanaTokenExpiresAt && credentials.asanaTokenExpiresAt < new Date()) {
         // Token abgelaufen, erneuern
         if (!credentials.asanaRefreshToken) {
-          return Result.success({ synced: false, asanaGid: phase.asanaGid });
+          return Result.ok({ synced: false, asanaGid: phase.asanaGid });
         }
 
         try {
@@ -139,7 +133,7 @@ export class UpdateAsanaPhaseUseCase {
           // TODO: Neue Tokens in DB speichern
         } catch {
           // Token-Erneuerung fehlgeschlagen
-          return Result.success({ synced: false, asanaGid: phase.asanaGid });
+          return Result.ok({ synced: false, asanaGid: phase.asanaGid });
         }
       }
 
@@ -171,17 +165,17 @@ export class UpdateAsanaPhaseUseCase {
       // Hinweis: Asana Sections haben keine nativen Start/End-Daten
       // Diese werden nur lokal in planned. gespeichert
 
-      return Result.success({
+      return Result.ok({
         synced: true,
         asanaGid: phase.asanaGid,
       });
     } catch (error) {
       console.error('[UpdateAsanaPhaseUseCase] Error:', error);
 
-      return Result.failure({
-        code: 'SYNC_ERROR',
-        message: error instanceof Error ? error.message : 'Sync fehlgeschlagen',
-      });
+      return Result.fail(
+        'SYNC_ERROR',
+        error instanceof Error ? error.message : 'Sync fehlgeschlagen'
+      );
     }
   }
 }
