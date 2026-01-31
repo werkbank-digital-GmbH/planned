@@ -30,7 +30,7 @@ export default async function RessourcenPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Ressourcen-Verwaltung</h1>
         <p className="text-gray-500">

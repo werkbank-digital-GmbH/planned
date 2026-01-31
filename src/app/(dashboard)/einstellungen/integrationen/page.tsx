@@ -43,7 +43,7 @@ export default async function IntegrationenPage() {
   const timetacActive = !!credentials?.timetac_api_token;
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Integrationen</h1>
         <p className="text-gray-500">
