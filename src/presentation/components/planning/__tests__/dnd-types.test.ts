@@ -8,6 +8,7 @@ import {
   isAllocationSpanDragData,
   isPoolItemDragData,
   isProjectPhaseDragData,
+  isResizeAllocationDragData,
   parseDropZoneId,
 } from '../types/dnd';
 
@@ -236,6 +237,76 @@ describe('Type Guards', () => {
         projectPhaseId: 'phase-1',
       };
       expect(isAllocationSpanDragData(data)).toBe(false);
+    });
+  });
+
+  describe('isResizeAllocationDragData', () => {
+    it('should return true for resize-allocation type', () => {
+      const data: DragData = {
+        type: 'resize-allocation',
+        allocationId: 'alloc-1',
+        allocationIds: ['alloc-1'],
+        phaseId: 'phase-1',
+        projectId: 'project-1',
+        startDayIndex: 0,
+        currentSpanDays: 1,
+        displayName: 'M. Müller',
+      };
+      expect(isResizeAllocationDragData(data)).toBe(true);
+    });
+
+    it('should return true for resize with multiple allocations', () => {
+      const data: DragData = {
+        type: 'resize-allocation',
+        allocationId: 'alloc-1',
+        allocationIds: ['alloc-1', 'alloc-2', 'alloc-3'],
+        phaseId: 'phase-1',
+        projectId: 'project-1',
+        startDayIndex: 0,
+        currentSpanDays: 3,
+        displayName: 'M. Müller',
+        userId: 'user-1',
+      };
+      expect(isResizeAllocationDragData(data)).toBe(true);
+    });
+
+    it('should return true for resize with phase constraints', () => {
+      const data: DragData = {
+        type: 'resize-allocation',
+        allocationId: 'alloc-1',
+        allocationIds: ['alloc-1'],
+        phaseId: 'phase-1',
+        projectId: 'project-1',
+        startDayIndex: 2,
+        currentSpanDays: 1,
+        displayName: 'Kran 1',
+        resourceId: 'res-1',
+        phaseStartDate: '2025-01-27',
+        phaseEndDate: '2025-02-28',
+      };
+      expect(isResizeAllocationDragData(data)).toBe(true);
+    });
+
+    it('should return false for allocation type', () => {
+      const data: DragData = {
+        type: 'allocation',
+        allocationId: 'alloc-1',
+        sourceDate: new Date(),
+        projectPhaseId: 'phase-1',
+      };
+      expect(isResizeAllocationDragData(data)).toBe(false);
+    });
+
+    it('should return false for allocation-span type', () => {
+      const data: DragData = {
+        type: 'allocation-span',
+        allocationIds: ['alloc-1', 'alloc-2'],
+        phaseId: 'phase-1',
+        displayName: 'M. Müller',
+        spanDays: 2,
+        startDayIndex: 0,
+      };
+      expect(isResizeAllocationDragData(data)).toBe(false);
     });
   });
 });

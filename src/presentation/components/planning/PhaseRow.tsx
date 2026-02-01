@@ -62,19 +62,28 @@ interface DayCellProps {
   phaseId: string;
   projectId: string;
   date: Date;
+  /** Tag-Index für Resize (0-4 für Mo-Fr) */
+  dayIndex: number;
   allocations: PhaseRowData['dayAllocations'][string];
   isActiveThisWeek: boolean;
   /** IDs der Allocations die Teil eines Multi-Tag-Spans sind (werden nicht angezeigt) */
   spannedAllocationIds: Set<string>;
+  /** Phase Start-Datum für Resize-Constraint */
+  phaseStartDate?: string;
+  /** Phase End-Datum für Resize-Constraint */
+  phaseEndDate?: string;
 }
 
 function DayCell({
   phaseId,
   projectId,
   date,
+  dayIndex,
   allocations,
   isActiveThisWeek,
   spannedAllocationIds,
+  phaseStartDate,
+  phaseEndDate,
 }: DayCellProps) {
   const dateKey = formatDateISO(date);
   const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
@@ -106,7 +115,13 @@ function DayCell({
       )}
     >
       {singleAllocations.map((allocation) => (
-        <AssignmentCard key={allocation.id} allocation={allocation} />
+        <AssignmentCard
+          key={allocation.id}
+          allocation={allocation}
+          dayIndex={dayIndex}
+          phaseStartDate={phaseStartDate}
+          phaseEndDate={phaseEndDate}
+        />
       ))}
     </div>
   );
@@ -182,7 +197,7 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
       <div className="col-span-5 relative">
         {/* Grid für die Tageszellen */}
         <div className="grid grid-cols-5">
-          {weekDates.map((date) => {
+          {weekDates.map((date, dayIndex) => {
             const dateKey = formatDateISO(date);
             const allocations = phase.dayAllocations[dateKey] ?? [];
 
@@ -192,9 +207,12 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
                 phaseId={phase.phase.id}
                 projectId={projectId}
                 date={date}
+                dayIndex={dayIndex}
                 allocations={allocations}
                 isActiveThisWeek={isActiveThisWeek}
                 spannedAllocationIds={spannedAllocationIds}
+                phaseStartDate={phase.phase.startDate?.toISOString()}
+                phaseEndDate={phase.phase.endDate?.toISOString()}
               />
             );
           })}
@@ -212,7 +230,11 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
                     gridColumn: `${span.startDayIndex + 1} / span ${span.spanDays}`,
                   }}
                 >
-                  <SpanningAssignmentCard span={span} />
+                  <SpanningAssignmentCard
+                    span={span}
+                    phaseStartDate={phase.phase.startDate?.toISOString()}
+                    phaseEndDate={phase.phase.endDate?.toISOString()}
+                  />
                 </div>
               ))}
             </div>

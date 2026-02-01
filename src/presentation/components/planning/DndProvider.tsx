@@ -29,6 +29,7 @@ import { AllocationCardOverlay } from './AllocationCardOverlay';
 import { AllocationSpanOverlay } from './AllocationSpanOverlay';
 import { PoolItemOverlay } from './PoolItemOverlay';
 import { ProjectPhaseOverlay } from './ProjectPhaseOverlay';
+import { ResizeAllocationOverlay } from './ResizeAllocationOverlay';
 import {
   type DragData,
   type DropZoneData,
@@ -36,6 +37,7 @@ import {
   isAllocationSpanDragData,
   isPoolItemDragData,
   isProjectPhaseDragData,
+  isResizeAllocationDragData,
   parseDropZoneId,
 } from './types/dnd';
 
@@ -64,7 +66,10 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
   const [activeData, setActiveData] = useState<DragData | null>(null);
   // overData wird für zukünftiges visuelles Feedback verwendet
   const [, setOverData] = useState<DropZoneData | null>(null);
-  const { refresh, getAllocationById, viewMode } = usePlanning();
+  const { refresh, getAllocationById, viewMode, weekStart } = usePlanning();
+
+  // Berechne weekDates aus weekStart
+  const weekDates = getWeekDates(weekStart);
   const { pushAction } = useUndo();
 
   // Sensor-Konfiguration
@@ -292,6 +297,105 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
             // Für Undo: Könnte als BATCH_MOVE implementiert werden
             // Aktuell nicht im Undo-System vorhanden
           }
+        } else if (isResizeAllocationDragData(dragData)) {
+          // Resize: Allocation-Dauer per Drag ändern
+          // Finde den Ziel-Tag-Index basierend auf dem Drop-Datum
+          const dropDayIndex = weekDates.findIndex(
+            (d: Date) => formatDateISO(d) === formatDateISO(dropZone.date)
+          );
+
+          if (dropDayIndex === -1) return;
+
+          // Berechne die neue Span-Länge
+          const newSpanDays = Math.max(1, dropDayIndex - dragData.startDayIndex + 1);
+
+          // Keine Änderung?
+          if (newSpanDays === dragData.currentSpanDays) return;
+
+          // Phasen-Grenzen prüfen
+          if (dragData.phaseStartDate || dragData.phaseEndDate) {
+            const dropDate = weekDates[dropDayIndex];
+            if (dragData.phaseStartDate && dropDate < new Date(dragData.phaseStartDate)) {
+              return;
+            }
+            if (dragData.phaseEndDate && dropDate > new Date(dragData.phaseEndDate)) {
+              return;
+            }
+          }
+
+          if (newSpanDays > dragData.currentSpanDays) {
+            // ERWEITERN: Neue Allocations erstellen
+            const newDates = weekDates
+              .slice(
+                dragData.startDayIndex + dragData.currentSpanDays,
+                dragData.startDayIndex + newSpanDays
+              )
+              .map((d: Date) => formatDateISO(d));
+
+            const results = await Promise.all(
+              newDates.map((date: string) =>
+                createAllocationAction({
+                  projectPhaseId: dragData.phaseId,
+                  date,
+                  userId: dragData.userId,
+                  resourceId: dragData.resourceId,
+                })
+              )
+            );
+
+            // Sammle erfolgreiche Allocations für Undo
+            const successfulAllocations = results
+              .filter((r) => r.success)
+              .map((r) => {
+                if (!r.success) return null;
+                return {
+                  id: r.data.allocation.id,
+                  tenantId: r.data.allocation.tenantId,
+                  userId: r.data.allocation.userId,
+                  resourceId: r.data.allocation.resourceId,
+                  projectPhaseId: r.data.allocation.projectPhaseId,
+                  date: r.data.allocation.date,
+                  plannedHours: r.data.allocation.plannedHours ?? 8,
+                  notes: r.data.allocation.notes,
+                };
+              })
+              .filter((a): a is NonNullable<typeof a> => a !== null);
+
+            if (successfulAllocations.length > 0) {
+              pushAction({
+                type: 'BATCH_CREATE',
+                allocations: successfulAllocations,
+              });
+            }
+          } else {
+            // VERKLEINERN: Überschüssige Allocations löschen
+            const toDelete = dragData.allocationIds.slice(newSpanDays);
+
+            // Sammle Original-Daten für Undo
+            const originalAllocations = toDelete
+              .map((id) => getAllocationById(id))
+              .filter((a): a is NonNullable<typeof a> => a !== undefined);
+
+            await Promise.all(
+              toDelete.map((id) => deleteAllocationAction({ allocationId: id }))
+            );
+
+            if (originalAllocations.length > 0) {
+              pushAction({
+                type: 'BATCH_DELETE',
+                allocations: originalAllocations.map((a) => ({
+                  id: a.id,
+                  tenantId: a.tenantId,
+                  userId: a.user?.id,
+                  resourceId: a.resource?.id,
+                  projectPhaseId: a.projectPhase.id,
+                  date: a.date.toISOString().split('T')[0],
+                  plannedHours: a.plannedHours ?? 8,
+                  notes: a.notes,
+                })),
+              });
+            }
+          }
         } else if (isPoolItemDragData(dragData)) {
           // Neues Allocation aus Pool erstellen (auf Phase-Zelle)
           if (dropZone.type !== 'phase' || !dropZone.phaseId) {
@@ -361,7 +465,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         console.error('DnD action failed:', error);
       }
     },
-    [refresh, getAllocationById, pushAction, viewMode]
+    [refresh, getAllocationById, pushAction, viewMode, weekDates]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -399,6 +503,13 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
           <AllocationSpanOverlay
             displayName={activeData.displayName}
             spanDays={activeData.spanDays}
+            isUser={!!activeData.userId}
+          />
+        )}
+        {activeData && isResizeAllocationDragData(activeData) && (
+          <ResizeAllocationOverlay
+            displayName={activeData.displayName}
+            currentSpanDays={activeData.currentSpanDays}
             isUser={!!activeData.userId}
           />
         )}

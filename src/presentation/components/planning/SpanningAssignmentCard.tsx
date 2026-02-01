@@ -12,6 +12,7 @@ import {
 
 import { cn } from '@/lib/utils';
 
+import type { ResizeAllocationDragData } from './types/dnd';
 import type { AllocationSpan } from './utils/allocation-grouping';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -20,6 +21,10 @@ import type { AllocationSpan } from './utils/allocation-grouping';
 
 interface SpanningAssignmentCardProps {
   span: AllocationSpan;
+  /** Phase Start-Datum für Resize-Constraint */
+  phaseStartDate?: string;
+  /** Phase End-Datum für Resize-Constraint */
+  phaseEndDate?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -52,9 +57,21 @@ function getSpanLabel(spanDays: number): string {
  * - Tages-Label (z.B. "Mo-Fr" oder "3 Tage")
  * - Gesamtstunden
  * - Draggable für Verschieben des gesamten Blocks
+ * - Resize-Handle am rechten Rand
  */
-export function SpanningAssignmentCard({ span }: SpanningAssignmentCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+export function SpanningAssignmentCard({
+  span,
+  phaseStartDate,
+  phaseEndDate,
+}: SpanningAssignmentCardProps) {
+  // Move-Draggable für die gesamte Card
+  const {
+    attributes: moveAttributes,
+    listeners: moveListeners,
+    setNodeRef: setMoveRef,
+    transform,
+    isDragging: isMoveDragging,
+  } = useDraggable({
     id: `allocation-span-${span.allocations[0].id}`,
     data: {
       type: 'allocation-span',
@@ -68,6 +85,32 @@ export function SpanningAssignmentCard({ span }: SpanningAssignmentCardProps) {
     },
   });
 
+  // Resize-Draggable für den Handle
+  const resizeData: ResizeAllocationDragData = {
+    type: 'resize-allocation',
+    allocationId: span.allocations[0].id,
+    allocationIds: span.allocations.map((a) => a.id),
+    userId: span.userId,
+    resourceId: span.resourceId,
+    phaseId: span.phaseId,
+    projectId: span.allocations[0].project.id,
+    startDayIndex: span.startDayIndex,
+    currentSpanDays: span.spanDays,
+    phaseStartDate,
+    phaseEndDate,
+    displayName: span.displayName,
+  };
+
+  const {
+    attributes: resizeAttributes,
+    listeners: resizeListeners,
+    setNodeRef: setResizeRef,
+    isDragging: isResizeDragging,
+  } = useDraggable({
+    id: `resize-span-${span.allocations[0].id}`,
+    data: resizeData,
+  });
+
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -76,16 +119,14 @@ export function SpanningAssignmentCard({ span }: SpanningAssignmentCardProps) {
 
   const isUser = !!span.userId;
   const spanLabel = getSpanLabel(span.spanDays);
+  const isDragging = isMoveDragging || isResizeDragging;
 
   const cardContent = (
     <div
-      ref={setNodeRef}
+      ref={setMoveRef}
       style={style}
-      {...listeners}
-      {...attributes}
       className={cn(
-        'flex items-center gap-1.5 px-2 py-1 rounded text-xs',
-        'cursor-grab active:cursor-grabbing',
+        'group relative flex items-center gap-1.5 px-2 py-1 rounded text-xs',
         'transition-colors select-none',
         'border shadow-sm',
         isUser
@@ -94,18 +135,41 @@ export function SpanningAssignmentCard({ span }: SpanningAssignmentCardProps) {
         isDragging && 'opacity-50 ring-2 ring-blue-500 shadow-lg'
       )}
     >
-      {isUser ? (
-        <User className="h-3.5 w-3.5 flex-shrink-0" />
-      ) : (
-        <Truck className="h-3.5 w-3.5 flex-shrink-0" />
-      )}
-      <span className="font-medium truncate">{span.displayName}</span>
-      {spanLabel && (
-        <span className="text-[10px] opacity-70 flex items-center gap-0.5">
-          <Calendar className="h-3 w-3" />
-          {spanLabel}
-        </span>
-      )}
+      {/* Move-Bereich (gesamte Card außer Handle) */}
+      <div
+        {...moveListeners}
+        {...moveAttributes}
+        className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing flex-1 min-w-0"
+      >
+        {isUser ? (
+          <User className="h-3.5 w-3.5 flex-shrink-0" />
+        ) : (
+          <Truck className="h-3.5 w-3.5 flex-shrink-0" />
+        )}
+        <span className="font-medium truncate">{span.displayName}</span>
+        {spanLabel && (
+          <span className="text-[10px] opacity-70 flex items-center gap-0.5">
+            <Calendar className="h-3 w-3" />
+            {spanLabel}
+          </span>
+        )}
+      </div>
+
+      {/* Resize-Handle am rechten Rand */}
+      <div
+        ref={setResizeRef}
+        {...resizeListeners}
+        {...resizeAttributes}
+        className={cn(
+          'absolute right-0 top-0 bottom-0 w-2',
+          'cursor-col-resize',
+          'opacity-0 group-hover:opacity-100 transition-opacity',
+          'bg-gradient-to-r from-transparent',
+          isUser ? 'to-blue-300' : 'to-orange-300',
+          'rounded-r'
+        )}
+        title="Ziehen um Dauer zu ändern"
+      />
     </div>
   );
 

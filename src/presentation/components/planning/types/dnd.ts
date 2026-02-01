@@ -68,9 +68,44 @@ export interface AllocationSpanDragData {
 }
 
 /**
+ * Drag-Daten für Resize einer Allocation (horizontal erweitern/verkleinern).
+ * Wird verwendet um die Dauer einer Allocation per Drag zu ändern.
+ */
+export interface ResizeAllocationDragData {
+  type: 'resize-allocation';
+  /** ID der Start-Allocation */
+  allocationId: string;
+  /** Alle IDs bei Span (für Verkleinern) */
+  allocationIds: string[];
+  /** User-ID wenn User-Allocation */
+  userId?: string;
+  /** Resource-ID wenn Resource-Allocation */
+  resourceId?: string;
+  /** Phase-ID */
+  phaseId: string;
+  /** Project-ID */
+  projectId: string;
+  /** Aktueller Start-Tag (0-4 für Mo-Fr) */
+  startDayIndex: number;
+  /** Aktuelle Span-Länge */
+  currentSpanDays: number;
+  /** Phase Start-Datum für Constraint (ISO String) */
+  phaseStartDate?: string;
+  /** Phase End-Datum für Constraint (ISO String) */
+  phaseEndDate?: string;
+  /** Display-Name für Overlay */
+  displayName: string;
+}
+
+/**
  * Union Type für alle Drag-Daten.
  */
-export type DragData = AllocationDragData | ProjectPhaseDragData | PoolItemDragData | AllocationSpanDragData;
+export type DragData =
+  | AllocationDragData
+  | ProjectPhaseDragData
+  | PoolItemDragData
+  | AllocationSpanDragData
+  | ResizeAllocationDragData;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DROP ZONE TYPES
@@ -214,4 +249,13 @@ export function isAllocationSpanDragData(
   data: DragData
 ): data is AllocationSpanDragData {
   return data.type === 'allocation-span';
+}
+
+/**
+ * Type Guard für ResizeAllocationDragData.
+ */
+export function isResizeAllocationDragData(
+  data: DragData
+): data is ResizeAllocationDragData {
+  return data.type === 'resize-allocation';
 }
