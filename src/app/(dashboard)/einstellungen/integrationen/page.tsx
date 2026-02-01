@@ -1,14 +1,20 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
+import { AbsenceSyncCard } from './AbsenceSyncCard';
+import { ProjectSyncCard } from './ProjectSyncCard';
+import { UserSyncCard } from './UserSyncCard';
+import { AsanaConnectionCard } from './asana/AsanaConnectionCard';
 
 /**
- * Integrationen Übersicht Seite (Admin only)
+ * Integrationen Seite (Admin only)
  *
- * Zeigt Links zu den verschiedenen Integration-Konfigurationen.
+ * Zeigt alle Integrations-Funktionen auf einer Seite:
+ * - Asana Verbindung (oben, immer sichtbar)
+ * - Projekte & Phasen
+ * - Mitarbeiter
+ * - Abwesenheiten
  */
 export default async function IntegrationenPage() {
   const supabase = await createServerSupabaseClient();
@@ -32,51 +38,41 @@ export default async function IntegrationenPage() {
     redirect('/einstellungen/profil');
   }
 
-  // Integration Credentials Status laden
+  // Integration Credentials laden
   const { data: credentials } = await supabase
     .from('integration_credentials')
-    .select('asana_access_token')
+    .select('asana_access_token, asana_workspace_id')
     .eq('tenant_id', userData.tenant_id)
     .single();
 
-  const asanaActive = !!credentials?.asana_access_token;
+  const isConnected = !!credentials?.asana_access_token;
+  const workspaceId = credentials?.asana_workspace_id;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Integrationen</h1>
         <p className="text-gray-500">
-          Verbinden Sie externe Dienste mit Planned
+          Verbinden Sie externe Dienste mit planned.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Link href="/einstellungen/integrationen/asana">
-          <Card className="cursor-pointer transition-shadow hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">Asana</CardTitle>
-              <StatusBadge active={asanaActive} />
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
-                Projekte und Phasen aus Asana synchronisieren
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
-    </div>
-  );
-}
+      {/* 1. Asana Verbindung (immer sichtbar) */}
+      <AsanaConnectionCard isConnected={isConnected} workspaceId={workspaceId ?? undefined} />
 
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span
-      className={`rounded-full px-2 py-1 text-xs font-medium ${
-        active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-      }`}
-    >
-      {active ? 'Aktiv' : 'Nicht verbunden'}
-    </span>
+      {/* 2. Funktions-Karten (nur wenn verbunden) */}
+      {isConnected && (
+        <>
+          {/* Projekte & Phasen */}
+          <ProjectSyncCard />
+
+          {/* Mitarbeiter */}
+          <UserSyncCard />
+
+          {/* Abwesenheiten */}
+          <AbsenceSyncCard />
+        </>
+      )}
+    </div>
   );
 }
