@@ -109,6 +109,11 @@ function DayCell({ phaseId, projectId, date, allocations, isActiveThisWeek }: Da
 export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
   const { isActiveThisWeek } = phase;
 
+  // Berechne die Summe der geplanten Stunden für diese Woche aus den Allocations
+  const weeklyPlannedHours = Object.values(phase.dayAllocations)
+    .flat()
+    .reduce((sum, allocation) => sum + (allocation.plannedHours ?? 0), 0);
+
   return (
     <div
       className={cn(
@@ -133,10 +138,10 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
             </Badge>
           </div>
 
-          {/* Stunden-Info (optional) */}
+          {/* Stunden-Info: Geplant diese Woche / Budget */}
           {phase.phase.budgetHours !== undefined && (
             <div className="text-xs text-gray-500 mt-0.5">
-              {phase.phase.actualHours ?? 0}h / {phase.phase.budgetHours}h
+              {weeklyPlannedHours}h geplant / {phase.phase.budgetHours}h Budget
             </div>
           )}
         </div>

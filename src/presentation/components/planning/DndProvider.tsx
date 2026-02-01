@@ -112,7 +112,9 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
       const dragData = active.data.current as DragData;
       const dropZone = parseDropZoneId(over.id as string);
 
-      if (!dropZone) return;
+      if (!dropZone) {
+        return;
+      }
 
       try {
         if (isAllocationDragData(dragData)) {
@@ -176,34 +178,57 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         } else if (isPoolItemDragData(dragData)) {
           // Neues Allocation aus Pool erstellen (auf Phase-Zelle)
           if (dropZone.type !== 'phase' || !dropZone.phaseId) {
-            console.error('Pool item kann nur auf Phase-Zellen gezogen werden');
             return;
           }
 
-          const result = await createAllocationAction({
-            projectPhaseId: dropZone.phaseId,
-            date: formatDateISO(dropZone.date),
-            userId: dragData.itemType === 'user' ? dragData.itemId : undefined,
-            resourceId: dragData.itemType === 'resource' ? dragData.itemId : undefined,
-          });
+          // Bestimme die Daten für die Allocations:
+          // - Wochenansicht (1 Tag im dates Array): Nur diesen Tag
+          // - Monatsansicht (5 Tage im dates Array): Alle 5 Werktage der Woche
+          const datesToCreate =
+            dragData.dates.length > 1
+              ? dragData.dates // Monatsansicht: Alle Werktage der Woche
+              : [formatDateISO(dropZone.date)]; // Wochenansicht: Nur der Drop-Tag
 
-          if (result.success) {
-            // Push Undo Action
-            pushAction({
-              type: 'CREATE_ALLOCATION',
-              allocation: {
-                id: result.data.allocation.id,
-                tenantId: result.data.allocation.tenantId,
-                userId: result.data.allocation.userId,
-                resourceId: result.data.allocation.resourceId,
-                projectPhaseId: result.data.allocation.projectPhaseId,
-                date: result.data.allocation.date,
-                plannedHours: result.data.allocation.plannedHours ?? 8,
-                notes: result.data.allocation.notes,
-              },
-            });
-          } else {
-            console.error('Create from pool failed:', result.error.message);
+          // Erstelle Allocations für alle Daten parallel
+          const results = await Promise.all(
+            datesToCreate.map((date) =>
+              createAllocationAction({
+                projectPhaseId: dropZone.phaseId!,
+                date,
+                userId: dragData.itemType === 'user' ? dragData.itemId : undefined,
+                resourceId:
+                  dragData.itemType === 'resource' ? dragData.itemId : undefined,
+              })
+            )
+          );
+
+          // Sammle erfolgreiche Allocations für Undo
+          const successfulAllocations = results
+            .filter((r) => r.success)
+            .map((r) => ({
+              id: r.data.allocation.id,
+              tenantId: r.data.allocation.tenantId,
+              userId: r.data.allocation.userId,
+              resourceId: r.data.allocation.resourceId,
+              projectPhaseId: r.data.allocation.projectPhaseId,
+              date: r.data.allocation.date,
+              plannedHours: r.data.allocation.plannedHours ?? 8,
+              notes: r.data.allocation.notes,
+            }));
+
+          if (successfulAllocations.length > 0) {
+            // Batch-Undo wenn mehrere Allocations erstellt wurden
+            if (successfulAllocations.length > 1) {
+              pushAction({
+                type: 'BATCH_CREATE',
+                allocations: successfulAllocations,
+              });
+            } else {
+              pushAction({
+                type: 'CREATE_ALLOCATION',
+                allocation: successfulAllocations[0],
+              });
+            }
           }
         }
 

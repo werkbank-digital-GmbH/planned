@@ -187,7 +187,7 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
                           <PoolCard
                             key={`${item.type}-${item.id}-${dayIndex}`}
                             item={item}
-                            weekDates={weekDates}
+                            weekDates={[date]} // Nur dieser eine Tag (Wochenansicht = 1 Allocation)
                             compact
                             contextKey={`day-${dayIndex}`}
                           />
