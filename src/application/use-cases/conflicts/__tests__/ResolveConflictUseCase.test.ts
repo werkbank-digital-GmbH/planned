@@ -101,7 +101,9 @@ describe('ResolveConflictUseCase', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data?.conflict.resolution).toBe('ignored');
+      if (result.success) {
+        expect(result.data.conflict.resolution).toBe('ignored');
+      }
       expect(mockAllocationRepository.delete).not.toHaveBeenCalled();
       expect(mockAllocationRepository.moveToDate).not.toHaveBeenCalled();
     });
@@ -125,7 +127,9 @@ describe('ResolveConflictUseCase', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data?.conflict.resolution).toBe('deleted');
+      if (result.success) {
+        expect(result.data.conflict.resolution).toBe('deleted');
+      }
       expect(mockAllocationRepository.delete).toHaveBeenCalledWith('alloc-1');
     });
   });
@@ -155,7 +159,9 @@ describe('ResolveConflictUseCase', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data?.conflict.resolution).toBe('moved');
+      if (result.success) {
+        expect(result.data.conflict.resolution).toBe('moved');
+      }
       expect(mockAllocationRepository.moveToDate).toHaveBeenCalledWith('alloc-1', newDate);
     });
 

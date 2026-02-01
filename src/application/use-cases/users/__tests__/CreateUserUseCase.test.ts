@@ -35,6 +35,8 @@ describe('CreateUserUseCase', () => {
       save: vi.fn().mockImplementation((user: User) => Promise.resolve(user)),
       update: vi.fn(),
       delete: vi.fn(),
+      findByTenantWithTimetacId: vi.fn(),
+      updateTimetacId: vi.fn(),
     };
 
     mockAuthService = {

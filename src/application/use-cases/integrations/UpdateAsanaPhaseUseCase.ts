@@ -29,6 +29,7 @@ export interface IPhaseRepository {
 
 export interface IIntegrationCredentialsRepository {
   findByTenantId(tenantId: string): Promise<IntegrationCredentials | null>;
+  update(tenantId: string, data: Partial<IntegrationCredentials>): Promise<void>;
 }
 
 interface PhaseWithProject {
@@ -130,7 +131,14 @@ export class UpdateAsanaPhaseUseCase {
         try {
           const newTokens = await this.asanaService.refreshAccessToken(credentials.asanaRefreshToken);
           accessToken = newTokens.access_token;
-          // TODO: Neue Tokens in DB speichern
+
+          // Neue Tokens in DB speichern
+          const expiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
+          await this.credentialsRepository.update(tenantId, {
+            asanaAccessToken: newTokens.access_token,
+            asanaRefreshToken: newTokens.refresh_token,
+            asanaTokenExpiresAt: expiresAt,
+          });
         } catch {
           // Token-Erneuerung fehlgeschlagen
           return Result.ok({ synced: false, asanaGid: phase.asanaGid });

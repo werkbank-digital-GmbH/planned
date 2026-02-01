@@ -99,6 +99,7 @@ async function getCurrentUserWithTenant() {
 
 /**
  * Holt gültigen Asana Access Token.
+ * Erneuert automatisch abgelaufene Tokens.
  */
 async function getAsanaAccessToken(tenantId: string): Promise<string> {
   const supabase = await createActionSupabaseClient();
@@ -111,7 +112,32 @@ async function getAsanaAccessToken(tenantId: string): Promise<string> {
     throw new Error('Asana ist nicht verbunden');
   }
 
-  // TODO: Token-Refresh bei Ablauf implementieren
+  // Token-Refresh bei Ablauf
+  if (credentials.asanaTokenExpiresAt && credentials.asanaTokenExpiresAt < new Date()) {
+    if (!credentials.asanaRefreshToken) {
+      throw new Error('Asana-Token abgelaufen und kein Refresh-Token vorhanden');
+    }
+
+    const asanaService = createAsanaService();
+    const decryptedRefreshToken = encryptionService.decrypt(credentials.asanaRefreshToken);
+
+    try {
+      const newTokens = await asanaService.refreshAccessToken(decryptedRefreshToken);
+
+      // Neue Tokens verschlüsseln und speichern
+      const expiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
+      await credentialsRepo.update(tenantId, {
+        asanaAccessToken: encryptionService.encrypt(newTokens.access_token),
+        asanaRefreshToken: encryptionService.encrypt(newTokens.refresh_token),
+        asanaTokenExpiresAt: expiresAt,
+      });
+
+      return newTokens.access_token;
+    } catch {
+      throw new Error('Asana-Token konnte nicht erneuert werden. Bitte erneut verbinden.');
+    }
+  }
+
   return encryptionService.decrypt(credentials.asanaAccessToken);
 }
 

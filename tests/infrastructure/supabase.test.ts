@@ -1,17 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type {
   Database,
-  Tenant,
-  User,
-  Project,
-  ProjectPhase,
-  Allocation,
-  TimeEntry,
-  Absence,
-  SyncLog,
-  Resource,
-  ResourceType,
-  IntegrationCredentials,
+  Tables,
   UserRole,
   ProjectStatus,
   PhaseBereich,
@@ -30,6 +20,19 @@ vi.mock('next/headers', () => ({
     })
   ),
 }));
+
+// Typen für Tabellen-Rows
+type Tenant = Tables<'tenants'>;
+type User = Tables<'users'>;
+type Project = Tables<'projects'>;
+type ProjectPhase = Tables<'project_phases'>;
+type Allocation = Tables<'allocations'>;
+type TimeEntry = Tables<'time_entries'>;
+type Absence = Tables<'absences'>;
+type SyncLog = Tables<'sync_logs'>;
+type Resource = Tables<'resources'>;
+type ResourceType = Tables<'resource_types'>;
+type IntegrationCredentials = Tables<'integration_credentials'>;
 
 describe('Supabase Configuration', () => {
   beforeEach(() => {

@@ -62,6 +62,8 @@ describe('GetUsersUseCase', () => {
       save: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      findByTenantWithTimetacId: vi.fn(),
+      updateTimetacId: vi.fn(),
     };
 
     useCase = new GetUsersUseCase(mockUserRepository);

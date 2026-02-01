@@ -50,8 +50,6 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
   const supabase = createAdminSupabaseClient();
   const { action, resource, parent } = event;
 
-  console.log(`[Asana Webhook] Processing event: ${action} ${resource.resource_type} ${resource.gid}`);
-
   // ─────────────────────────────────────────────────────────────────────────
   // PROJECT EVENTS
   // ─────────────────────────────────────────────────────────────────────────

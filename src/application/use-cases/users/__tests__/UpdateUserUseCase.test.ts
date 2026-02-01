@@ -45,6 +45,8 @@ describe('UpdateUserUseCase', () => {
       save: vi.fn(),
       update: vi.fn().mockImplementation((user: User) => Promise.resolve(user)),
       delete: vi.fn(),
+      findByTenantWithTimetacId: vi.fn(),
+      updateTimetacId: vi.fn(),
     };
 
     useCase = new UpdateUserUseCase(mockUserRepository);

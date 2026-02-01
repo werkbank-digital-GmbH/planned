@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Absence } from '@/domain/entities/Absence';
 import { Allocation } from '@/domain/entities/Allocation';
@@ -34,7 +34,7 @@ function createTestUser(overrides: Partial<Parameters<typeof User.create>[0]> = 
     authId: 'auth-1',
     email: 'test@example.com',
     fullName: 'Max Mustermann',
-    role: 'mitarbeiter',
+    role: 'gewerblich',
     weeklyHours: 40,
     isActive: true,
     createdAt: new Date(),

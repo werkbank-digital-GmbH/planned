@@ -282,20 +282,20 @@ describe('TimeTacService', () => {
   describe('mapAbsenceType', () => {
     const config = {
       absenceTypeMapping: {
-        1: 'urlaub' as const,
-        2: 'krank' as const,
-        3: 'feiertag' as const,
+        1: 'vacation' as const,
+        2: 'sick' as const,
+        3: 'holiday' as const,
       },
     };
 
     it('should map known absence types', () => {
-      expect(service.mapAbsenceType(1, config)).toBe('urlaub');
-      expect(service.mapAbsenceType(2, config)).toBe('krank');
-      expect(service.mapAbsenceType(3, config)).toBe('feiertag');
+      expect(service.mapAbsenceType(1, config)).toBe('vacation');
+      expect(service.mapAbsenceType(2, config)).toBe('sick');
+      expect(service.mapAbsenceType(3, config)).toBe('holiday');
     });
 
-    it('should return sonstiges for unknown types', () => {
-      expect(service.mapAbsenceType(99, config)).toBe('sonstiges');
+    it('should return other for unknown types', () => {
+      expect(service.mapAbsenceType(99, config)).toBe('other');
     });
   });
 });

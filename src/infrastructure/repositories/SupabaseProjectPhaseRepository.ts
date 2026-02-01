@@ -377,8 +377,6 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
       .eq('status', 'active')
       .in('projects.status', ['planning', 'active']);
 
-    console.log('[SupabaseProjectPhaseRepository] Query for tenant:', tenantId, 'range:', startISO, '-', endISO, 'total phases loaded:', data?.length ?? 0);
-
     if (error || !data) {
       console.error('[SupabaseProjectPhaseRepository] Error:', error);
       return [];
@@ -397,8 +395,6 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
 
       return startsBeforeOrDuringRange && endsAfterOrDuringRange;
     });
-
-    console.log('[SupabaseProjectPhaseRepository] After date filter:', filteredData.length, 'phases match range', startISO, '-', endISO);
 
     return filteredData.map((row) => {
       const project = row.projects as unknown as {

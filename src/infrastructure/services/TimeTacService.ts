@@ -148,7 +148,7 @@ export class TimeTacService implements ITimeTacService {
   // ─────────────────────────────────────────────────────────────────────────
 
   mapAbsenceType(timetacTypeId: number, config: TimeTacSyncConfig): AbsenceType {
-    return config.absenceTypeMapping[timetacTypeId] ?? 'sonstiges';
+    return config.absenceTypeMapping[timetacTypeId] ?? 'other';
   }
 
   // ─────────────────────────────────────────────────────────────────────────
