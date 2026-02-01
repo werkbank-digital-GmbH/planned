@@ -77,6 +77,7 @@ export function PlanningGrid() {
     isLoading,
     error,
     viewMode,
+    periodDates,
     getWeekDates,
     toggleProjectExpanded,
   } = usePlanning();
@@ -91,7 +92,7 @@ export function PlanningGrid() {
 
         {/* Ressourcen-Pool - Sticky am unteren Bildschirmrand */}
         <div className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pt-4 -mx-6 px-6 -mb-6 pb-6">
-          <ResourcePool poolItems={poolItems} weekDates={weekDates} />
+          <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
         </div>
       </div>
     );
@@ -149,7 +150,7 @@ export function PlanningGrid() {
 
       {/* Ressourcen-Pool - Sticky am unteren Bildschirmrand */}
       <div className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pt-4 -mx-6 px-6 -mb-6 pb-6">
-        <ResourcePool poolItems={poolItems} weekDates={weekDates} />
+        <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
       </div>
     </div>
   );

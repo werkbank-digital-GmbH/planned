@@ -344,25 +344,36 @@ export function MonthGrid() {
     );
   }
 
-  return (
-    <div className="rounded-lg border bg-white overflow-x-auto relative">
-      <MonthGridHeader monthDates={periodDates} />
+  // Berechne die Gesamtbreite des Grids
+  const totalGridWidth = PROJECT_COLUMN_WIDTH + periodDates.length * DAY_COLUMN_WIDTH;
 
-      <div className="divide-y divide-gray-200">
-        {projectRows.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            Keine Projekte mit Phasen in diesem Monat
-          </div>
-        ) : (
-          projectRows.map((project) => (
-            <MonthProjectRow
-              key={project.project.id}
-              project={project}
-              monthDates={periodDates}
-              onToggleExpand={toggleProjectExpanded}
-            />
-          ))
-        )}
+  return (
+    <div
+      className="rounded-lg border bg-white overflow-x-auto relative"
+      style={{
+        // Grid nimmt volle verfügbare Breite, scrollt wenn nötig
+        minWidth: '100%',
+      }}
+    >
+      <div style={{ minWidth: totalGridWidth }}>
+        <MonthGridHeader monthDates={periodDates} />
+
+        <div className="divide-y divide-gray-200">
+          {projectRows.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              Keine Projekte mit Phasen in diesem Monat
+            </div>
+          ) : (
+            projectRows.map((project) => (
+              <MonthProjectRow
+                key={project.project.id}
+                project={project}
+                monthDates={periodDates}
+                onToggleExpand={toggleProjectExpanded}
+              />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
