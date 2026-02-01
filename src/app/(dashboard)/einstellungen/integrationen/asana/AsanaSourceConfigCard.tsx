@@ -16,15 +16,8 @@ import {
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import { Label } from '@/presentation/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/presentation/components/ui/select';
+import { SearchableSelect } from '@/presentation/components/ui/searchable-select';
 
-const NONE_VALUE = '__none__';
 
 /**
  * Konfiguration für das Quell-Projekt und Team.
@@ -93,11 +86,11 @@ export function AsanaSourceConfigCard() {
 
   const handleChange = (
     field: keyof AsanaSourceConfigDTO,
-    value: string
+    value: string | null
   ) => {
     setConfig((prev) => ({
       ...prev,
-      [field]: value === NONE_VALUE ? null : value,
+      [field]: value,
     }));
   };
 
@@ -129,22 +122,16 @@ export function AsanaSourceConfigCard() {
           <p className="text-sm text-gray-500">
             Tasks aus diesem Projekt werden als Phasen importiert (z.B. &quot;Jahresplanung&quot;)
           </p>
-          <Select
-            value={config.sourceProjectId ?? NONE_VALUE}
+          <SearchableSelect
+            value={config.sourceProjectId}
             onValueChange={(v) => handleChange('sourceProjectId', v)}
-          >
-            <SelectTrigger id="sourceProject">
-              <SelectValue placeholder="Projekt auswahlen..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE_VALUE}>Nicht konfiguriert</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.gid} value={project.gid}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={projects.map((p) => ({ value: p.gid, label: p.name }))}
+            placeholder="Projekt auswählen..."
+            searchPlaceholder="Projekt suchen..."
+            emptyText="Kein Projekt gefunden"
+            allowClear={true}
+            clearLabel="Nicht konfiguriert"
+          />
         </div>
 
         {/* Team (Projekte werden zu Bauvorhaben) */}
@@ -153,22 +140,16 @@ export function AsanaSourceConfigCard() {
           <p className="text-sm text-gray-500">
             Projekte aus diesem Team werden als Bauvorhaben importiert (z.B. &quot;600 Projekte&quot;)
           </p>
-          <Select
-            value={config.teamId ?? NONE_VALUE}
+          <SearchableSelect
+            value={config.teamId}
             onValueChange={(v) => handleChange('teamId', v)}
-          >
-            <SelectTrigger id="team">
-              <SelectValue placeholder="Team auswahlen..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE_VALUE}>Nicht konfiguriert</SelectItem>
-              {teams.map((team) => (
-                <SelectItem key={team.gid} value={team.gid}>
-                  {team.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={teams.map((t) => ({ value: t.gid, label: t.name }))}
+            placeholder="Team auswählen..."
+            searchPlaceholder="Team suchen..."
+            emptyText="Kein Team gefunden"
+            allowClear={true}
+            clearLabel="Nicht konfiguriert"
+          />
         </div>
 
         {/* Info Box */}
