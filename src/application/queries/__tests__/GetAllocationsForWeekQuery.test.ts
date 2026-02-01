@@ -6,7 +6,6 @@ import { User } from '@/domain/entities/User';
 import type { IAbsenceRepository } from '@/application/ports/repositories/IAbsenceRepository';
 import type { IAllocationRepository } from '@/application/ports/repositories/IAllocationRepository';
 import type { IProjectPhaseRepository } from '@/application/ports/repositories/IProjectPhaseRepository';
-import type { ITimeEntryRepository } from '@/application/ports/repositories/ITimeEntryRepository';
 import type { IUserRepository } from '@/application/ports/repositories/IUserRepository';
 
 import { GetAllocationsForWeekQuery } from '../GetAllocationsForWeekQuery';
@@ -61,22 +60,8 @@ describe('GetAllocationsForWeekQuery', () => {
     deleteMany: vi.fn(),
   };
 
-  const mockTimeEntryRepo = {
-    findById: vi.fn(),
-    findByTimeTacId: vi.fn(),
-    findByUserAndDateRange: vi.fn(),
-    findByUserIdsAndDateRange: vi.fn(),
-    findByPhase: vi.fn(),
-    findByTenantAndDateRange: vi.fn(),
-    sumHoursByPhase: vi.fn(),
-    save: vi.fn(),
-    saveMany: vi.fn(),
-    upsertByTimeTacId: vi.fn(),
-  };
-
   const mockAbsenceRepo = {
     findById: vi.fn(),
-    findByTimeTacId: vi.fn(),
     findByUserAndDateRange: vi.fn(),
     findByUsersAndDateRange: vi.fn(),
     findByTenantAndDateRange: vi.fn(),
@@ -85,7 +70,6 @@ describe('GetAllocationsForWeekQuery', () => {
     saveMany: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    upsertByTimeTacId: vi.fn(),
   };
 
   let query: GetAllocationsForWeekQuery;
@@ -143,14 +127,12 @@ describe('GetAllocationsForWeekQuery', () => {
     mockUserRepo.findByIds.mockResolvedValue([]);
     mockUserRepo.findActiveByTenant.mockResolvedValue([]);
     mockPhaseRepo.findByIdsWithProject.mockResolvedValue([]);
-    mockTimeEntryRepo.findByUserIdsAndDateRange.mockResolvedValue([]);
     mockAbsenceRepo.findByUsersAndDateRange.mockResolvedValue([]);
 
     query = new GetAllocationsForWeekQuery(
       mockAllocationRepo as unknown as IAllocationRepository,
       mockUserRepo as unknown as IUserRepository,
       mockPhaseRepo as unknown as IProjectPhaseRepository,
-      mockTimeEntryRepo as unknown as ITimeEntryRepository,
       mockAbsenceRepo as unknown as IAbsenceRepository
     );
   });
@@ -344,29 +326,25 @@ describe('GetAllocationsForWeekQuery', () => {
     });
   });
 
-  describe('Actual hours from TimeEntries', () => {
-    it('should include actual hours from time entries', async () => {
+  describe('Actual hours', () => {
+    it('should return 0 actual hours (Asana integration pending)', async () => {
       const allocation = createTestAllocation({
         userId: 'user-1',
         date: new Date('2026-02-02'),
       });
-      const timeEntries = [
-        { userId: 'user-1', date: new Date('2026-02-02'), hours: 6 },
-        { userId: 'user-1', date: new Date('2026-02-02'), hours: 2 },
-      ];
 
       mockAllocationRepo.findByTenantAndDateRange.mockResolvedValue([allocation]);
       mockUserRepo.findByIds.mockResolvedValue([createTestUser({ id: 'user-1' })]);
       mockPhaseRepo.findByIdsWithProject.mockResolvedValue([createTestPhaseWithProject()]);
-      mockTimeEntryRepo.findByUserIdsAndDateRange.mockResolvedValue(timeEntries);
 
       const result = await query.execute({
         tenantId: 'tenant-123',
         weekStart: new Date('2026-02-02'),
       });
 
-      expect(result.days[0].allocations[0].actualHours).toBe(8); // 6 + 2
-      expect(result.days[0].totalActualHours).toBe(8);
+      // TODO: Actual hours will come from Asana integration
+      expect(result.days[0].allocations[0].actualHours).toBe(0);
+      expect(result.days[0].totalActualHours).toBe(0);
     });
   });
 

@@ -35,12 +35,11 @@ export default async function IntegrationenPage() {
   // Integration Credentials Status laden
   const { data: credentials } = await supabase
     .from('integration_credentials')
-    .select('asana_access_token, timetac_api_token')
+    .select('asana_access_token')
     .eq('tenant_id', userData.tenant_id)
     .single();
 
   const asanaActive = !!credentials?.asana_access_token;
-  const timetacActive = !!credentials?.timetac_api_token;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -61,20 +60,6 @@ export default async function IntegrationenPage() {
             <CardContent>
               <p className="text-sm text-gray-500">
                 Projekte und Phasen aus Asana synchronisieren
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/einstellungen/integrationen/timetac">
-          <Card className="cursor-pointer transition-shadow hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium">TimeTac</CardTitle>
-              <StatusBadge active={timetacActive} />
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
-                Abwesenheiten und Zeiteinträge synchronisieren
               </p>
             </CardContent>
           </Card>

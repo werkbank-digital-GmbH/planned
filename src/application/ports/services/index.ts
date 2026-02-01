@@ -17,12 +17,3 @@ export type {
   MappedTaskPhaseData,
 } from './IAsanaService';
 export type { IEncryptionService } from './IEncryptionService';
-export type {
-  ITimeTacService,
-  TimeTacAbsence,
-  TimeTacAbsenceType,
-  TimeTacAccount,
-  TimeTacSyncConfig,
-  TimeTacTimeEntry,
-  TimeTacUser,
-} from './ITimeTacService';

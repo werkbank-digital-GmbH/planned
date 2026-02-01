@@ -6,7 +6,6 @@ import type { IAbsenceRepository } from '@/application/ports/repositories/IAbsen
 import type { IAllocationRepository } from '@/application/ports/repositories/IAllocationRepository';
 import type { IProjectPhaseRepository } from '@/application/ports/repositories/IProjectPhaseRepository';
 import type { IProjectRepository } from '@/application/ports/repositories/IProjectRepository';
-import type { ITimeEntryRepository } from '@/application/ports/repositories/ITimeEntryRepository';
 import type { IUserRepository } from '@/application/ports/repositories/IUserRepository';
 
 import {
@@ -251,11 +250,6 @@ interface AbsenceData {
   endDate: Date;
 }
 
-interface TimeEntryData {
-  userId: string;
-  date: Date;
-  hours: number;
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // QUERY IMPLEMENTATION
@@ -286,7 +280,6 @@ export class GetAllocationsForWeekQuery {
     private readonly allocationRepository: IAllocationRepository,
     private readonly userRepository: IUserRepository,
     private readonly projectPhaseRepository: IProjectPhaseRepository,
-    private readonly timeEntryRepository: ITimeEntryRepository,
     private readonly absenceRepository: IAbsenceRepository,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _projectRepository?: IProjectRepository
@@ -311,14 +304,11 @@ export class GetAllocationsForWeekQuery {
     const phaseIds = [...new Set(allocations.map((a) => a.projectPhaseId))];
 
     // 3. Verknüpfte Entitäten laden (Batch für Performance)
-    const [users, allUsers, phases, timeEntries, absences] = await Promise.all([
+    const [users, allUsers, phases, absences] = await Promise.all([
       userIds.length > 0 ? this.userRepository.findByIds(userIds) : Promise.resolve([]),
       this.userRepository.findActiveByTenant(tenantId),
       phaseIds.length > 0
         ? this.projectPhaseRepository.findByIdsWithProject(phaseIds)
-        : Promise.resolve([]),
-      userIds.length > 0
-        ? this.timeEntryRepository.findByUserIdsAndDateRange(userIds, monday, friday)
         : Promise.resolve([]),
       userIds.length > 0
         ? this.absenceRepository.findByUsersAndDateRange(userIds, monday, friday)
@@ -326,12 +316,11 @@ export class GetAllocationsForWeekQuery {
     ]);
 
     // 4. Lookup-Maps erstellen
-    const userMap = new Map(users.map((u) => [u.id, u]));
+    const userMap = new Map(users.map((u: User) => [u.id, u]));
     const phaseMap = new Map(
       (phases as PhaseWithProject[]).map((p) => [p.id, p])
     );
     const absenceMap = this.buildAbsenceMap(absences as AbsenceData[]);
-    const timeEntryMap = this.buildTimeEntryMap(timeEntries as TimeEntryData[]);
 
     // 5. Tagesweise Daten aufbauen
     const days: DayData[] = weekDates.map((date, index) => {
@@ -341,7 +330,7 @@ export class GetAllocationsForWeekQuery {
       );
 
       const allocationsWithDetails = dayAllocations.map((alloc) =>
-        this.enrichAllocation(alloc, userMap, phaseMap, absenceMap, timeEntryMap)
+        this.enrichAllocation(alloc, userMap, phaseMap, absenceMap)
       );
 
       const totalPlannedHours = allocationsWithDetails.reduce(
@@ -384,8 +373,7 @@ export class GetAllocationsForWeekQuery {
     alloc: Allocation,
     userMap: Map<string, User>,
     phaseMap: Map<string, PhaseWithProject>,
-    absenceMap: Map<string, AbsenceData[]>,
-    timeEntryMap: Map<string, TimeEntryData[]>
+    absenceMap: Map<string, AbsenceData[]>
   ): AllocationWithDetails {
     const user = alloc.userId ? userMap.get(alloc.userId) : undefined;
     const phase = phaseMap.get(alloc.projectPhaseId);
@@ -395,11 +383,8 @@ export class GetAllocationsForWeekQuery {
     const userAbsences = alloc.userId ? absenceMap.get(`${alloc.userId}-${dateKey}`) : undefined;
     const hasAbsence = !!userAbsences?.length;
 
-    // Actual Hours aus TimeEntries
-    const userTimeEntries = alloc.userId
-      ? timeEntryMap.get(`${alloc.userId}-${dateKey}`)
-      : undefined;
-    const actualHours = userTimeEntries?.reduce((sum, te) => sum + te.hours, 0) ?? 0;
+    // Actual Hours - TODO: Aus Asana laden wenn verfügbar
+    const actualHours = 0;
 
     return {
       id: alloc.id,
@@ -463,19 +448,6 @@ export class GetAllocationsForWeekQuery {
         map.set(key, existing);
         current.setDate(current.getDate() + 1);
       }
-    }
-
-    return map;
-  }
-
-  private buildTimeEntryMap(entries: TimeEntryData[]): Map<string, TimeEntryData[]> {
-    const map = new Map<string, TimeEntryData[]>();
-
-    for (const entry of entries) {
-      const key = `${entry.userId}-${formatDateISO(entry.date)}`;
-      const existing = map.get(key) ?? [];
-      existing.push(entry);
-      map.set(key, existing);
     }
 
     return map;
@@ -546,24 +518,20 @@ export class GetAllocationsForWeekQuery {
     const allUserIds = allUsers.map((u) => u.id);
 
     // 4. WICHTIG: Alle Phasen im Zeitraum laden, nicht nur die mit Allocations
-    const [users, phases, timeEntries, absences] = await Promise.all([
+    const [users, phases, absences] = await Promise.all([
       userIds.length > 0 ? this.userRepository.findByIds(userIds) : Promise.resolve([]),
       this.projectPhaseRepository.findByTenantAndDateRange(tenantId, monday, friday),
-      userIds.length > 0
-        ? this.timeEntryRepository.findByUserIdsAndDateRange(userIds, monday, friday)
-        : Promise.resolve([]),
       this.absenceRepository.findByUsersAndDateRange(allUserIds, monday, friday),
     ]);
 
     // 4. Lookup-Maps erstellen
-    const userMap = new Map(users.map((u) => [u.id, u]));
+    const userMap = new Map(users.map((u: User) => [u.id, u]));
     const phaseMap = new Map((phases as PhaseWithProject[]).map((p) => [p.id, p]));
     const absenceMap = this.buildAbsenceMap(absences as AbsenceData[]);
-    const timeEntryMap = this.buildTimeEntryMap(timeEntries as TimeEntryData[]);
 
     // 5. Allocations mit Details anreichern
     const enrichedAllocations = allocations.map((alloc) =>
-      this.enrichAllocation(alloc, userMap, phaseMap, absenceMap, timeEntryMap)
+      this.enrichAllocation(alloc, userMap, phaseMap, absenceMap)
     );
 
     // 6. Projekt-Zeilen aufbauen

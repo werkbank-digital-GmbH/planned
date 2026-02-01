@@ -78,17 +78,4 @@ export interface IUserRepository {
    * Normalerweise wird stattdessen deactivate() verwendet.
    */
   delete(id: string): Promise<void>;
-
-  /**
-   * Findet alle User eines Tenants die eine TimeTac-ID haben.
-   * Wird für TimeTac-Sync verwendet.
-   */
-  findByTenantWithTimetacId(
-    tenantId: string
-  ): Promise<Array<{ id: string; timetacId: string }>>;
-
-  /**
-   * Aktualisiert die TimeTac-ID eines Users.
-   */
-  updateTimetacId(userId: string, timetacId: string | null): Promise<void>;
 }

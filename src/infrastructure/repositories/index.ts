@@ -8,5 +8,4 @@ export * from './SupabaseProjectRepository';
 export * from './SupabaseResourceRepository';
 export * from './SupabaseResourceTypeRepository';
 export * from './SupabaseSyncLogRepository';
-export * from './SupabaseTimeEntryRepository';
 export * from './SupabaseUserRepository';

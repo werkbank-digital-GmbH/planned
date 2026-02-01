@@ -29,7 +29,6 @@ export interface CreateAbsenceProps {
   startDate: Date;
   endDate: Date;
   notes?: string;
-  timetacId?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -38,7 +37,7 @@ export interface CreateAbsenceProps {
  * Absence Entity (Abwesenheit)
  *
  * Repräsentiert eine Abwesenheit eines Mitarbeiters (Urlaub, Krank, etc.).
- * Abwesenheiten können aus TimeTac importiert oder manuell erfasst werden.
+ * Abwesenheiten können aus Asana importiert oder manuell erfasst werden.
  *
  * Wichtig: Abwesenheiten BLOCKIEREN NICHT, sondern WARNEN nur bei Konflikten.
  *
@@ -65,7 +64,6 @@ export class Absence {
     public readonly startDate: Date,
     public readonly endDate: Date,
     public readonly notes: string | undefined,
-    public readonly timetacId: string | undefined,
     public readonly createdAt: Date,
     public readonly updatedAt: Date
   ) {
@@ -90,7 +88,6 @@ export class Absence {
       props.startDate,
       props.endDate,
       props.notes?.trim(),
-      props.timetacId,
       props.createdAt ?? new Date(),
       props.updatedAt ?? new Date()
     );
@@ -128,13 +125,6 @@ export class Absence {
   }
 
   /**
-   * Ist aus TimeTac importiert (nicht manuell bearbeitbar)
-   */
-  get isFromTimeTac(): boolean {
-    return !!this.timetacId;
-  }
-
-  /**
    * Aktualisiert die Notizen.
    */
   withNotes(notes: string | undefined): Absence {
@@ -146,7 +136,6 @@ export class Absence {
       this.startDate,
       this.endDate,
       notes?.trim(),
-      this.timetacId,
       this.createdAt,
       new Date()
     );
@@ -168,7 +157,6 @@ export class Absence {
       startDate,
       endDate,
       this.notes,
-      this.timetacId,
       this.createdAt,
       new Date()
     );
@@ -190,7 +178,6 @@ export class Absence {
       this.startDate,
       this.endDate,
       this.notes,
-      this.timetacId,
       this.createdAt,
       new Date()
     );

@@ -9,5 +9,4 @@ export * from './IResourceRepository';
 export * from './IResourceTypeRepository';
 export * from './ISyncLogRepository';
 export * from './ITenantRepository';
-export * from './ITimeEntryRepository';
 export * from './IUserRepository';

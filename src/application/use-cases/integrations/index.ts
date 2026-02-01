@@ -1,4 +1,3 @@
-export { ConnectTimeTacUseCase } from './ConnectTimeTacUseCase';
 export {
   SyncAsanaProjectsUseCase,
   type SyncResult,
@@ -7,11 +6,6 @@ export {
   SyncAsanaTaskPhasesUseCase,
   type TaskSyncResult,
 } from './SyncAsanaTaskPhasesUseCase';
-export {
-  SyncTimeTacAbsencesUseCase,
-  type SyncAbsencesResult,
-} from './SyncTimeTacAbsencesUseCase';
-export { SyncTimeTacTimeEntriesUseCase } from './SyncTimeTacTimeEntriesUseCase';
 export {
   UnlinkProjectUseCase,
   type UnlinkProjectInput,

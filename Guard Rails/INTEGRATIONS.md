@@ -1,9 +1,11 @@
 # planned. – Integrationen
 
-> Asana & TimeTac API-Details, Sync-Logik und Mapping
+> Asana API-Details, Sync-Logik und Mapping
 
-**Version:** 1.3  
-**Datum:** 29. Januar 2026
+**Version:** 1.4
+**Datum:** 01. Februar 2026
+
+> **HINWEIS:** TimeTac wurde entfernt. Ist-Stunden und Abwesenheiten kommen künftig aus Asana.
 
 ---
 
@@ -14,15 +16,15 @@
 │                         planned.                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ┌─────────────────────┐       ┌─────────────────────┐         │
-│  │      ASANA          │       │     TIMETAC         │         │
-│  │   (Bidirektional)   │       │   (Unidirektional)  │         │
-│  │                     │       │                     │         │
-│  │  ↓ Projekte         │       │  ↓ Abwesenheiten    │         │
-│  │  ↓ Phasen/Tasks     │       │  ↓ IST-Stunden      │         │
-│  │  ↑ Phasen-Dates     │       │  ↓ User (Mapping)   │         │
-│  │  ↑ Phasen-Stunden   │       │                     │         │
-│  └─────────────────────┘       └─────────────────────┘         │
+│  ┌─────────────────────────────────────────────────┐           │
+│  │                    ASANA                         │           │
+│  │              (Bidirektional)                     │           │
+│  │                                                  │           │
+│  │  ↓ Projekte          ↑ Phasen-Dates             │           │
+│  │  ↓ Phasen/Tasks      ↑ Phasen-Stunden           │           │
+│  │  ↓ Abwesenheiten     (planned)                  │           │
+│  │  ↓ IST-Stunden                                  │           │
+│  └─────────────────────────────────────────────────┘           │
 │                                                                 │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │                    SYNC ENGINE                           │   │
@@ -912,163 +914,7 @@ interface AsanaWebhookEvent {
 
 ---
 
-## 4. TimeTac Integration
-
-### 4.1 Übersicht
-
-| Aspekt | Details |
-|--------|---------|
-| **Richtung** | Unidirektional (TimeTac → planned.) |
-| **Authentifizierung** | Bearer Token (API Key) |
-| **Daten** | Abwesenheiten, IST-Stunden, User |
-| **Sync-Intervall** | Abwesenheiten: stündlich, IST-Stunden: täglich |
-
-### 4.2 Verbindung einrichten
-
-```typescript
-// src/presentation/actions/integrations/timetac.ts
-
-interface ConnectTimeTacInput {
-  accountId: string;
-  apiToken: string;
-}
-
-/**
- * Verbindet TimeTac und testet die Credentials.
- */
-export async function connectTimeTac(
-  data: ConnectTimeTacInput
-): Promise<ActionResult<void>> {
-  return withActionHandler({
-    requiredRole: ['admin'],
-    schema: z.object({
-      accountId: z.string().min(1, 'Account-ID ist erforderlich'),
-      apiToken: z.string().min(1, 'API-Token ist erforderlich'),
-    }),
-    handler: async (data, { tenantId }) => {
-      // Verbindung testen
-      const isValid = await timetacService.testConnection(
-        data.accountId,
-        data.apiToken
-      );
-      
-      if (!isValid) {
-        return failure('TIMETAC_AUTH_FAILED', 'Die TimeTac-Zugangsdaten sind ungültig.');
-      }
-      
-      // Credentials verschlüsselt speichern
-      await credentialsRepo.update(tenantId, {
-        timetacAccountId: data.accountId,
-        timetacApiToken: encrypt(data.apiToken),
-      });
-      
-      return success(undefined);
-    },
-  })(data);
-}
-```
-
-### 4.3 User Mapping
-
-```typescript
-// src/presentation/actions/integrations/timetac.ts
-
-interface TimeTacUser {
-  id: number;
-  username: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  active: boolean;
-}
-
-interface UserMappingRow {
-  timetacUser: TimeTacUser;
-  plannedUser: User | null;
-  isAutoMatched: boolean;
-}
-
-/**
- * Lädt TimeTac-User und schlägt Auto-Mappings vor.
- */
-export async function getTimeTacUserMappings(): Promise<ActionResult<UserMappingRow[]>> {
-  return withActionHandler({
-    requiredRole: ['admin'],
-    handler: async (_, { tenantId }) => {
-      const credentials = await credentialsRepo.findByTenant(tenantId);
-      
-      if (!credentials?.timetacApiToken) {
-        return failure('INTEGRATION_NOT_CONFIGURED', 'TimeTac ist nicht verbunden.');
-      }
-      
-      // TimeTac User laden
-      const timetacUsers = await timetacService.getUsers(
-        credentials.timetacAccountId,
-        decrypt(credentials.timetacApiToken)
-      );
-      
-      // planned. User laden
-      const plannedUsers = await userRepo.findByTenant(tenantId);
-      
-      // Mappings erstellen mit Auto-Match via E-Mail
-      const mappings: UserMappingRow[] = timetacUsers.map(ttUser => {
-        // Bereits gemappter User?
-        const existingMapping = plannedUsers.find(u => u.timetacId === String(ttUser.id));
-        if (existingMapping) {
-          return {
-            timetacUser: ttUser,
-            plannedUser: existingMapping,
-            isAutoMatched: false,
-          };
-        }
-        
-        // Auto-Match via E-Mail
-        const emailMatch = plannedUsers.find(
-          u => u.email.toLowerCase() === ttUser.email.toLowerCase() && !u.timetacId
-        );
-        
-        return {
-          timetacUser: ttUser,
-          plannedUser: emailMatch || null,
-          isAutoMatched: !!emailMatch,
-        };
-      });
-      
-      return success(mappings);
-    },
-  })({});
-}
-
-/**
- * Speichert die User-Mappings.
- */
-export async function saveTimeTacUserMappings(
-  mappings: { timetacId: number; plannedUserId: string | null }[]
-): Promise<ActionResult<void>> {
-  return withActionHandler({
-    requiredRole: ['admin'],
-    handler: async (mappings, { tenantId }) => {
-      // Alle bestehenden Mappings löschen
-      await userRepo.clearTimetacMappings(tenantId);
-      
-      // Neue Mappings setzen
-      for (const mapping of mappings) {
-        if (mapping.plannedUserId) {
-          await userRepo.update(mapping.plannedUserId, {
-            timetacId: String(mapping.timetacId),
-          });
-        }
-      }
-      
-      return success(undefined);
-    },
-  })(mappings);
-}
-```
-
----
-
-## 5. Cron Jobs
+## 4. Cron Jobs
 
 ### 5.1 Konfiguration (vercel.json)
 
@@ -1225,8 +1071,9 @@ export async function getIntegrationStatus(): Promise<ActionResult<IntegrationSt
 | 1.1 | Januar 2026 | + Token Refresh Logic, + Webhook Signature Verification, + TimeEntries Sync, + User Mapping Service, + Sync Queue/Debouncing, + Error Recovery, + Monitoring/Alerts |
 | 1.2 | Januar 2026 | + **Asana App Credentials dokumentiert** (Client ID, Secret), + **Vollständiger Onboarding-Flow** (5 Steps), + **Custom Field Discovery & Mapping UI**, + **Webhook Secret Lifecycle** erklärt (Asana generiert!), + **getAsanaCustomFields Action** mit Suggestions, + **AsanaFieldMapping UI-Komponente**, + **EnumValueMapping** für Bereich-Zuordnung, + **Integration Status Dashboard**, + Cron Job Konfiguration in vercel.json |
 | 1.3 | Januar 2026 | **Rebranding: "bänk" → "planned."**, URLs und Variablennamen aktualisiert |
+| 1.4 | Februar 2026 | **TimeTac entfernt** – Ist-Stunden und Abwesenheiten kommen künftig aus Asana |
 
 ---
 
-*Version: 1.3 für Antigravity*  
-*Erstellt: 29. Januar 2026*
+*Version: 1.4 für Antigravity*
+*Aktualisiert: 01. Februar 2026*

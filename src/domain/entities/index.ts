@@ -19,8 +19,5 @@ export type { CreateResourceTypeProps } from './ResourceType';
 export { Tenant } from './Tenant';
 export type { CreateTenantProps } from './Tenant';
 
-export { TimeEntry } from './TimeEntry';
-export type { CreateTimeEntryProps } from './TimeEntry';
-
 export { User } from './User';
 export type { CreateUserProps, UpdateProfileProps } from './User';

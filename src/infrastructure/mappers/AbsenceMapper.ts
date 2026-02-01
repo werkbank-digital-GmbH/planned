@@ -23,7 +23,6 @@ export class AbsenceMapper {
       startDate: new Date(row.start_date),
       endDate: new Date(row.end_date),
       notes: row.notes ?? undefined,
-      timetacId: row.timetac_id ?? undefined,
       createdAt: row.created_at ? new Date(row.created_at) : new Date(),
       updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
@@ -43,7 +42,6 @@ export class AbsenceMapper {
       start_date: absence.startDate.toISOString().split('T')[0],
       end_date: absence.endDate.toISOString().split('T')[0],
       notes: absence.notes ?? null,
-      timetac_id: absence.timetacId ?? null,
       created_at: absence.createdAt.toISOString(),
       updated_at: absence.updatedAt.toISOString(),
     };

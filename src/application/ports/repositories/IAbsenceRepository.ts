@@ -42,11 +42,6 @@ export interface IAbsenceRepository {
   ): Promise<Absence[]>;
 
   /**
-   * Findet Absence anhand der TimeTac-ID (für Sync).
-   */
-  findByTimetacId(timetacId: string): Promise<Absence | null>;
-
-  /**
    * Speichert eine neue Absence.
    */
   save(absence: Absence): Promise<Absence>;
@@ -60,9 +55,4 @@ export interface IAbsenceRepository {
    * Löscht eine Absence.
    */
   delete(id: string): Promise<void>;
-
-  /**
-   * Upsert basierend auf TimeTac-ID (für Sync).
-   */
-  upsertByTimetacId(absence: Absence): Promise<Absence>;
 }

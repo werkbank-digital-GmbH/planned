@@ -7,7 +7,7 @@
 ## Session-Status
 
 **Letzte Aktualisierung:** 2026-02-01
-**Projekt-Status:** MVP größtenteils implementiert, Resize-Feature implementiert
+**Projekt-Status:** MVP größtenteils implementiert, Asana Custom Fields Fix
 
 ---
 
@@ -15,11 +15,12 @@
 
 | Layer | Dateien | Status | Test-Coverage |
 |-------|---------|--------|---------------|
-| Domain | 15 | ✅ 100% | 95% |
+| Domain | 16 | ✅ 100% | 95% |
 | Application | 35 | ✅ 95% | 85% |
 | Infrastructure | 30 | ✅ 98% | 30% |
 | Presentation | 150+ | ⚠️ 95% | 8% |
 | **Planning Components** | 39 | ✅ | **62 Tests** |
+| **UI Components** | 15+ | ✅ | **12 Tests** (SearchableSelect) |
 
 **Detaillierte Analyse:** Siehe `agent/memory/codebaseAnalysis.md`
 
@@ -41,8 +42,8 @@
 | Dashboard KPIs | ✅ |
 | Mobile "Meine Woche" | ✅ |
 | Settings (Profil, Unternehmen) | ✅ |
-| **Asana Integration** | ✅ Backend, Task-basierte Sync, UI umgebaut |
-| **TimeTac Integration** | ✅ Backend, UI |
+| **Asana Integration** | ✅ Backend, Task-basierte Sync, UI mit SearchableSelect, Custom Fields Fix |
+| ~~TimeTac Integration~~ | ❌ **ENTFERNT** – Daten kommen aus Asana |
 
 ---
 
@@ -50,7 +51,6 @@
 
 ### Fehlende UI-Seiten
 - ✅ ~~`/einstellungen/integrationen/asana`~~ (IMPLEMENTIERT)
-- ✅ ~~`/einstellungen/integrationen/timetac`~~ (IMPLEMENTIERT)
 - ❌ `/einstellungen/ressourcen` (Placeholder)
 - ❌ `/profil` Mobile (Placeholder)
 
@@ -81,40 +81,56 @@
 
 ## Letzte Session
 
-**Datum:** 2026-02-01 (Asana-Integration Umbau)
+**Datum:** 2026-02-01 (Asana Custom Fields Fix & SearchableSelect)
 
 ### Erledigte Aufgaben:
-- ✅ **RLS Fix** – sync_logs INSERT/UPDATE Policy hinzugefügt
-- ✅ **DB Schema erweitert** – Neue Spalten für Task-basierte Sync
-- ✅ **AsanaService erweitert** – getTeams, getTeamProjects, getTasksFromProject, mapTaskToPhase
-- ✅ **IAsanaService erweitert** – AsanaTask, AsanaTeam, AsanaTaskSyncConfig, MappedTaskPhaseData
-- ✅ **Neuer Use Case** – SyncAsanaTaskPhasesUseCase für Task-basierte Phasen
-- ✅ **Neue Server Actions** – getAsanaTeams, getAsanaTeamProjects, getAsanaSourceConfig, saveAsanaSourceConfig, syncAsanaTaskPhases
-- ✅ **Neue UI-Komponenten** – AsanaSourceConfigCard, AsanaTaskFieldMappingCard
-- ✅ **Asana Page umgebaut** – Quell-Konfiguration statt direkter Projekt-Sync
-
-### Neue Sync-Logik:
-| Aspekt | Alt | Neu |
-|--------|-----|-----|
-| Projekte | Alle aus Workspace | Aus ausgewähltem Team |
-| Phasen | Sections eines Projekts | Tasks aus Quell-Projekt (z.B. "Jahresplanung") |
-| Projekt-Zuordnung | Direkt | Via Multi-Project Membership |
-| Start/Ende | Nicht implementiert | Task Due Date Range |
-| Budget Hours | Nicht implementiert | Custom Field "Soll-Stunden" |
+- ✅ **SearchableSelect Komponente** – Wiederverwendbare cmdk-basierte Komponente
+- ✅ **12 Unit Tests** – Vollständige Test-Coverage für SearchableSelect
+- ✅ **Asana UI verbessert** – Select-Dropdowns durch SearchableSelect ersetzt
+- ✅ **Custom Fields Fix** – Laden von Projekt statt Workspace
+- ✅ **PhaseBereich erweitert** – `nicht_definiert` als neuer Wert hinzugefügt
+- ✅ **Bereich-Mapping korrigiert** – Default jetzt `nicht_definiert` statt `produktion`
+- ✅ **Supabase Migration** – Enum-Wert in Datenbank hinzugefügt
 
 ### Neue Dateien:
 | Datei | Beschreibung |
 |-------|--------------|
-| `supabase/migrations/20260201100000_fix_sync_logs_rls.sql` | RLS Policy Fix |
-| `supabase/migrations/20260201100001_extend_integration_credentials.sql` | Neue DB-Spalten |
-| `src/application/use-cases/integrations/SyncAsanaTaskPhasesUseCase.ts` | Neuer Use Case |
-| `src/app/.../asana/AsanaSourceConfigCard.tsx` | Quell-Konfiguration UI |
-| `src/app/.../asana/AsanaTaskFieldMappingCard.tsx` | Task Field Mapping UI |
+| `src/presentation/components/ui/searchable-select.tsx` | Command Palette Style Selector |
+| `src/presentation/components/ui/searchable-select.test.tsx` | 12 Unit Tests |
+| `supabase/migrations/20260201200000_add_nicht_definiert_bereich.sql` | Enum Migration |
+
+### Geänderte Dateien:
+| Datei | Änderung |
+|-------|----------|
+| `src/app/.../asana/AsanaSourceConfigCard.tsx` | Select → SearchableSelect |
+| `src/app/.../asana/AsanaTaskFieldMappingCard.tsx` | Hinweis wenn kein Quell-Projekt |
+| `src/domain/types/PhaseBereich.ts` | `nicht_definiert` hinzugefügt |
+| `src/application/ports/services/IAsanaService.ts` | `getProjectCustomFields()` + Typ-Update |
+| `src/infrastructure/services/AsanaService.ts` | Custom Fields von Projekt laden, Mapping-Fix |
+| `src/presentation/actions/integrations.ts` | `getAsanaCustomFields()` von Projekt laden |
+| `src/presentation/components/planning/DraggablePhaseCard.tsx` | Farb-Mapping für `nicht_definiert` |
+| `src/presentation/components/project-details/PhaseCard.tsx` | Farb-Mapping für `nicht_definiert` |
+| `src/lib/database.types.ts` | Enum-Typ aktualisiert |
+| `tests/setup.ts` | scrollIntoView Mock hinzugefügt |
+
+### Technische Details:
+**Custom Fields API-Änderung:**
+- Vorher: `/workspaces/{gid}/custom_field_settings` (Workspace-Level)
+- Nachher: `/projects/{gid}/custom_field_settings` (Projekt-Level)
+
+**PhaseBereich Mapping:**
+- Vorher: Default war `produktion` (falsch)
+- Nachher: Default ist `nicht_definiert` (korrekt)
+- Neue Werte: `Produktion → produktion`, `Montage → montage`, `Externes Gewerk → externes_gewerk`, Rest → `nicht_definiert`
+
+### Commits:
+- `cc9b48e feat: Add searchable select for Asana source config`
+- `d7759ab fix: Asana custom fields loading and bereich mapping`
 
 ### Guard-Ergebnisse:
 - ESLint: ⚠️ 7 Warnings (bekannte Server-Logs)
 - TypeScript: ✅ **Keine Fehler**
-- Vitest: ✅ **677 Tests grün**
+- Vitest: ✅ **689 Tests grün**
 
 ---
 
@@ -143,14 +159,6 @@
   - Resize-Feature (aktuell client-seitig implementiert mit mehreren `createAllocationAction` / `deleteAllocationAction` Calls)
   - Zukünftige Bulk-Operationen
 - **Status:** Resize funktioniert, aber könnte für Robustheit optimiert werden
-
-### 🔜 TimeTac Integration – Bugs fixen
-- **Priorität:** Mittel
-- **Grund:** Kleinere Bugs in der TimeTac-Integration (Abwesenheits-Sync)
-- **Status:** Integration läuft parallel, Bugs werden später analysiert
-- **Betroffene Stellen:**
-  - Abwesenheits-Daten im Planning-Grid
-  - Sync-Logik zwischen TimeTac und planned.
 
 ### 🔜 Asana Integration – Webhook-Signatur
 - **Priorität:** Niedrig

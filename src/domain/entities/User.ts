@@ -22,7 +22,6 @@ export interface CreateUserProps {
   role: UserRole;
   weeklyHours: number;
   isActive: boolean;
-  timetacId?: string;
   avatarUrl?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -68,7 +67,6 @@ export class User {
     public readonly role: UserRole,
     public readonly weeklyHours: number,
     public readonly isActive: boolean,
-    public readonly timetacId: string | undefined,
     public readonly avatarUrl: string | undefined,
     public readonly createdAt: Date,
     public readonly updatedAt: Date
@@ -100,7 +98,6 @@ export class User {
       props.role,
       props.weeklyHours,
       props.isActive,
-      props.timetacId,
       props.avatarUrl,
       props.createdAt,
       props.updatedAt
@@ -121,7 +118,6 @@ export class User {
       this.role,
       this.weeklyHours,
       false,
-      this.timetacId,
       this.avatarUrl,
       this.createdAt,
       new Date()
@@ -142,7 +138,6 @@ export class User {
       this.role,
       this.weeklyHours,
       true,
-      this.timetacId,
       this.avatarUrl,
       this.createdAt,
       new Date()
@@ -163,7 +158,6 @@ export class User {
       newRole,
       this.weeklyHours,
       this.isActive,
-      this.timetacId,
       this.avatarUrl,
       this.createdAt,
       new Date()
@@ -188,7 +182,6 @@ export class User {
       this.role,
       newWeeklyHours,
       this.isActive,
-      this.timetacId,
       this.avatarUrl,
       this.createdAt,
       new Date()
@@ -218,7 +211,6 @@ export class User {
       this.role,
       this.weeklyHours,
       this.isActive,
-      this.timetacId,
       newAvatarUrl,
       this.createdAt,
       new Date()

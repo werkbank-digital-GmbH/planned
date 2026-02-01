@@ -4,4 +4,3 @@ export { ProjectMapper } from './ProjectMapper';
 export { ProjectPhaseMapper } from './ProjectPhaseMapper';
 export { ResourceMapper } from './ResourceMapper';
 export { ResourceTypeMapper } from './ResourceTypeMapper';
-export { TimeEntryMapper } from './TimeEntryMapper';

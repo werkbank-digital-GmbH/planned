@@ -44,10 +44,6 @@ function mapToDomain(row: CredentialsRow): IntegrationCredentialsData {
     asanaZuordnungFieldId: row.asana_zuordnung_field_id,
     asanaSollStundenFieldId: row.asana_soll_stunden_field_id,
 
-    // TimeTac
-    timetacAccountId: row.timetac_account_id,
-    timetacApiToken: row.timetac_api_token,
-
     createdAt: row.created_at ? new Date(row.created_at) : new Date(),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
   };
@@ -111,14 +107,6 @@ function mapToDb(
   }
   if (data.asanaSollStundenFieldId !== undefined) {
     result.asana_soll_stunden_field_id = data.asanaSollStundenFieldId;
-  }
-
-  // TimeTac
-  if (data.timetacAccountId !== undefined) {
-    result.timetac_account_id = data.timetacAccountId;
-  }
-  if (data.timetacApiToken !== undefined) {
-    result.timetac_api_token = data.timetacApiToken;
   }
 
   return result;
@@ -207,20 +195,6 @@ export class SupabaseIntegrationCredentialsRepository
     }
   }
 
-  async clearTimeTacCredentials(tenantId: string): Promise<void> {
-    const { error } = await this.supabase
-      .from('integration_credentials')
-      .update({
-        timetac_account_id: null,
-        timetac_api_token: null,
-      })
-      .eq('tenant_id', tenantId);
-
-    if (error) {
-      throw new Error(`TimeTac Credentials löschen fehlgeschlagen: ${error.message}`);
-    }
-  }
-
   async hasAsanaConnection(tenantId: string): Promise<boolean> {
     const { data } = await this.supabase
       .from('integration_credentials')
@@ -229,15 +203,5 @@ export class SupabaseIntegrationCredentialsRepository
       .single();
 
     return !!data?.asana_access_token;
-  }
-
-  async hasTimeTacConnection(tenantId: string): Promise<boolean> {
-    const { data } = await this.supabase
-      .from('integration_credentials')
-      .select('timetac_api_token')
-      .eq('tenant_id', tenantId)
-      .single();
-
-    return !!data?.timetac_api_token;
   }
 }

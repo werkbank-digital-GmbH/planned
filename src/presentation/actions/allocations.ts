@@ -38,7 +38,6 @@ import { SupabaseAbsenceRepository } from '@/infrastructure/repositories/Supabas
 import { SupabaseAllocationRepository } from '@/infrastructure/repositories/SupabaseAllocationRepository';
 import { SupabaseProjectPhaseRepository } from '@/infrastructure/repositories/SupabaseProjectPhaseRepository';
 import { SupabaseResourceRepository } from '@/infrastructure/repositories/SupabaseResourceRepository';
-import { SupabaseTimeEntryRepository } from '@/infrastructure/repositories/SupabaseTimeEntryRepository';
 import { SupabaseUserRepository } from '@/infrastructure/repositories/SupabaseUserRepository';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 
@@ -516,7 +515,6 @@ export async function getAllocationsForWeekAction(input: {
     const allocationRepo = new SupabaseAllocationRepository(supabase);
     const userRepo = new SupabaseUserRepository(supabase);
     const phaseRepo = new SupabaseProjectPhaseRepository(supabase);
-    const timeEntryRepo = new SupabaseTimeEntryRepository(supabase);
     const absenceRepo = new SupabaseAbsenceRepository(supabase);
 
     // Query erstellen und ausführen
@@ -524,7 +522,6 @@ export async function getAllocationsForWeekAction(input: {
       allocationRepo,
       userRepo,
       phaseRepo,
-      timeEntryRepo,
       absenceRepo
     );
 
@@ -574,7 +571,6 @@ export async function getProjectWeekDataAction(input: {
     const allocationRepo = new SupabaseAllocationRepository(supabase);
     const userRepo = new SupabaseUserRepository(supabase);
     const phaseRepo = new SupabaseProjectPhaseRepository(supabase);
-    const timeEntryRepo = new SupabaseTimeEntryRepository(supabase);
     const absenceRepo = new SupabaseAbsenceRepository(supabase);
 
     // Query erstellen und ausführen
@@ -582,7 +578,6 @@ export async function getProjectWeekDataAction(input: {
       allocationRepo,
       userRepo,
       phaseRepo,
-      timeEntryRepo,
       absenceRepo
     );
 

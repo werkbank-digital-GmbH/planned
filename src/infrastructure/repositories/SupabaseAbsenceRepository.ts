@@ -125,20 +125,6 @@ export class SupabaseAbsenceRepository implements IAbsenceRepository {
     return AbsenceMapper.toDomainList(data);
   }
 
-  async findByTimetacId(timetacId: string): Promise<Absence | null> {
-    const { data, error } = await this.supabase
-      .from('absences')
-      .select('*')
-      .eq('timetac_id', timetacId)
-      .single();
-
-    if (error || !data) {
-      return null;
-    }
-
-    return AbsenceMapper.toDomain(data);
-  }
-
   async save(absence: Absence): Promise<Absence> {
     const { data, error } = await this.supabase
       .from('absences')
@@ -179,39 +165,6 @@ export class SupabaseAbsenceRepository implements IAbsenceRepository {
 
     if (error) {
       throw new Error(`Fehler beim Löschen der Absence: ${error.message}`);
-    }
-  }
-
-  async upsertByTimetacId(absence: Absence): Promise<Absence> {
-    if (!absence.timetacId) {
-      throw new Error('TimeTac-ID ist erforderlich für upsert');
-    }
-
-    const existing = await this.findByTimetacId(absence.timetacId);
-
-    if (existing) {
-      // Update existing
-      const { data, error } = await this.supabase
-        .from('absences')
-        .update({
-          type: absence.type,
-          start_date: absence.startDate.toISOString().split('T')[0],
-          end_date: absence.endDate.toISOString().split('T')[0],
-          notes: absence.notes ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('timetac_id', absence.timetacId)
-        .select()
-        .single();
-
-      if (error || !data) {
-        throw new Error(`Fehler beim Aktualisieren der Absence: ${error?.message}`);
-      }
-
-      return AbsenceMapper.toDomain(data);
-    } else {
-      // Insert new
-      return this.save(absence);
     }
   }
 }

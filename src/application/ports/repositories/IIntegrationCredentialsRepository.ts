@@ -28,10 +28,6 @@ export interface IntegrationCredentialsData {
   asanaZuordnungFieldId: string | null;     // "Zuordnung" Dropdown (Bereich)
   asanaSollStundenFieldId: string | null;   // "Soll-Stunden" Number
 
-  // TimeTac
-  timetacAccountId: string | null;
-  timetacApiToken: string | null;
-
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,9 +57,6 @@ export interface IntegrationCredentialsUpdate {
   asanaPhaseTypeFieldId?: string | null;
   asanaZuordnungFieldId?: string | null;
   asanaSollStundenFieldId?: string | null;
-
-  timetacAccountId?: string | null;
-  timetacApiToken?: string | null;
 }
 
 /**
@@ -97,17 +90,7 @@ export interface IIntegrationCredentialsRepository {
   clearAsanaCredentials(tenantId: string): Promise<void>;
 
   /**
-   * Löscht alle TimeTac-Credentials.
-   */
-  clearTimeTacCredentials(tenantId: string): Promise<void>;
-
-  /**
    * Prüft ob Asana verbunden ist.
    */
   hasAsanaConnection(tenantId: string): Promise<boolean>;
-
-  /**
-   * Prüft ob TimeTac verbunden ist.
-   */
-  hasTimeTacConnection(tenantId: string): Promise<boolean>;
 }

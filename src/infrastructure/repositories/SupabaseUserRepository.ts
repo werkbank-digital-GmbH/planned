@@ -166,7 +166,6 @@ export class SupabaseUserRepository implements IUserRepository {
         role: user.role,
         weekly_hours: user.weeklyHours,
         is_active: user.isActive,
-        timetac_id: user.timetacId ?? null,
         avatar_url: user.avatarUrl ?? null,
       })
       .select()
@@ -187,7 +186,6 @@ export class SupabaseUserRepository implements IUserRepository {
         role: user.role,
         weekly_hours: user.weeklyHours,
         is_active: user.isActive,
-        timetac_id: user.timetacId ?? null,
         avatar_url: user.avatarUrl ?? null,
         updated_at: new Date().toISOString(),
       })
@@ -213,41 +211,6 @@ export class SupabaseUserRepository implements IUserRepository {
     }
   }
 
-  async findByTenantWithTimetacId(
-    tenantId: string
-  ): Promise<Array<{ id: string; timetacId: string }>> {
-    const { data, error } = await this.supabase
-      .from('users')
-      .select('id, timetac_id')
-      .eq('tenant_id', tenantId)
-      .not('timetac_id', 'is', null);
-
-    if (error || !data) {
-      return [];
-    }
-
-    return data
-      .filter((row) => row.timetac_id !== null)
-      .map((row) => ({
-        id: row.id,
-        timetacId: row.timetac_id as string,
-      }));
-  }
-
-  async updateTimetacId(userId: string, timetacId: string | null): Promise<void> {
-    const { error } = await this.supabase
-      .from('users')
-      .update({
-        timetac_id: timetacId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
-
-    if (error) {
-      throw new Error(`Failed to update timetac_id: ${error.message}`);
-    }
-  }
-
   /**
    * Mappt eine Datenbank-Row auf eine User-Entity.
    */
@@ -261,7 +224,6 @@ export class SupabaseUserRepository implements IUserRepository {
       role: row.role as UserRole,
       weeklyHours: row.weekly_hours ?? 40,
       isActive: row.is_active ?? true,
-      timetacId: row.timetac_id ?? undefined,
       avatarUrl: row.avatar_url ?? undefined,
       createdAt: row.created_at ? new Date(row.created_at) : new Date(),
       updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),

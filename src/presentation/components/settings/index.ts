@@ -1,6 +1,5 @@
 export { AsanaFieldMapping } from './AsanaFieldMapping';
 export { AsanaProjectSelector } from './AsanaProjectSelector';
-export { TimeTacProjectMapping } from './TimeTacProjectMapping';
 
 export { UserList } from './UserList';
 export type { User, UserListProps } from './UserList';
