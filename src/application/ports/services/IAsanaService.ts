@@ -125,7 +125,7 @@ export interface MappedPhaseData {
 export interface MappedTaskPhaseData {
   asanaGid: string;           // Task GID
   name: string;               // Task Name oder Projektphase-Custom-Field
-  bereich: 'produktion' | 'montage';
+  bereich: 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert';
   startDate: Date | null;     // Task.start_on
   endDate: Date | null;       // Task.due_on
   budgetHours: number | null; // Soll-Stunden Custom Field
@@ -213,6 +213,14 @@ export interface IAsanaService {
    */
   getCustomFields(
     workspaceId: string,
+    accessToken: string
+  ): Promise<AsanaCustomFieldDefinition[]>;
+
+  /**
+   * Lädt alle Custom Field Definitionen eines spezifischen Projekts.
+   */
+  getProjectCustomFields(
+    projectGid: string,
     accessToken: string
   ): Promise<AsanaCustomFieldDefinition[]>;
 

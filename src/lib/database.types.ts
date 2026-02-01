@@ -818,7 +818,7 @@ export type Database = {
     Enums: {
       absence_type: "vacation" | "sick" | "holiday" | "training" | "other"
       conflict_resolution: "moved" | "deleted" | "ignored"
-      phase_bereich: "produktion" | "montage" | "externes_gewerk"
+      phase_bereich: "produktion" | "montage" | "externes_gewerk" | "nicht_definiert"
       phase_status: "active" | "deleted"
       project_status: "planning" | "active" | "paused" | "completed"
       sync_service: "asana" | "timetac"
@@ -953,7 +953,7 @@ export const Constants = {
     Enums: {
       absence_type: ["vacation", "sick", "holiday", "training", "other"],
       conflict_resolution: ["moved", "deleted", "ignored"],
-      phase_bereich: ["produktion", "montage", "externes_gewerk"],
+      phase_bereich: ["produktion", "montage", "externes_gewerk", "nicht_definiert"],
       phase_status: ["active", "deleted"],
       project_status: ["planning", "active", "paused", "completed"],
       sync_service: ["asana", "timetac"],

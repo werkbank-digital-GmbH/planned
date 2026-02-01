@@ -268,7 +268,8 @@ export async function syncSelectedProjects(
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Lädt alle Custom Field Definitionen aus dem Asana Workspace.
+ * Lädt Custom Field Definitionen aus dem konfigurierten Asana Quell-Projekt.
+ * Wenn kein Quell-Projekt konfiguriert ist, wird ein Fehler zurückgegeben.
  */
 export async function getAsanaCustomFields(): Promise<ActionResult<CustomFieldDTO[]>> {
   try {
@@ -287,11 +288,17 @@ export async function getAsanaCustomFields(): Promise<ActionResult<CustomFieldDT
       return Result.fail('NOT_CONFIGURED', 'Kein Asana Workspace konfiguriert');
     }
 
+    // Custom Fields vom Quell-Projekt laden, nicht vom Workspace
+    if (!credentials.asanaSourceProjectId) {
+      return Result.fail('NOT_CONFIGURED', 'Bitte zuerst ein Quell-Projekt auswählen');
+    }
+
     const accessToken = await getAsanaAccessToken(currentUser.tenantId);
     const asanaService = createAsanaService();
 
-    const customFields = await asanaService.getCustomFields(
-      credentials.asanaWorkspaceId,
+    // Projekt-spezifische Custom Fields laden
+    const customFields = await asanaService.getProjectCustomFields(
+      credentials.asanaSourceProjectId,
       accessToken
     );
 

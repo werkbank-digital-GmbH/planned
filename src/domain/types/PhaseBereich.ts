@@ -9,24 +9,27 @@
  * @see Prompts/08-projectphase-entity.md
  */
 
-export type PhaseBereich = 'produktion' | 'montage' | 'externes_gewerk';
+export type PhaseBereich = 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert';
 
 export const PHASE_BEREICHE: readonly PhaseBereich[] = [
   'produktion',
   'montage',
   'externes_gewerk',
+  'nicht_definiert',
 ] as const;
 
 export const PHASE_BEREICH_LABELS: Record<PhaseBereich, string> = {
   produktion: 'PRODUKTION',
   montage: 'MONTAGE',
   externes_gewerk: 'EXTERNES GEWERK',
+  nicht_definiert: 'NICHT DEFINIERT',
 };
 
 export const PHASE_BEREICH_COLORS: Record<PhaseBereich, string> = {
   produktion: 'green',
   montage: 'orange',
   externes_gewerk: 'blue',
+  nicht_definiert: 'gray',
 };
 
 export function isValidPhaseBereich(value: unknown): value is PhaseBereich {

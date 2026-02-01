@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Save } from 'lucide-react';
+import { AlertCircle, Loader2, Save } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
@@ -36,6 +36,7 @@ export function AsanaTaskFieldMappingCard() {
 
   // Daten
   const [customFields, setCustomFields] = useState<CustomFieldDTO[]>([]);
+  const [noSourceProject, setNoSourceProject] = useState(false);
   const [config, setConfig] = useState<AsanaSourceConfigDTO>({
     sourceProjectId: null,
     teamId: null,
@@ -47,17 +48,21 @@ export function AsanaTaskFieldMappingCard() {
   // Daten laden
   useEffect(() => {
     async function loadData() {
-      const [fieldsResult, configResult] = await Promise.all([
-        getAsanaCustomFields(),
-        getAsanaSourceConfig(),
-      ]);
-
-      if (fieldsResult.success) {
-        setCustomFields(fieldsResult.data);
-      }
+      const configResult = await getAsanaSourceConfig();
 
       if (configResult.success) {
         setConfig(configResult.data);
+
+        // Nur Custom Fields laden wenn Quell-Projekt konfiguriert ist
+        if (configResult.data.sourceProjectId) {
+          const fieldsResult = await getAsanaCustomFields();
+          if (fieldsResult.success) {
+            setCustomFields(fieldsResult.data);
+          }
+          setNoSourceProject(false);
+        } else {
+          setNoSourceProject(true);
+        }
       }
 
       setIsLoading(false);
@@ -124,9 +129,20 @@ export function AsanaTaskFieldMappingCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {customFields.length === 0 ? (
+        {noSourceProject ? (
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+            <div className="text-sm text-amber-800">
+              <p className="font-medium">Quell-Projekt nicht konfiguriert</p>
+              <p className="mt-1">
+                Bitte wählen Sie zuerst ein Quell-Projekt in der Konfiguration oben aus,
+                um die Custom Fields zu laden.
+              </p>
+            </div>
+          </div>
+        ) : customFields.length === 0 ? (
           <p className="text-sm text-gray-500">
-            Keine Custom Fields im Workspace gefunden.
+            Keine Custom Fields im Quell-Projekt gefunden.
           </p>
         ) : (
           <>
@@ -168,7 +184,7 @@ export function AsanaTaskFieldMappingCard() {
                   <SelectValue placeholder="Field auswahlen..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE_VALUE}>Standard: Produktion</SelectItem>
+                  <SelectItem value={NONE_VALUE}>Standard: Nicht definiert</SelectItem>
                   {enumFields.map((field) => (
                     <SelectItem key={field.gid} value={field.gid}>
                       {field.name} (Dropdown)

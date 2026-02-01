@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Factory, Truck, Users } from 'lucide-react';
+import { Building2, CircleHelp, Factory, Truck, Users } from 'lucide-react';
 
 import type { PhaseDetailDTO } from '@/presentation/actions/project-details';
 import { Badge } from '@/presentation/components/ui/badge';
@@ -39,6 +39,12 @@ const BEREICH_STYLES: Record<
     text: 'text-purple-700',
     label: 'EXTERN',
     icon: <Truck className="h-5 w-5" />,
+  },
+  nicht_definiert: {
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    label: 'NICHT DEFINIERT',
+    icon: <CircleHelp className="h-5 w-5" />,
   },
 };
 

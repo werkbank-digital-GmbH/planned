@@ -129,6 +129,30 @@ export class AsanaService implements IAsanaService {
     return response.data;
   }
 
+  async getProjectCustomFields(
+    projectGid: string,
+    accessToken: string
+  ): Promise<AsanaCustomFieldDefinition[]> {
+    // Projekt-spezifische Custom Fields laden
+    // Die API /projects/{gid}/custom_field_settings gibt die Felder mit custom_field Wrapper zurück
+    const params = new URLSearchParams({
+      opt_fields: 'custom_field,custom_field.gid,custom_field.name,custom_field.resource_subtype,custom_field.enum_options,custom_field.enum_options.gid,custom_field.enum_options.name',
+    });
+
+    interface CustomFieldSettingResponse {
+      gid: string;
+      custom_field: AsanaCustomFieldDefinition;
+    }
+
+    const response = await this.request<CustomFieldSettingResponse[]>(
+      `/projects/${projectGid}/custom_field_settings?${params}`,
+      accessToken
+    );
+
+    // Extrahiere die custom_field Objekte aus den Wrapper-Objekten
+    return response.data.map((setting) => setting.custom_field);
+  }
+
   async getProjects(
     workspaceId: string,
     accessToken: string,
@@ -276,12 +300,17 @@ export class AsanaService implements IAsanaService {
     const name = phaseTypeValue.enum || phaseTypeValue.text || task.name;
 
     // Bereich aus "Zuordnung" Custom Field
+    // Default ist 'nicht_definiert', wird nur gesetzt wenn Custom Field einen bekannten Wert hat
     const zuordnungValue = getCustomFieldValue(config.zuordnungFieldId);
-    let bereich: 'produktion' | 'montage' = 'produktion';
+    let bereich: 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert' = 'nicht_definiert';
     if (zuordnungValue.enum || zuordnungValue.text) {
       const value = (zuordnungValue.enum || zuordnungValue.text || '').toLowerCase();
-      if (value.includes('montage') || value.includes('baustelle')) {
+      if (value.includes('produktion')) {
+        bereich = 'produktion';
+      } else if (value.includes('montage') || value.includes('baustelle')) {
         bereich = 'montage';
+      } else if (value.includes('extern')) {
+        bereich = 'externes_gewerk';
       }
     }
 
