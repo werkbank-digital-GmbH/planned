@@ -128,7 +128,8 @@ export function parseDropZoneId(id: string): DropZoneData | null {
   }
 
   // Format 2: phase-{phaseId}-{projectId}-{YYYY-MM-DD}
-  const phaseMatch = id.match(/^phase-([^-]+)-([^-]+)-(\d{4}-\d{2}-\d{2})$/);
+  // UUIDs enthalten Bindestriche, daher matching bis zum letzten Datumsformat
+  const phaseMatch = id.match(/^phase-([0-9a-f-]{36})-([0-9a-f-]{36})-(\d{4}-\d{2}-\d{2})$/);
   if (phaseMatch) {
     const [, phaseId, projectId, dateStr] = phaseMatch;
     return {
