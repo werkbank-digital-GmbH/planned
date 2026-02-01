@@ -1,6 +1,6 @@
 import { User } from 'lucide-react';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 /**
  * Profil Page (Placeholder)
@@ -9,7 +9,7 @@ import { createActionSupabaseClient } from '@/infrastructure/supabase';
  * Zeigt vorerst nur Name und E-Mail des Users.
  */
 export default async function ProfilPage() {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },

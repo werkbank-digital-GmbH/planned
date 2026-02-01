@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
@@ -14,7 +14,7 @@ import { TimeTacMappingCard } from './TimeTacMappingCard';
  * TimeTac Integration Konfigurationsseite (Admin only)
  */
 export default async function TimeTacIntegrationPage() {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },

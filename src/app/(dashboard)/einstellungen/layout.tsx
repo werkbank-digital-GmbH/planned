@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import type { UserRole } from '@/domain/types';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 import { SettingsTabs } from '@/presentation/components/settings';
 
@@ -17,7 +17,7 @@ export default async function SettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 /**
  * Ressourcen-Verwaltung Seite (Admin only)
@@ -8,7 +8,7 @@ import { createActionSupabaseClient } from '@/infrastructure/supabase';
  * Placeholder - wird in späterem Prompt implementiert.
  */
 export default async function RessourcenPage() {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },

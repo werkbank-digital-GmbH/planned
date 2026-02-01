@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 import {
   PasswordChangeSection,
@@ -13,7 +13,7 @@ import {
  * Zeigt und ermöglicht die Bearbeitung des eigenen Profils.
  */
 export default async function ProfilePage() {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },

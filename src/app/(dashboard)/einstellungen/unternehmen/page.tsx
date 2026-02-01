@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 import { CompanyForm } from '@/presentation/components/settings';
 
@@ -10,7 +10,7 @@ import { CompanyForm } from '@/presentation/components/settings';
  * Ermöglicht die Bearbeitung der Unternehmens-Daten.
  */
 export default async function CompanySettingsPage() {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },

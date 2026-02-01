@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { createActionSupabaseClient } from '@/infrastructure/supabase';
+import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 
@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/compone
  * Zeigt Links zu den verschiedenen Integration-Konfigurationen.
  */
 export default async function IntegrationenPage() {
-  const supabase = await createActionSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user: authUser },
