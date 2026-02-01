@@ -4,6 +4,8 @@ import { AsanaService } from '@/infrastructure/services/AsanaService';
 import { EncryptionService } from '@/infrastructure/services/EncryptionService';
 import { createAdminSupabaseClient } from '@/infrastructure/supabase/admin';
 
+import { syncUsersAfterAsanaConnect } from '@/presentation/actions/integrations';
+
 /**
  * GET /api/integrations/asana/callback
  *
@@ -87,6 +89,12 @@ export async function GET(request: NextRequest) {
       console.error('Error saving Asana credentials:', upsertError);
       return NextResponse.redirect(`${settingsUrl}?error=save_failed`);
     }
+
+    // NEU: User-Mapping nach erfolgreichem Connect (fire-and-forget)
+    // state enthält die tenant_id
+    syncUsersAfterAsanaConnect(state).catch(() => {
+      // Silent fail - User-Mapping ist nicht kritisch für OAuth-Erfolg
+    });
 
     // Erfolg
     return NextResponse.redirect(

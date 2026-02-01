@@ -100,6 +100,7 @@ export class SyncAsanaTaskPhasesUseCase {
           startDate: Date | undefined;
           endDate: Date | undefined;
           budgetHours: number | undefined;
+          actualHours: number | undefined;
         }>;
       }>();
 
@@ -133,6 +134,7 @@ export class SyncAsanaTaskPhasesUseCase {
           startDate: mappedPhase.startDate ?? undefined,
           endDate: mappedPhase.endDate ?? undefined,
           budgetHours: mappedPhase.budgetHours ?? undefined,
+          actualHours: mappedPhase.actualHours ?? undefined,
         });
       }
 
@@ -194,6 +196,7 @@ export class SyncAsanaTaskPhasesUseCase {
                   startDate: phaseData.startDate,
                   endDate: phaseData.endDate,
                   budgetHours: phaseData.budgetHours,
+                  actualHours: phaseData.actualHours,
                   sortOrder: i,
                   updatedAt: now,
                 });
@@ -210,6 +213,7 @@ export class SyncAsanaTaskPhasesUseCase {
                   startDate: phaseData.startDate,
                   endDate: phaseData.endDate,
                   budgetHours: phaseData.budgetHours,
+                  actualHours: phaseData.actualHours,
                   sortOrder: i,
                   asanaGid: phaseData.asanaGid,
                   createdAt: now,
@@ -329,6 +333,7 @@ export class SyncAsanaTaskPhasesUseCase {
       phaseTypeFieldId: credentials.asanaPhaseTypeFieldId ?? undefined,
       zuordnungFieldId: credentials.asanaZuordnungFieldId ?? undefined,
       sollStundenFieldId: credentials.asanaSollStundenFieldId ?? undefined,
+      istStundenFieldId: credentials.asanaIstStundenFieldId ?? undefined,
     };
   }
 }

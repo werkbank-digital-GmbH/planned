@@ -29,6 +29,7 @@ export interface CreateAbsenceProps {
   startDate: Date;
   endDate: Date;
   notes?: string;
+  asanaGid?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -64,6 +65,7 @@ export class Absence {
     public readonly startDate: Date,
     public readonly endDate: Date,
     public readonly notes: string | undefined,
+    public readonly asanaGid: string | undefined,
     public readonly createdAt: Date,
     public readonly updatedAt: Date
   ) {
@@ -88,6 +90,7 @@ export class Absence {
       props.startDate,
       props.endDate,
       props.notes?.trim(),
+      props.asanaGid,
       props.createdAt ?? new Date(),
       props.updatedAt ?? new Date()
     );
@@ -136,6 +139,7 @@ export class Absence {
       this.startDate,
       this.endDate,
       notes?.trim(),
+      this.asanaGid,
       this.createdAt,
       new Date()
     );
@@ -157,6 +161,7 @@ export class Absence {
       startDate,
       endDate,
       this.notes,
+      this.asanaGid,
       this.createdAt,
       new Date()
     );
@@ -178,6 +183,7 @@ export class Absence {
       this.startDate,
       this.endDate,
       this.notes,
+      this.asanaGid,
       this.createdAt,
       new Date()
     );

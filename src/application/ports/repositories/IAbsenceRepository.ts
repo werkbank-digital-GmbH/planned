@@ -12,6 +12,11 @@ export interface IAbsenceRepository {
   findById(id: string): Promise<Absence | null>;
 
   /**
+   * Findet eine Absence anhand ihrer Asana GID.
+   */
+  findByAsanaGid(asanaGid: string): Promise<Absence | null>;
+
+  /**
    * Findet alle Absences eines Users.
    */
   findByUser(userId: string): Promise<Absence[]>;

@@ -43,6 +43,7 @@ export function AsanaTaskFieldMappingCard() {
     phaseTypeFieldId: null,
     zuordnungFieldId: null,
     sollStundenFieldId: null,
+    istStundenFieldId: null,
   });
 
   // Daten laden
@@ -79,6 +80,7 @@ export function AsanaTaskFieldMappingCard() {
         phaseTypeFieldId: config.phaseTypeFieldId,
         zuordnungFieldId: config.zuordnungFieldId,
         sollStundenFieldId: config.sollStundenFieldId,
+        istStundenFieldId: config.istStundenFieldId,
       });
 
       if (result.success) {
@@ -206,6 +208,30 @@ export function AsanaTaskFieldMappingCard() {
               >
                 <SelectTrigger id="sollStunden">
                   <SelectValue placeholder="Field auswahlen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
+                  {numberFields.map((field) => (
+                    <SelectItem key={field.gid} value={field.gid}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Ist-Stunden (Number) */}
+            <div className="space-y-2">
+              <Label htmlFor="istStunden">Ist-Stunden</Label>
+              <p className="text-xs text-gray-500">
+                Number-Feld für die tatsächlich geleisteten Stunden (Actual Hours)
+              </p>
+              <Select
+                value={config.istStundenFieldId ?? NONE_VALUE}
+                onValueChange={(v) => handleChange('istStundenFieldId', v)}
+              >
+                <SelectTrigger id="istStunden">
+                  <SelectValue placeholder="Field auswählen..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>

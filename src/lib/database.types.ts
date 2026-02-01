@@ -94,6 +94,7 @@ export type Database = {
       }
       absences: {
         Row: {
+          asana_gid: string | null
           created_at: string | null
           end_date: string
           id: string
@@ -106,6 +107,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asana_gid?: string | null
           created_at?: string | null
           end_date: string
           id?: string
@@ -118,6 +120,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asana_gid?: string | null
           created_at?: string | null
           end_date?: string
           id?: string
@@ -216,7 +219,9 @@ export type Database = {
       }
       integration_credentials: {
         Row: {
+          asana_absence_project_id: string | null
           asana_access_token: string | null
+          asana_ist_stunden_field_id: string | null
           asana_phase_bereich_field_id: string | null
           asana_phase_budget_hours_field_id: string | null
           asana_phase_type_field_id: string | null
@@ -239,7 +244,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          asana_absence_project_id?: string | null
           asana_access_token?: string | null
+          asana_ist_stunden_field_id?: string | null
           asana_phase_bereich_field_id?: string | null
           asana_phase_budget_hours_field_id?: string | null
           asana_phase_type_field_id?: string | null
@@ -262,7 +269,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          asana_absence_project_id?: string | null
           asana_access_token?: string | null
+          asana_ist_stunden_field_id?: string | null
           asana_phase_bereich_field_id?: string | null
           asana_phase_budget_hours_field_id?: string | null
           asana_phase_type_field_id?: string | null

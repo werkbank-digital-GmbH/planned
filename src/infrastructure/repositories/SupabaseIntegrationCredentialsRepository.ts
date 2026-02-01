@@ -43,6 +43,10 @@ function mapToDomain(row: CredentialsRow): IntegrationCredentialsData {
     asanaPhaseTypeFieldId: row.asana_phase_type_field_id,
     asanaZuordnungFieldId: row.asana_zuordnung_field_id,
     asanaSollStundenFieldId: row.asana_soll_stunden_field_id,
+    asanaIstStundenFieldId: row.asana_ist_stunden_field_id,
+
+    // Abwesenheiten
+    asanaAbsenceProjectId: row.asana_absence_project_id,
 
     createdAt: row.created_at ? new Date(row.created_at) : new Date(),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
@@ -107,6 +111,14 @@ function mapToDb(
   }
   if (data.asanaSollStundenFieldId !== undefined) {
     result.asana_soll_stunden_field_id = data.asanaSollStundenFieldId;
+  }
+  if (data.asanaIstStundenFieldId !== undefined) {
+    result.asana_ist_stunden_field_id = data.asanaIstStundenFieldId;
+  }
+
+  // Abwesenheiten
+  if (data.asanaAbsenceProjectId !== undefined) {
+    result.asana_absence_project_id = data.asanaAbsenceProjectId;
   }
 
   return result;

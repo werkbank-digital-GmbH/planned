@@ -27,6 +27,10 @@ export interface IntegrationCredentialsData {
   asanaPhaseTypeFieldId: string | null;     // "Projektphase" Dropdown
   asanaZuordnungFieldId: string | null;     // "Zuordnung" Dropdown (Bereich)
   asanaSollStundenFieldId: string | null;   // "Soll-Stunden" Number
+  asanaIstStundenFieldId: string | null;    // "Ist-Stunden" Number (actual hours)
+
+  // Asana - Abwesenheiten
+  asanaAbsenceProjectId: string | null;     // GID des Abwesenheiten-Projekts
 
   createdAt: Date;
   updatedAt: Date;
@@ -57,6 +61,10 @@ export interface IntegrationCredentialsUpdate {
   asanaPhaseTypeFieldId?: string | null;
   asanaZuordnungFieldId?: string | null;
   asanaSollStundenFieldId?: string | null;
+  asanaIstStundenFieldId?: string | null;
+
+  // Abwesenheiten
+  asanaAbsenceProjectId?: string | null;
 }
 
 /**

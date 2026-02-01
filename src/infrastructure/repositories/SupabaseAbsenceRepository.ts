@@ -30,6 +30,20 @@ export class SupabaseAbsenceRepository implements IAbsenceRepository {
     return AbsenceMapper.toDomain(data);
   }
 
+  async findByAsanaGid(asanaGid: string): Promise<Absence | null> {
+    const { data, error } = await this.supabase
+      .from('absences')
+      .select('*')
+      .eq('asana_gid', asanaGid)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return AbsenceMapper.toDomain(data);
+  }
+
   async findByUser(userId: string): Promise<Absence[]> {
     const { data, error } = await this.supabase
       .from('absences')
@@ -147,6 +161,7 @@ export class SupabaseAbsenceRepository implements IAbsenceRepository {
         start_date: absence.startDate.toISOString().split('T')[0],
         end_date: absence.endDate.toISOString().split('T')[0],
         notes: absence.notes ?? null,
+        asana_gid: absence.asanaGid ?? null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', absence.id)

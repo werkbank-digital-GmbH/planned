@@ -37,6 +37,7 @@ export function AsanaSourceConfigCard() {
     phaseTypeFieldId: null,
     zuordnungFieldId: null,
     sollStundenFieldId: null,
+    istStundenFieldId: null,
   });
 
   // Daten laden
@@ -74,6 +75,7 @@ export function AsanaSourceConfigCard() {
         phaseTypeFieldId: config.phaseTypeFieldId,
         zuordnungFieldId: config.zuordnungFieldId,
         sollStundenFieldId: config.sollStundenFieldId,
+        istStundenFieldId: config.istStundenFieldId,
       });
 
       if (result.success) {

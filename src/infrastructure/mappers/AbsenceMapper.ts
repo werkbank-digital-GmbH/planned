@@ -23,6 +23,7 @@ export class AbsenceMapper {
       startDate: new Date(row.start_date),
       endDate: new Date(row.end_date),
       notes: row.notes ?? undefined,
+      asanaGid: row.asana_gid ?? undefined,
       createdAt: row.created_at ? new Date(row.created_at) : new Date(),
       updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
     };
@@ -42,6 +43,7 @@ export class AbsenceMapper {
       start_date: absence.startDate.toISOString().split('T')[0],
       end_date: absence.endDate.toISOString().split('T')[0],
       notes: absence.notes ?? null,
+      asana_gid: absence.asanaGid ?? null,
       created_at: absence.createdAt.toISOString(),
       updated_at: absence.updatedAt.toISOString(),
     };

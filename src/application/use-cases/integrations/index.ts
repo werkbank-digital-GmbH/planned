@@ -17,3 +17,15 @@ export {
   type UpdateAsanaPhaseRequest,
   type UpdateAsanaPhaseResult,
 } from './UpdateAsanaPhaseUseCase';
+export {
+  SyncAsanaUsersUseCase,
+  GetAsanaUserMappingsUseCase,
+  type SyncAsanaUsersInput,
+  type UserSyncResult,
+  type UserMappingDTO,
+} from './SyncAsanaUsersUseCase';
+export {
+  SyncAsanaAbsencesUseCase,
+  type SyncAsanaAbsencesInput,
+  type AbsenceSyncResult,
+} from './SyncAsanaAbsencesUseCase';

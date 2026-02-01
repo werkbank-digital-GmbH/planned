@@ -64,6 +64,19 @@ export interface AsanaUser {
 }
 
 /**
+ * Asana Task für Abwesenheiten
+ * Enthält Assignee für User-Zuordnung
+ */
+export interface AsanaAbsenceTask {
+  gid: string;
+  name: string;
+  completed: boolean;
+  start_on: string | null;
+  due_on: string | null;
+  assignee: { gid: string; email?: string } | null;
+}
+
+/**
  * Konfiguration für Asana Sync (Legacy: Section-basiert)
  */
 export interface AsanaSyncConfig {
@@ -95,6 +108,8 @@ export interface AsanaTaskSyncConfig {
   zuordnungFieldId?: string;
   /** Custom Field GID für Soll-Stunden (Number) */
   sollStundenFieldId?: string;
+  /** Custom Field GID für Ist-Stunden (Number) */
+  istStundenFieldId?: string;
 }
 
 /**
@@ -129,6 +144,7 @@ export interface MappedTaskPhaseData {
   startDate: Date | null;     // Task.start_on
   endDate: Date | null;       // Task.due_on
   budgetHours: number | null; // Soll-Stunden Custom Field
+  actualHours: number | null; // Ist-Stunden Custom Field (NEU)
   /** GID des zugehörigen Projekts (aus task.projects[]) */
   projectAsanaGid: string;
   /** Name des zugehörigen Projekts */
@@ -253,6 +269,11 @@ export interface IAsanaService {
   getTeams(workspaceId: string, accessToken: string): Promise<AsanaTeam[]>;
 
   /**
+   * Lädt alle Users eines Workspaces.
+   */
+  getWorkspaceUsers(workspaceId: string, accessToken: string): Promise<AsanaUser[]>;
+
+  /**
    * Lädt alle Projekte eines Teams.
    */
   getTeamProjects(
@@ -265,6 +286,11 @@ export interface IAsanaService {
    * Lädt alle Tasks eines Projekts mit Custom Fields und Projects (Multi-Membership).
    */
   getTasksFromProject(projectGid: string, accessToken: string): Promise<AsanaTask[]>;
+
+  /**
+   * Lädt alle Tasks eines Projekts als Abwesenheiten (mit Assignee).
+   */
+  getAbsenceTasks(projectGid: string, accessToken: string): Promise<AsanaAbsenceTask[]>;
 
   /**
    * Mappt einen Asana-Task auf Phasen-Daten.

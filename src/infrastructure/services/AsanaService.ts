@@ -1,4 +1,5 @@
 import type {
+  AsanaAbsenceTask,
   AsanaCustomFieldDefinition,
   AsanaProject,
   AsanaSection,
@@ -211,6 +212,21 @@ export class AsanaService implements IAsanaService {
     return response.data;
   }
 
+  async getWorkspaceUsers(
+    workspaceId: string,
+    accessToken: string
+  ): Promise<Array<{ gid: string; name: string; email: string }>> {
+    const params = new URLSearchParams({
+      opt_fields: 'gid,name,email',
+    });
+
+    const response = await this.request<Array<{ gid: string; name: string; email: string }>>(
+      `/workspaces/${workspaceId}/users?${params}`,
+      accessToken
+    );
+    return response.data;
+  }
+
   async getTeamProjects(
     teamGid: string,
     accessToken: string,
@@ -258,6 +274,31 @@ export class AsanaService implements IAsanaService {
     });
 
     const response = await this.request<AsanaTask[]>(
+      `/projects/${projectGid}/tasks?${params}`,
+      accessToken
+    );
+    return response.data;
+  }
+
+  async getAbsenceTasks(
+    projectGid: string,
+    accessToken: string
+  ): Promise<AsanaAbsenceTask[]> {
+    // Tasks mit Assignee für Abwesenheiten laden
+    const params = new URLSearchParams({
+      opt_fields: [
+        'gid',
+        'name',
+        'completed',
+        'start_on',
+        'due_on',
+        'assignee',
+        'assignee.gid',
+        'assignee.email',
+      ].join(','),
+    });
+
+    const response = await this.request<AsanaAbsenceTask[]>(
       `/projects/${projectGid}/tasks?${params}`,
       accessToken
     );
@@ -318,6 +359,10 @@ export class AsanaService implements IAsanaService {
     const sollStundenValue = getCustomFieldValue(config.sollStundenFieldId);
     const budgetHours = sollStundenValue.number ?? null;
 
+    // Ist-Stunden (NEU)
+    const istStundenValue = getCustomFieldValue(config.istStundenFieldId);
+    const actualHours = istStundenValue.number ?? null;
+
     // Dates parsen
     const startDate = task.start_on ? new Date(task.start_on) : null;
     const endDate = task.due_on ? new Date(task.due_on) : null;
@@ -329,6 +374,7 @@ export class AsanaService implements IAsanaService {
       startDate,
       endDate,
       budgetHours,
+      actualHours,
       projectAsanaGid: otherProject.gid,
       projectName: otherProject.name,
     };

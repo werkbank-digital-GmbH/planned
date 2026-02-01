@@ -32,6 +32,8 @@ import { SupabaseAuthService } from '@/infrastructure/services';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 import { createAdminSupabaseClient } from '@/infrastructure/supabase/admin';
 
+import { matchSingleUserToAsana } from '@/presentation/actions/integrations';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -199,6 +201,11 @@ export async function createUserAction(
     });
 
     revalidatePath('/einstellungen/mitarbeiter');
+
+    // NEU: Automatisches Asana-Mapping für neuen User (fire-and-forget)
+    matchSingleUserToAsana(user.id, currentUser.tenantId).catch(() => {
+      // Silent fail - Mapping ist nicht kritisch für User-Erstellung
+    });
 
     return Result.ok({
       id: user.id,

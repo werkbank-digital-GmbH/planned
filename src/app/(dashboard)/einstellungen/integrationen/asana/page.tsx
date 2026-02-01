@@ -7,10 +7,12 @@ import { createServerSupabaseClient } from '@/infrastructure/supabase';
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 
+import { AsanaAbsenceConfigCard } from './AsanaAbsenceConfigCard';
 import { AsanaConnectionCard } from './AsanaConnectionCard';
 import { AsanaSourceConfigCard } from './AsanaSourceConfigCard';
 import { AsanaSyncCard } from './AsanaSyncCard';
 import { AsanaTaskFieldMappingCard } from './AsanaTaskFieldMappingCard';
+import { AsanaUserMappingCard } from './AsanaUserMappingCard';
 
 /**
  * Asana Integration Konfigurationsseite (Admin only)
@@ -94,6 +96,12 @@ export default async function AsanaIntegrationPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* User-Mapping */}
+          <AsanaUserMappingCard />
+
+          {/* Abwesenheiten */}
+          <AsanaAbsenceConfigCard />
         </>
       )}
 

@@ -13,6 +13,7 @@ describe('AbsenceConflictChecker', () => {
     findByUsersAndDateRange: vi.fn(),
     findByTenantAndDateRange: vi.fn(),
     findByTimetacId: vi.fn(),
+    findByAsanaGid: vi.fn(),
     save: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),

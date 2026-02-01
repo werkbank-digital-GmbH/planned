@@ -16,12 +16,24 @@ import type { UserRole } from '@/domain/types';
 
 import { Result, type ActionResult } from '@/application/common';
 import type { AsanaCustomFieldDefinition, AsanaProject } from '@/application/ports/services/IAsanaService';
-import { SyncAsanaProjectsUseCase, SyncAsanaTaskPhasesUseCase, UnlinkProjectUseCase } from '@/application/use-cases/integrations';
+import {
+  SyncAsanaProjectsUseCase,
+  SyncAsanaTaskPhasesUseCase,
+  UnlinkProjectUseCase,
+  SyncAsanaUsersUseCase,
+  GetAsanaUserMappingsUseCase,
+  SyncAsanaAbsencesUseCase,
+  type UserMappingDTO,
+  type AbsenceSyncResult,
+} from '@/application/use-cases/integrations';
 
+import { SupabaseAbsenceRepository } from '@/infrastructure/repositories/SupabaseAbsenceRepository';
 import { SupabaseIntegrationCredentialsRepository } from '@/infrastructure/repositories/SupabaseIntegrationCredentialsRepository';
+import { SupabaseIntegrationMappingRepository } from '@/infrastructure/repositories/SupabaseIntegrationMappingRepository';
 import { SupabaseProjectPhaseRepository } from '@/infrastructure/repositories/SupabaseProjectPhaseRepository';
 import { SupabaseProjectRepository } from '@/infrastructure/repositories/SupabaseProjectRepository';
 import { SupabaseSyncLogRepository } from '@/infrastructure/repositories/SupabaseSyncLogRepository';
+import { SupabaseUserRepository } from '@/infrastructure/repositories/SupabaseUserRepository';
 import { AsanaService } from '@/infrastructure/services/AsanaService';
 import { createEncryptionService } from '@/infrastructure/services/EncryptionService';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
@@ -57,6 +69,9 @@ export interface SyncResultDTO {
   archived: number;
   errors: string[];
 }
+
+// Re-export types from use-cases
+export type { UserMappingDTO, AbsenceSyncResult };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
@@ -595,6 +610,7 @@ export interface AsanaSourceConfigDTO {
   phaseTypeFieldId: string | null;
   zuordnungFieldId: string | null;
   sollStundenFieldId: string | null;
+  istStundenFieldId: string | null;
 }
 
 /**
@@ -620,6 +636,7 @@ export async function getAsanaSourceConfig(): Promise<ActionResult<AsanaSourceCo
         phaseTypeFieldId: null,
         zuordnungFieldId: null,
         sollStundenFieldId: null,
+        istStundenFieldId: null,
       });
     }
 
@@ -629,6 +646,7 @@ export async function getAsanaSourceConfig(): Promise<ActionResult<AsanaSourceCo
       phaseTypeFieldId: credentials.asanaPhaseTypeFieldId,
       zuordnungFieldId: credentials.asanaZuordnungFieldId,
       sollStundenFieldId: credentials.asanaSollStundenFieldId,
+      istStundenFieldId: credentials.asanaIstStundenFieldId,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
@@ -658,6 +676,7 @@ export async function saveAsanaSourceConfig(
       asanaPhaseTypeFieldId: config.phaseTypeFieldId,
       asanaZuordnungFieldId: config.zuordnungFieldId,
       asanaSollStundenFieldId: config.sollStundenFieldId,
+      asanaIstStundenFieldId: config.istStundenFieldId,
     });
 
     // Paths revalidieren
@@ -734,5 +753,305 @@ export async function syncAsanaTaskPhases(): Promise<ActionResult<TaskSyncResult
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
     return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: USER MAPPING
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface UserSyncResultDTO {
+  matched: number;
+  unmatchedPlanned: number;
+  unmatchedAsana: number;
+  mappings: UserMappingDTO[];
+}
+
+/**
+ * Synchronisiert User-Mappings zwischen Asana und planned.
+ * Matcht User per E-Mail-Prefix (vor dem @).
+ */
+export async function syncAsanaUsers(): Promise<ActionResult<UserSyncResultDTO>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const asanaService = createAsanaService();
+
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+    const mappingRepo = new SupabaseIntegrationMappingRepository(supabase);
+    const userRepo = new SupabaseUserRepository(supabase);
+
+    // Access Token holen (mit automatischem Refresh)
+    const accessToken = await getAsanaAccessToken(currentUser.tenantId);
+
+    // Credentials für Workspace-ID laden
+    const credentials = await credentialsRepo.findByTenantId(currentUser.tenantId);
+    if (!credentials?.asanaWorkspaceId) {
+      return Result.fail('NOT_CONFIGURED', 'Kein Asana Workspace konfiguriert');
+    }
+
+    const useCase = new SyncAsanaUsersUseCase(
+      asanaService,
+      mappingRepo,
+      userRepo
+    );
+
+    const result = await useCase.execute({
+      tenantId: currentUser.tenantId,
+      accessToken,
+      workspaceId: credentials.asanaWorkspaceId,
+    });
+
+    return Result.ok(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+/**
+ * Lädt die aktuellen User-Mappings (ohne erneute Synchronisation).
+ */
+export async function getAsanaUserMappings(): Promise<ActionResult<UserMappingDTO[]>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+
+    const mappingRepo = new SupabaseIntegrationMappingRepository(supabase);
+    const userRepo = new SupabaseUserRepository(supabase);
+
+    const useCase = new GetAsanaUserMappingsUseCase(mappingRepo, userRepo);
+
+    const result = await useCase.execute(currentUser.tenantId);
+
+    return Result.ok(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: ABSENCES FROM ASANA
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AsanaAbsenceConfigDTO {
+  absenceProjectId: string | null;
+  absenceProjectName?: string;
+}
+
+/**
+ * Lädt die Absence-Projekt-Konfiguration.
+ */
+export async function getAsanaAbsenceConfig(): Promise<ActionResult<AsanaAbsenceConfigDTO>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    const credentials = await credentialsRepo.findByTenantId(currentUser.tenantId);
+
+    return Result.ok({
+      absenceProjectId: credentials?.asanaAbsenceProjectId ?? null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+/**
+ * Speichert die Absence-Projekt-Konfiguration.
+ */
+export async function saveAsanaAbsenceConfig(
+  config: Pick<AsanaAbsenceConfigDTO, 'absenceProjectId'>
+): Promise<ActionResult<void>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (currentUser.role !== 'admin') {
+      return Result.fail('FORBIDDEN', 'Nur Administratoren können die Konfiguration ändern');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    await credentialsRepo.update(currentUser.tenantId, {
+      asanaAbsenceProjectId: config.absenceProjectId,
+    });
+
+    // Paths revalidieren
+    revalidatePath('/einstellungen/integrationen/asana');
+
+    return Result.ok(undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+/**
+ * Synchronisiert Abwesenheiten aus dem konfigurierten Asana-Projekt.
+ */
+export async function syncAsanaAbsences(): Promise<ActionResult<AbsenceSyncResult>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const asanaService = createAsanaService();
+
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+    const mappingRepo = new SupabaseIntegrationMappingRepository(supabase);
+    const absenceRepo = new SupabaseAbsenceRepository(supabase);
+
+    // Access Token holen (mit automatischem Refresh)
+    const accessToken = await getAsanaAccessToken(currentUser.tenantId);
+
+    const useCase = new SyncAsanaAbsencesUseCase(
+      asanaService,
+      credentialsRepo,
+      mappingRepo,
+      absenceRepo
+    );
+
+    const result = await useCase.execute({
+      tenantId: currentUser.tenantId,
+      accessToken,
+    });
+
+    // Paths revalidieren
+    revalidatePath('/planung');
+    revalidatePath('/einstellungen/integrationen/asana');
+
+    return Result.ok(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: SINGLE USER MATCHING (für automatische Trigger)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Matcht einen einzelnen User gegen Asana-Users.
+ * Wird bei User-Erstellung aufgerufen (fire-and-forget).
+ *
+ * Diese Funktion ist für interne Verwendung und erfordert keine Auth-Prüfung,
+ * da sie nur von anderen vertrauenswürdigen Serverfunktionen aufgerufen wird.
+ */
+export async function matchSingleUserToAsana(
+  userId: string,
+  tenantId: string
+): Promise<void> {
+  try {
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+    const mappingRepo = new SupabaseIntegrationMappingRepository(supabase);
+    const userRepo = new SupabaseUserRepository(supabase);
+    const asanaService = createAsanaService();
+    const encryptionService = createEncryptionService();
+
+    // 1. Prüfen ob Asana verbunden ist
+    const credentials = await credentialsRepo.findByTenantId(tenantId);
+    if (!credentials?.asanaAccessToken || !credentials?.asanaWorkspaceId) {
+      return; // Keine Asana-Verbindung, nichts zu tun
+    }
+
+    // 2. User laden
+    const user = await userRepo.findById(userId);
+    if (!user) return;
+
+    // 3. Access Token entschlüsseln
+    const accessToken = encryptionService.decrypt(credentials.asanaAccessToken);
+
+    // 4. Asana-Users laden
+    const asanaUsers = await asanaService.getWorkspaceUsers(
+      credentials.asanaWorkspaceId,
+      accessToken
+    );
+
+    // 5. E-Mail-Prefix Match
+    const getPrefix = (email: string) => email.split('@')[0].toLowerCase();
+    const userPrefix = getPrefix(user.email);
+
+    const matchedAsanaUser = asanaUsers.find(
+      (au) => au.email && getPrefix(au.email) === userPrefix
+    );
+
+    if (!matchedAsanaUser) return; // Kein Match gefunden
+
+    // 6. Mapping speichern
+    await mappingRepo.upsert({
+      tenantId,
+      service: 'asana',
+      mappingType: 'user',
+      externalId: matchedAsanaUser.gid,
+      internalId: userId,
+      externalName: matchedAsanaUser.name,
+    });
+  } catch {
+    // Silent fail - Mapping ist nicht kritisch
+  }
+}
+
+/**
+ * Führt ein vollständiges User-Mapping für einen Tenant durch.
+ * Wird nach Asana-Connect aufgerufen.
+ *
+ * Diese Funktion ist für interne Verwendung (z.B. aus OAuth-Callback).
+ */
+export async function syncUsersAfterAsanaConnect(tenantId: string): Promise<void> {
+  try {
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+    const mappingRepo = new SupabaseIntegrationMappingRepository(supabase);
+    const userRepo = new SupabaseUserRepository(supabase);
+    const asanaService = createAsanaService();
+    const encryptionService = createEncryptionService();
+
+    // Credentials laden
+    const credentials = await credentialsRepo.findByTenantId(tenantId);
+    if (!credentials?.asanaAccessToken || !credentials?.asanaWorkspaceId) {
+      return;
+    }
+
+    // Access Token entschlüsseln
+    const accessToken = encryptionService.decrypt(credentials.asanaAccessToken);
+
+    // SyncAsanaUsersUseCase ausführen
+    const useCase = new SyncAsanaUsersUseCase(
+      asanaService,
+      mappingRepo,
+      userRepo
+    );
+
+    await useCase.execute({
+      tenantId,
+      accessToken,
+      workspaceId: credentials.asanaWorkspaceId,
+    });
+  } catch {
+    // Silent fail - User-Mapping nach Connect ist nice-to-have
   }
 }
