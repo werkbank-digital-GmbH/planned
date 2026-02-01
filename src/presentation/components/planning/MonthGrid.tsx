@@ -1,5 +1,6 @@
 'use client';
 
+import { useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronRight, Clock, Target } from 'lucide-react';
 
 import type { PhaseRowData, ProjectRowData } from '@/application/queries';
@@ -16,6 +17,8 @@ import {
   isWeekend,
 } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
+
+import { createPhaseDropZoneId } from './types/dnd';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -210,6 +213,7 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
               key={phase.phase.id}
               phase={phase}
               monthDates={monthDates}
+              projectId={project.project.id}
             />
           ))}
         </div>
@@ -232,6 +236,7 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
 interface MonthPhaseRowProps {
   phase: PhaseRowData;
   monthDates: Date[];
+  projectId: string;
 }
 
 function getBereichColor(bereich: string): string {
@@ -247,7 +252,77 @@ function getBereichColor(bereich: string): string {
   }
 }
 
-function MonthPhaseRow({ phase, monthDates }: MonthPhaseRowProps) {
+// Droppable Tageszelle für Monatsansicht
+interface MonthDayCellProps {
+  phaseId: string;
+  projectId: string;
+  date: Date;
+  totalHours: number;
+  bereichColor: string;
+  allocationsInfo: string;
+}
+
+function MonthDayCell({ phaseId, projectId, date, totalHours, bereichColor, allocationsInfo }: MonthDayCellProps) {
+  const weekend = isWeekend(date);
+  const today = isToday(date);
+  const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: droppableId,
+    data: {
+      type: 'phase-cell',
+      phaseId,
+      projectId,
+      date,
+    },
+  });
+
+  // Wochenenden sind nicht droppable
+  if (weekend) {
+    return (
+      <div
+        className={cn(
+          'min-h-[36px] border-r border-gray-200 last:border-r-0 flex-shrink-0 flex items-center justify-center',
+          today && 'bg-amber-50/50',
+          'bg-gray-50'
+        )}
+        style={{ width: DAY_COLUMN_WIDTH }}
+      >
+        {totalHours > 0 && (
+          <div
+            className={cn('text-[9px] font-medium rounded px-1 py-0.5', bereichColor)}
+            title={allocationsInfo}
+          >
+            {totalHours}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'min-h-[36px] border-r border-gray-200 last:border-r-0 flex-shrink-0 flex items-center justify-center',
+        today && 'bg-amber-50/50',
+        isOver && 'bg-blue-100 ring-1 ring-inset ring-blue-400'
+      )}
+      style={{ width: DAY_COLUMN_WIDTH }}
+    >
+      {totalHours > 0 && (
+        <div
+          className={cn('text-[9px] font-medium rounded px-1 py-0.5', bereichColor)}
+          title={allocationsInfo}
+        >
+          {totalHours}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
   const bereichColor = getBereichColor(phase.phase.bereich);
 
   return (
@@ -269,36 +344,23 @@ function MonthPhaseRow({ phase, monthDates }: MonthPhaseRowProps) {
         <span className="text-sm truncate">{phase.phase.name}</span>
       </div>
 
-      {/* Tageszellen mit Allocations */}
+      {/* Tageszellen mit Allocations - jetzt Droppable! */}
       {monthDates.map((date) => {
         const dateKey = formatDateISO(date);
         const allocations = phase.dayAllocations[dateKey] ?? [];
-        const weekend = isWeekend(date);
-        const today = isToday(date);
         const totalHours = allocations.reduce((sum, a) => sum + (a.plannedHours ?? 0), 0);
+        const allocationsInfo = `${totalHours}h - ${allocations.map(a => a.user?.fullName ?? 'Unbekannt').join(', ')}`;
 
         return (
-          <div
+          <MonthDayCell
             key={date.toISOString()}
-            className={cn(
-              'min-h-[36px] border-r border-gray-200 last:border-r-0 flex-shrink-0 flex items-center justify-center',
-              today && 'bg-amber-50/50',
-              weekend && !today && 'bg-gray-50'
-            )}
-            style={{ width: DAY_COLUMN_WIDTH }}
-          >
-            {totalHours > 0 && (
-              <div
-                className={cn(
-                  'text-[9px] font-medium rounded px-1 py-0.5',
-                  bereichColor
-                )}
-                title={`${totalHours}h - ${allocations.map(a => a.user?.fullName ?? 'Unbekannt').join(', ')}`}
-              >
-                {totalHours}
-              </div>
-            )}
-          </div>
+            phaseId={phase.phase.id}
+            projectId={projectId}
+            date={date}
+            totalHours={totalHours}
+            bereichColor={bereichColor}
+            allocationsInfo={allocationsInfo}
+          />
         );
       })}
     </div>

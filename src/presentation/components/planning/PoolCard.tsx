@@ -5,6 +5,7 @@ import { Truck, User } from 'lucide-react';
 
 import type { AvailabilityStatus, PoolItem } from '@/application/queries';
 
+import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -61,6 +62,12 @@ export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolC
     ? `pool-${item.type}-${item.id}-${contextKey}`
     : `pool-${item.type}-${item.id}`;
 
+  // Filtere Wochenenden aus weekDates (nur Werktage Mo-Fr)
+  const workDates = weekDates.filter((date) => {
+    const day = date.getDay();
+    return day !== 0 && day !== 6; // 0 = Sonntag, 6 = Samstag
+  });
+
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: draggableId,
     data: {
@@ -68,6 +75,8 @@ export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolC
       itemType: item.type,
       itemId: item.id,
       itemName: item.name,
+      // Übergebe die Werktage als ISO-Strings für die Allocation-Erstellung
+      dates: workDates.map((d) => formatDateISO(d)),
     },
   });
 

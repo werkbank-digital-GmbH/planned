@@ -41,6 +41,8 @@ export interface PoolItemDragData {
   itemType: 'user' | 'resource';
   itemId: string;
   itemName: string;
+  /** Die Werktage, für die Allocations erstellt werden sollen (bei Wochenansicht: 1 Tag, bei Monatsansicht: 5 Tage) */
+  dates: string[];
 }
 
 /**
