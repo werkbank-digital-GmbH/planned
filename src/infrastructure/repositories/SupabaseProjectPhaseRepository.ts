@@ -91,7 +91,6 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         projects!inner(
           id,
           name,
-          project_number,
           status,
           address
         )
@@ -106,7 +105,6 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
       const project = row.projects as unknown as {
         id: string;
         name: string;
-        project_number: string | null;
         status: string | null;
         address: string | null;
       };
@@ -122,7 +120,7 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         project: {
           id: project.id,
           name: project.name,
-          projectNumber: project.project_number ?? undefined,
+          projectNumber: undefined,
           status: project.status ?? undefined,
           address: project.address ?? undefined,
         },
@@ -370,7 +368,6 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         projects!inner(
           id,
           name,
-          project_number,
           status,
           address,
           tenant_id
@@ -407,7 +404,6 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
       const project = row.projects as unknown as {
         id: string;
         name: string;
-        project_number: string | null;
         status: string | null;
         address: string | null;
       };
@@ -423,7 +419,7 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         project: {
           id: project.id,
           name: project.name,
-          projectNumber: project.project_number ?? undefined,
+          projectNumber: undefined,
           status: project.status ?? undefined,
           address: project.address ?? undefined,
         },
