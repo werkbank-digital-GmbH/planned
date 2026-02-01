@@ -39,16 +39,16 @@
 | Dashboard KPIs | ✅ |
 | Mobile "Meine Woche" | ✅ |
 | Settings (Profil, Unternehmen) | ✅ |
-| **Asana Integration** | ⚠️ Backend ✅, Token-Refresh ✅, UI ❌ |
-| **TimeTac Integration** | ⚠️ Backend ✅, UI ❌ |
+| **Asana Integration** | ✅ Backend, Token-Refresh, UI |
+| **TimeTac Integration** | ✅ Backend, UI |
 
 ---
 
 ## Offene Punkte
 
 ### Fehlende UI-Seiten
-- ❌ `/einstellungen/integrationen/asana`
-- ❌ `/einstellungen/integrationen/timetac`
+- ✅ ~~`/einstellungen/integrationen/asana`~~ (IMPLEMENTIERT)
+- ✅ ~~`/einstellungen/integrationen/timetac`~~ (IMPLEMENTIERT)
 - ❌ `/einstellungen/ressourcen` (Placeholder)
 - ❌ `/profil` Mobile (Placeholder)
 
@@ -67,43 +67,59 @@
 
 ## Nächste Schritte (Empfohlen)
 
-1. **Asana Integration UI** – Config-Seite, Projekt-Auswahl
-2. **TimeTac Integration UI** – API-Key Eingabe, User/Projekt-Mapping
-3. **Test-Coverage** – Repository & Server Action Tests (Integration Use Cases ✅ erledigt)
+1. ~~**Asana Integration UI**~~ ✅ ERLEDIGT
+2. ~~**TimeTac Integration UI**~~ ✅ ERLEDIGT
+3. **Test-Coverage** – Repository & Server Action Tests
+4. **Ressourcen-Verwaltung UI** – `/einstellungen/ressourcen`
+5. **Profil Mobile** – `/profil` Mobile-Ansicht
 
 ---
 
 ## Letzte Session
 
-**Datum:** 2026-02-01 (Task D: Integration Use Cases Tests)
+**Datum:** 2026-02-01 (Task B: Integration UI)
 
 ### Erledigte Aufgaben:
-- ✅ **54 neue Tests für Integration Use Cases geschrieben**
-- ✅ 6 neue Test-Dateien erstellt
-- ✅ ESLint-Fehler in neuen Tests behoben
+- ✅ **Asana Integration UI** komplett implementiert
+- ✅ **TimeTac Integration UI** komplett implementiert
+- ✅ Neue Server Actions hinzugefügt
 
-### Neue Test-Dateien:
-| Test-Datei | Tests | Use Case |
-|------------|-------|----------|
-| `ConnectTimeTacUseCase.test.ts` | 5 | API-Key Validierung, Account-Info |
-| `SyncAsanaProjectsUseCase.test.ts` | 13 | Projekt-Sync, Token-Refresh, Archivierung |
-| `UpdateAsanaPhaseUseCase.test.ts` | 10 | Phase-Update, Bidirektionaler Sync |
-| `SyncTimeTacAbsencesUseCase.test.ts` | 10 | Abwesenheits-Sync, Konflikt-Erkennung |
-| `SyncTimeTacTimeEntriesUseCase.test.ts` | 12 | TimeEntry-Sync, Projekt-Mapping |
-| `UnlinkProjectUseCase.test.ts` | 4 | Asana-Verknüpfung entfernen |
-| **Gesamt** | **54** | |
+### Neue Dateien:
+| Datei | Beschreibung |
+|-------|--------------|
+| `src/app/(dashboard)/einstellungen/integrationen/asana/page.tsx` | Asana Config-Seite |
+| `src/app/(dashboard)/einstellungen/integrationen/asana/AsanaConnectionCard.tsx` | Verbindungs-Status |
+| `src/app/(dashboard)/einstellungen/integrationen/asana/AsanaSyncCard.tsx` | Projekt-Sync |
+| `src/app/(dashboard)/einstellungen/integrationen/asana/AsanaFieldMappingCard.tsx` | Custom Field Mapping |
+| `src/app/(dashboard)/einstellungen/integrationen/timetac/page.tsx` | TimeTac Config-Seite |
+| `src/app/(dashboard)/einstellungen/integrationen/timetac/TimeTacConnectionCard.tsx` | API-Key Formular |
+| `src/app/(dashboard)/einstellungen/integrationen/timetac/TimeTacMappingCard.tsx` | Projekt-Mapping |
 
-### Test-Kategorien pro Use Case:
-- Happy Path (Erfolgreicher Durchlauf)
-- Validation Errors (Ungültige Inputs)
-- Auth Errors (Fehlende/abgelaufene Tokens)
-- Token Refresh (Automatische Erneuerung + Persistierung)
-- External Service Errors (API-Fehler)
+### Neue Server Actions (in `integrations.ts`):
+| Action | Funktion |
+|--------|----------|
+| `connectTimeTac()` | TimeTac mit API-Key verbinden |
+| `disconnectTimeTac()` | TimeTac-Verbindung trennen |
+| `disconnectAsana()` | Asana-Verbindung trennen |
+| `getAsanaConnectionStatus()` | Asana-Verbindungsstatus |
+| `getTimeTacConnectionStatus()` | TimeTac-Verbindungsstatus |
+
+### Features der Integration UI:
+**Asana:**
+- OAuth-Verbindung über Button
+- Projekt-Sync mit Erfolgs-/Fehlermeldungen
+- Custom Field Mapping (Projektnummer, Soll-Produktion, Soll-Montage)
+- Verbindung trennen
+
+**TimeTac:**
+- API-Key Eingabe mit Validierung
+- Projekt-Mapping (TimeTac Projekt → Planned Phase)
+- Verbindung trennen / API-Key ändern
 
 ### Guard-Ergebnisse:
 - ESLint: ⚠️ 7 Warnings (bekannte Server-Logs)
 - TypeScript: ✅ **Keine Fehler**
-- Vitest: ✅ **615 Tests grün** (vorher 561)
+- Vitest: ✅ **615 Tests grün**
 
 ---
 

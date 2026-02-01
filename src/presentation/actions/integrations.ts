@@ -18,7 +18,7 @@ import type { UserRole } from '@/domain/types';
 import { Result, type ActionResult } from '@/application/common';
 import type { AsanaCustomFieldDefinition, AsanaProject } from '@/application/ports/services/IAsanaService';
 import type { TimeTacProject } from '@/application/ports/services/ITimeTacService';
-import { SyncAsanaProjectsUseCase, UnlinkProjectUseCase } from '@/application/use-cases/integrations';
+import { ConnectTimeTacUseCase, SyncAsanaProjectsUseCase, UnlinkProjectUseCase } from '@/application/use-cases/integrations';
 
 import { SupabaseIntegrationCredentialsRepository } from '@/infrastructure/repositories/SupabaseIntegrationCredentialsRepository';
 import { SupabaseIntegrationMappingRepository } from '@/infrastructure/repositories/SupabaseIntegrationMappingRepository';
@@ -413,6 +413,199 @@ export async function unlinkProject(
     revalidatePath('/einstellungen/integrationen');
 
     return Result.ok(result.data!);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONNECT TIMETAC
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Verbindet TimeTac mit einem API-Key.
+ */
+export async function connectTimeTac(
+  apiKey: string
+): Promise<ActionResult<{ accountName: string }>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    // Nur Admin kann Integration einrichten
+    if (currentUser.role !== 'admin') {
+      return Result.fail('FORBIDDEN', 'Nur Administratoren können Integrationen einrichten');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+    const encryptionService = createEncryptionService();
+    const timetacService = new TimeTacService();
+
+    const useCase = new ConnectTimeTacUseCase(
+      timetacService,
+      credentialsRepo,
+      encryptionService
+    );
+
+    const result = await useCase.execute(currentUser.tenantId, apiKey);
+
+    // Paths revalidieren
+    revalidatePath('/einstellungen/integrationen');
+    revalidatePath('/einstellungen/integrationen/timetac');
+
+    return Result.ok({ accountName: result.accountName ?? '' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DISCONNECT TIMETAC
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Trennt die TimeTac-Verbindung.
+ */
+export async function disconnectTimeTac(): Promise<ActionResult<void>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    // Nur Admin kann Integration trennen
+    if (currentUser.role !== 'admin') {
+      return Result.fail('FORBIDDEN', 'Nur Administratoren können Integrationen trennen');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    await credentialsRepo.update(currentUser.tenantId, {
+      timetacApiToken: null,
+      timetacAccountId: null,
+    });
+
+    // Paths revalidieren
+    revalidatePath('/einstellungen/integrationen');
+    revalidatePath('/einstellungen/integrationen/timetac');
+
+    return Result.ok(undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DISCONNECT ASANA
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Trennt die Asana-Verbindung.
+ */
+export async function disconnectAsana(): Promise<ActionResult<void>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    // Nur Admin kann Integration trennen
+    if (currentUser.role !== 'admin') {
+      return Result.fail('FORBIDDEN', 'Nur Administratoren können Integrationen trennen');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    await credentialsRepo.update(currentUser.tenantId, {
+      asanaAccessToken: null,
+      asanaRefreshToken: null,
+      asanaTokenExpiresAt: null,
+      asanaWorkspaceId: null,
+    });
+
+    // Paths revalidieren
+    revalidatePath('/einstellungen/integrationen');
+    revalidatePath('/einstellungen/integrationen/asana');
+
+    return Result.ok(undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET ASANA CONNECTION STATUS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AsanaConnectionStatus {
+  connected: boolean;
+  workspaceName?: string;
+  lastSyncedAt?: string;
+}
+
+/**
+ * Lädt den Asana-Verbindungsstatus.
+ */
+export async function getAsanaConnectionStatus(): Promise<ActionResult<AsanaConnectionStatus>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    const credentials = await credentialsRepo.findByTenantId(currentUser.tenantId);
+
+    if (!credentials?.asanaAccessToken) {
+      return Result.ok({ connected: false });
+    }
+
+    return Result.ok({
+      connected: true,
+      workspaceName: credentials.asanaWorkspaceId ?? undefined,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET TIMETAC CONNECTION STATUS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface TimeTacConnectionStatus {
+  connected: boolean;
+  accountId?: string;
+}
+
+/**
+ * Lädt den TimeTac-Verbindungsstatus.
+ */
+export async function getTimeTacConnectionStatus(): Promise<ActionResult<TimeTacConnectionStatus>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    const credentials = await credentialsRepo.findByTenantId(currentUser.tenantId);
+
+    if (!credentials?.timetacApiToken) {
+      return Result.ok({ connected: false });
+    }
+
+    return Result.ok({
+      connected: true,
+      accountId: credentials.timetacAccountId ?? undefined,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
     return Result.fail('INTERNAL_ERROR', message);
