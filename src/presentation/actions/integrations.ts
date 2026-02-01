@@ -18,7 +18,7 @@ import type { UserRole } from '@/domain/types';
 import { Result, type ActionResult } from '@/application/common';
 import type { AsanaCustomFieldDefinition, AsanaProject } from '@/application/ports/services/IAsanaService';
 import type { TimeTacProject } from '@/application/ports/services/ITimeTacService';
-import { ConnectTimeTacUseCase, SyncAsanaProjectsUseCase, UnlinkProjectUseCase } from '@/application/use-cases/integrations';
+import { ConnectTimeTacUseCase, SyncAsanaProjectsUseCase, SyncAsanaTaskPhasesUseCase, UnlinkProjectUseCase } from '@/application/use-cases/integrations';
 
 import { SupabaseIntegrationCredentialsRepository } from '@/infrastructure/repositories/SupabaseIntegrationCredentialsRepository';
 import { SupabaseIntegrationMappingRepository } from '@/infrastructure/repositories/SupabaseIntegrationMappingRepository';
@@ -838,6 +838,244 @@ export async function getLocalProjectsWithPhases(): Promise<
     }
 
     return Result.ok(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: ASANA TEAMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AsanaTeamDTO {
+  gid: string;
+  name: string;
+}
+
+/**
+ * Lädt alle Teams aus dem verbundenen Asana Workspace.
+ */
+export async function getAsanaTeams(): Promise<ActionResult<AsanaTeamDTO[]>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    const credentials = await credentialsRepo.findByTenantId(currentUser.tenantId);
+
+    if (!credentials?.asanaWorkspaceId) {
+      return Result.fail('NOT_CONFIGURED', 'Kein Asana Workspace konfiguriert');
+    }
+
+    const accessToken = await getAsanaAccessToken(currentUser.tenantId);
+    const asanaService = createAsanaService();
+
+    const teams = await asanaService.getTeams(credentials.asanaWorkspaceId, accessToken);
+
+    const teamDTOs: AsanaTeamDTO[] = teams.map((t) => ({
+      gid: t.gid,
+      name: t.name,
+    }));
+
+    return Result.ok(teamDTOs);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: ASANA TEAM PROJECTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Lädt alle Projekte eines Asana Teams.
+ */
+export async function getAsanaTeamProjects(
+  teamGid: string
+): Promise<ActionResult<AsanaProjectDTO[]>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const accessToken = await getAsanaAccessToken(currentUser.tenantId);
+    const asanaService = createAsanaService();
+
+    const projects = await asanaService.getTeamProjects(teamGid, accessToken, {
+      archived: false,
+    });
+
+    const projectDTOs: AsanaProjectDTO[] = projects.map((p) => ({
+      gid: p.gid,
+      name: p.name,
+      archived: p.archived,
+      isSynced: false, // Nicht relevant für Team-Projekte
+    }));
+
+    return Result.ok(projectDTOs);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: ASANA SOURCE CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AsanaSourceConfigDTO {
+  sourceProjectId: string | null;
+  sourceProjectName?: string;
+  teamId: string | null;
+  teamName?: string;
+  phaseTypeFieldId: string | null;
+  zuordnungFieldId: string | null;
+  sollStundenFieldId: string | null;
+}
+
+/**
+ * Lädt die aktuelle Asana Source-Konfiguration.
+ */
+export async function getAsanaSourceConfig(): Promise<ActionResult<AsanaSourceConfigDTO>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    const credentials = await credentialsRepo.findByTenantId(currentUser.tenantId);
+
+    if (!credentials) {
+      return Result.ok({
+        sourceProjectId: null,
+        teamId: null,
+        phaseTypeFieldId: null,
+        zuordnungFieldId: null,
+        sollStundenFieldId: null,
+      });
+    }
+
+    return Result.ok({
+      sourceProjectId: credentials.asanaSourceProjectId,
+      teamId: credentials.asanaTeamId,
+      phaseTypeFieldId: credentials.asanaPhaseTypeFieldId,
+      zuordnungFieldId: credentials.asanaZuordnungFieldId,
+      sollStundenFieldId: credentials.asanaSollStundenFieldId,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+/**
+ * Speichert die Asana Source-Konfiguration.
+ */
+export async function saveAsanaSourceConfig(
+  config: Omit<AsanaSourceConfigDTO, 'sourceProjectName' | 'teamName'>
+): Promise<ActionResult<void>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (currentUser.role !== 'admin') {
+      return Result.fail('FORBIDDEN', 'Nur Administratoren können die Konfiguration ändern');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+
+    await credentialsRepo.update(currentUser.tenantId, {
+      asanaSourceProjectId: config.sourceProjectId,
+      asanaTeamId: config.teamId,
+      asanaPhaseTypeFieldId: config.phaseTypeFieldId,
+      asanaZuordnungFieldId: config.zuordnungFieldId,
+      asanaSollStundenFieldId: config.sollStundenFieldId,
+    });
+
+    // Paths revalidieren
+    revalidatePath('/einstellungen/integrationen/asana');
+
+    return Result.ok(undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NEU: SYNC TASK PHASES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface TaskSyncResultDTO {
+  projectsCreated: number;
+  projectsUpdated: number;
+  phasesCreated: number;
+  phasesUpdated: number;
+  tasksSkipped: number;
+  errors: string[];
+}
+
+/**
+ * Synchronisiert Phasen aus dem Asana Source-Projekt (Task-basiert).
+ */
+export async function syncAsanaTaskPhases(): Promise<ActionResult<TaskSyncResultDTO>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const asanaService = createAsanaService();
+    const encryptionService = createEncryptionService();
+
+    const projectRepo = new SupabaseProjectRepository(supabase);
+    const projectPhaseRepo = new SupabaseProjectPhaseRepository(supabase);
+    const credentialsRepo = new SupabaseIntegrationCredentialsRepository(supabase);
+    const syncLogRepo = new SupabaseSyncLogRepository(supabase);
+
+    const useCase = new SyncAsanaTaskPhasesUseCase(
+      asanaService,
+      projectRepo,
+      projectPhaseRepo,
+      credentialsRepo,
+      syncLogRepo,
+      encryptionService
+    );
+
+    const result = await useCase.execute(currentUser.tenantId);
+
+    // Paths revalidieren
+    revalidatePath('/planung');
+    revalidatePath('/einstellungen/integrationen');
+    revalidatePath('/einstellungen/integrationen/asana');
+
+    if (!result.success) {
+      return Result.fail('SYNC_FAILED', result.errors.join(', '));
+    }
+
+    return Result.ok({
+      projectsCreated: result.projectsCreated,
+      projectsUpdated: result.projectsUpdated,
+      phasesCreated: result.phasesCreated,
+      phasesUpdated: result.phasesUpdated,
+      tasksSkipped: result.tasksSkipped,
+      errors: result.errors,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
     return Result.fail('INTERNAL_ERROR', message);

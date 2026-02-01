@@ -219,13 +219,18 @@ export type Database = {
           asana_access_token: string | null
           asana_phase_bereich_field_id: string | null
           asana_phase_budget_hours_field_id: string | null
+          asana_phase_type_field_id: string | null
           asana_project_status_field_id: string | null
           asana_refresh_token: string | null
           asana_soll_montage_field_id: string | null
           asana_soll_produktion_field_id: string | null
+          asana_soll_stunden_field_id: string | null
+          asana_source_project_id: string | null
+          asana_team_id: string | null
           asana_token_expires_at: string | null
           asana_webhook_secret: string | null
           asana_workspace_id: string | null
+          asana_zuordnung_field_id: string | null
           created_at: string | null
           id: string
           tenant_id: string
@@ -237,13 +242,18 @@ export type Database = {
           asana_access_token?: string | null
           asana_phase_bereich_field_id?: string | null
           asana_phase_budget_hours_field_id?: string | null
+          asana_phase_type_field_id?: string | null
           asana_project_status_field_id?: string | null
           asana_refresh_token?: string | null
           asana_soll_montage_field_id?: string | null
           asana_soll_produktion_field_id?: string | null
+          asana_soll_stunden_field_id?: string | null
+          asana_source_project_id?: string | null
+          asana_team_id?: string | null
           asana_token_expires_at?: string | null
           asana_webhook_secret?: string | null
           asana_workspace_id?: string | null
+          asana_zuordnung_field_id?: string | null
           created_at?: string | null
           id?: string
           tenant_id: string
@@ -255,13 +265,18 @@ export type Database = {
           asana_access_token?: string | null
           asana_phase_bereich_field_id?: string | null
           asana_phase_budget_hours_field_id?: string | null
+          asana_phase_type_field_id?: string | null
           asana_project_status_field_id?: string | null
           asana_refresh_token?: string | null
           asana_soll_montage_field_id?: string | null
           asana_soll_produktion_field_id?: string | null
+          asana_soll_stunden_field_id?: string | null
+          asana_source_project_id?: string | null
+          asana_team_id?: string | null
           asana_token_expires_at?: string | null
           asana_webhook_secret?: string | null
           asana_workspace_id?: string | null
+          asana_zuordnung_field_id?: string | null
           created_at?: string | null
           id?: string
           tenant_id?: string

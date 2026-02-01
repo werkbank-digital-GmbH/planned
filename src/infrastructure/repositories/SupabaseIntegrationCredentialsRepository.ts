@@ -18,6 +18,8 @@ function mapToDomain(row: CredentialsRow): IntegrationCredentialsData {
   return {
     id: row.id,
     tenantId: row.tenant_id,
+
+    // Auth
     asanaAccessToken: row.asana_access_token,
     asanaRefreshToken: row.asana_refresh_token,
     asanaTokenExpiresAt: row.asana_token_expires_at
@@ -25,13 +27,27 @@ function mapToDomain(row: CredentialsRow): IntegrationCredentialsData {
       : null,
     asanaWorkspaceId: row.asana_workspace_id,
     asanaWebhookSecret: row.asana_webhook_secret,
+
+    // Source Config (NEU)
+    asanaSourceProjectId: row.asana_source_project_id,
+    asanaTeamId: row.asana_team_id,
+
+    // Legacy Field Mappings
     asanaProjectStatusFieldId: row.asana_project_status_field_id,
     asanaSollProduktionFieldId: row.asana_soll_produktion_field_id,
     asanaSollMontageFieldId: row.asana_soll_montage_field_id,
     asanaPhaseBereichFieldId: row.asana_phase_bereich_field_id,
     asanaPhaseBudgetHoursFieldId: row.asana_phase_budget_hours_field_id,
+
+    // NEU Field Mappings
+    asanaPhaseTypeFieldId: row.asana_phase_type_field_id,
+    asanaZuordnungFieldId: row.asana_zuordnung_field_id,
+    asanaSollStundenFieldId: row.asana_soll_stunden_field_id,
+
+    // TimeTac
     timetacAccountId: row.timetac_account_id,
     timetacApiToken: row.timetac_api_token,
+
     createdAt: row.created_at ? new Date(row.created_at) : new Date(),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
   };
@@ -44,6 +60,7 @@ function mapToDb(
     Database['public']['Tables']['integration_credentials']['Update']
   > = {};
 
+  // Auth
   if (data.asanaAccessToken !== undefined) {
     result.asana_access_token = data.asanaAccessToken;
   }
@@ -59,6 +76,16 @@ function mapToDb(
   if (data.asanaWebhookSecret !== undefined) {
     result.asana_webhook_secret = data.asanaWebhookSecret;
   }
+
+  // Source Config (NEU)
+  if (data.asanaSourceProjectId !== undefined) {
+    result.asana_source_project_id = data.asanaSourceProjectId;
+  }
+  if (data.asanaTeamId !== undefined) {
+    result.asana_team_id = data.asanaTeamId;
+  }
+
+  // Legacy Field Mappings
   if (data.asanaProjectStatusFieldId !== undefined) {
     result.asana_project_status_field_id = data.asanaProjectStatusFieldId;
   }
@@ -74,6 +101,19 @@ function mapToDb(
   if (data.asanaPhaseBudgetHoursFieldId !== undefined) {
     result.asana_phase_budget_hours_field_id = data.asanaPhaseBudgetHoursFieldId;
   }
+
+  // NEU Field Mappings
+  if (data.asanaPhaseTypeFieldId !== undefined) {
+    result.asana_phase_type_field_id = data.asanaPhaseTypeFieldId;
+  }
+  if (data.asanaZuordnungFieldId !== undefined) {
+    result.asana_zuordnung_field_id = data.asanaZuordnungFieldId;
+  }
+  if (data.asanaSollStundenFieldId !== undefined) {
+    result.asana_soll_stunden_field_id = data.asanaSollStundenFieldId;
+  }
+
+  // TimeTac
   if (data.timetacAccountId !== undefined) {
     result.timetac_account_id = data.timetacAccountId;
   }

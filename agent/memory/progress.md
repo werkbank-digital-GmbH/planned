@@ -7,7 +7,7 @@
 ## Session-Status
 
 **Letzte Aktualisierung:** 2026-02-01
-**Projekt-Status:** MVP größtenteils implementiert, Planning-Komponenten getestet
+**Projekt-Status:** MVP größtenteils implementiert, Resize-Feature implementiert
 
 ---
 
@@ -19,7 +19,7 @@
 | Application | 35 | ✅ 95% | 85% |
 | Infrastructure | 30 | ✅ 98% | 30% |
 | Presentation | 150+ | ⚠️ 95% | 8% |
-| **Planning Components** | 38 | ✅ | **57 Tests** |
+| **Planning Components** | 39 | ✅ | **62 Tests** |
 
 **Detaillierte Analyse:** Siehe `agent/memory/codebaseAnalysis.md`
 
@@ -36,11 +36,12 @@
 | Drag & Drop | ✅ |
 | Undo/Redo | ✅ |
 | Keyboard Shortcuts | ✅ |
+| **Allocation Resize** | ✅ |
 | Resource Pool | ✅ |
 | Dashboard KPIs | ✅ |
 | Mobile "Meine Woche" | ✅ |
 | Settings (Profil, Unternehmen) | ✅ |
-| **Asana Integration** | ✅ Backend, Token-Refresh, UI |
+| **Asana Integration** | ✅ Backend, Task-basierte Sync, UI umgebaut |
 | **TimeTac Integration** | ✅ Backend, UI |
 
 ---
@@ -71,50 +72,49 @@
 1. ~~**Asana Integration UI**~~ ✅ ERLEDIGT
 2. ~~**TimeTac Integration UI**~~ ✅ ERLEDIGT
 3. ~~**Planning Component Tests**~~ ✅ ERLEDIGT (57 Tests)
-4. **Resize-Feature** – Allocation-Dauer per Drag ändern (Sicherheitsnetz vorhanden)
+4. ~~**Resize-Feature**~~ ✅ ERLEDIGT – Allocation-Dauer per Drag ändern
 5. **Repository & Server Action Tests** – Test-Coverage weiter erhöhen
 6. **Ressourcen-Verwaltung UI** – `/einstellungen/ressourcen`
+7. **E2E Tests** – Playwright Setup für kritische User Flows
 
 ---
 
 ## Letzte Session
 
-**Datum:** 2026-02-01 (Planning Component Tests)
+**Datum:** 2026-02-01 (Asana-Integration Umbau)
 
 ### Erledigte Aufgaben:
-- ✅ **Planning Component Tests** als Sicherheitsnetz für Resize-Feature
-- ✅ **57 neue Tests** für kritische DnD-Komponenten
-- ✅ Alle Tests grün, TypeScript fehlerfrei
+- ✅ **RLS Fix** – sync_logs INSERT/UPDATE Policy hinzugefügt
+- ✅ **DB Schema erweitert** – Neue Spalten für Task-basierte Sync
+- ✅ **AsanaService erweitert** – getTeams, getTeamProjects, getTasksFromProject, mapTaskToPhase
+- ✅ **IAsanaService erweitert** – AsanaTask, AsanaTeam, AsanaTaskSyncConfig, MappedTaskPhaseData
+- ✅ **Neuer Use Case** – SyncAsanaTaskPhasesUseCase für Task-basierte Phasen
+- ✅ **Neue Server Actions** – getAsanaTeams, getAsanaTeamProjects, getAsanaSourceConfig, saveAsanaSourceConfig, syncAsanaTaskPhases
+- ✅ **Neue UI-Komponenten** – AsanaSourceConfigCard, AsanaTaskFieldMappingCard
+- ✅ **Asana Page umgebaut** – Quell-Konfiguration statt direkter Projekt-Sync
 
-### Neue Test-Dateien:
-| Datei | Tests | Beschreibung |
-|-------|-------|--------------|
-| `__tests__/dnd-types.test.ts` | 23 | Helper Functions & Type Guards |
-| `__tests__/SpanningAssignmentCard.test.tsx` | 15 | Multi-Tag Allocation Cards |
-| `__tests__/AssignmentCard.test.tsx` | 19 | Single-Tag Allocation Cards |
+### Neue Sync-Logik:
+| Aspekt | Alt | Neu |
+|--------|-----|-----|
+| Projekte | Alle aus Workspace | Aus ausgewähltem Team |
+| Phasen | Sections eines Projekts | Tasks aus Quell-Projekt (z.B. "Jahresplanung") |
+| Projekt-Zuordnung | Direkt | Via Multi-Project Membership |
+| Start/Ende | Nicht implementiert | Task Due Date Range |
+| Budget Hours | Nicht implementiert | Custom Field "Soll-Stunden" |
 
-### Getestete Funktionalität:
-**DnD Types:**
-- `createDropZoneId()` – Drop-Zone ID Erstellung
-- `createPhaseDropZoneId()` – Phase Drop-Zone ID
-- `parseDropZoneId()` – ID Parsing (user, resource, phase, pool)
-- Type Guards für alle Drag-Data Types
-
-**SpanningAssignmentCard:**
-- Span-Labels (Mo-Fr, X Tage)
-- User vs Resource Styling
-- Drag-Data Korrektheit
-
-**AssignmentCard:**
-- Name-Formatierung (M.Bauer)
-- Absence-Konflikt Anzeige
-- Compact-Mode
-- Drag-Data Korrektheit
+### Neue Dateien:
+| Datei | Beschreibung |
+|-------|--------------|
+| `supabase/migrations/20260201100000_fix_sync_logs_rls.sql` | RLS Policy Fix |
+| `supabase/migrations/20260201100001_extend_integration_credentials.sql` | Neue DB-Spalten |
+| `src/application/use-cases/integrations/SyncAsanaTaskPhasesUseCase.ts` | Neuer Use Case |
+| `src/app/.../asana/AsanaSourceConfigCard.tsx` | Quell-Konfiguration UI |
+| `src/app/.../asana/AsanaTaskFieldMappingCard.tsx` | Task Field Mapping UI |
 
 ### Guard-Ergebnisse:
 - ESLint: ⚠️ 7 Warnings (bekannte Server-Logs)
 - TypeScript: ✅ **Keine Fehler**
-- Vitest: ✅ **672 Tests grün** (+57 neue)
+- Vitest: ✅ **677 Tests grün**
 
 ---
 
@@ -127,13 +127,37 @@
 
 ## Technische Schulden / Backlog
 
-### 🔜 Logger einführen (geplant)
+### 🔜 Logger einführen
 - **Priorität:** Mittel
 - **Grund:** Die `console.log` Statements in Server-Code (z.B. Webhook-Handler) sollten durch einen strukturierten Logger ersetzt werden
 - **Empfehlung:** `pino` oder `winston` für strukturiertes Logging mit Log-Levels, Timestamps und optional JSON-Output
 - **Betroffene Stellen:**
   - `src/app/api/webhooks/asana/route.ts` (7 console.log/error Aufrufe)
   - Zukünftige Server Actions und API Routes
+
+### 🔜 Atomare Server Actions für Batch-Operationen
+- **Priorität:** Niedrig
+- **Grund:** Resize und andere Batch-Operationen nutzen aktuell mehrere einzelne API-Calls. Bei Netzwerk-Fehlern kann inkonsistenter Zustand entstehen.
+- **Empfehlung:** Dedizierte Server Actions wie `resizeAllocationSpanAction({ baseAllocationId, newEndDate })` die serverseitig in einer Transaktion arbeiten
+- **Betroffene Stellen:**
+  - Resize-Feature (aktuell client-seitig implementiert mit mehreren `createAllocationAction` / `deleteAllocationAction` Calls)
+  - Zukünftige Bulk-Operationen
+- **Status:** Resize funktioniert, aber könnte für Robustheit optimiert werden
+
+### 🔜 TimeTac Integration – Bugs fixen
+- **Priorität:** Mittel
+- **Grund:** Kleinere Bugs in der TimeTac-Integration (Abwesenheits-Sync)
+- **Status:** Integration läuft parallel, Bugs werden später analysiert
+- **Betroffene Stellen:**
+  - Abwesenheits-Daten im Planning-Grid
+  - Sync-Logik zwischen TimeTac und planned.
+
+### 🔜 Asana Integration – Webhook-Signatur
+- **Priorität:** Niedrig
+- **Grund:** Webhook-Signatur-Validierung fehlt (`api/webhooks/asana/route.ts:271`)
+- **Empfehlung:** Asana Webhook-Signatur mit HMAC-SHA256 validieren
+- **Betroffene Stellen:**
+  - `src/app/api/webhooks/asana/route.ts`
 
 ---
 

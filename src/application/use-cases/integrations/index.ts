@@ -4,6 +4,10 @@ export {
   type SyncResult,
 } from './SyncAsanaProjectsUseCase';
 export {
+  SyncAsanaTaskPhasesUseCase,
+  type TaskSyncResult,
+} from './SyncAsanaTaskPhasesUseCase';
+export {
   SyncTimeTacAbsencesUseCase,
   type SyncAbsencesResult,
 } from './SyncTimeTacAbsencesUseCase';

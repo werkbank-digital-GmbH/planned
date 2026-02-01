@@ -5,17 +5,28 @@ export interface IntegrationCredentialsData {
   id: string;
   tenantId: string;
 
-  // Asana
+  // Asana - Auth
   asanaAccessToken: string | null;
   asanaRefreshToken: string | null;
   asanaTokenExpiresAt: Date | null;
   asanaWorkspaceId: string | null;
   asanaWebhookSecret: string | null;
+
+  // Asana - Source Config (NEU)
+  asanaSourceProjectId: string | null;  // GID des Quell-Projekts (z.B. "Jahresplanung")
+  asanaTeamId: string | null;           // GID des Teams für Bauvorhaben
+
+  // Asana - Custom Field Mappings (Legacy)
   asanaProjectStatusFieldId: string | null;
   asanaSollProduktionFieldId: string | null;
   asanaSollMontageFieldId: string | null;
   asanaPhaseBereichFieldId: string | null;
   asanaPhaseBudgetHoursFieldId: string | null;
+
+  // Asana - Custom Field Mappings (NEU für Task-basierte Phasen)
+  asanaPhaseTypeFieldId: string | null;     // "Projektphase" Dropdown
+  asanaZuordnungFieldId: string | null;     // "Zuordnung" Dropdown (Bereich)
+  asanaSollStundenFieldId: string | null;   // "Soll-Stunden" Number
 
   // TimeTac
   timetacAccountId: string | null;
@@ -34,11 +45,23 @@ export interface IntegrationCredentialsUpdate {
   asanaTokenExpiresAt?: Date | null;
   asanaWorkspaceId?: string | null;
   asanaWebhookSecret?: string | null;
+
+  // Source Config (NEU)
+  asanaSourceProjectId?: string | null;
+  asanaTeamId?: string | null;
+
+  // Legacy Field Mappings
   asanaProjectStatusFieldId?: string | null;
   asanaSollProduktionFieldId?: string | null;
   asanaSollMontageFieldId?: string | null;
   asanaPhaseBereichFieldId?: string | null;
   asanaPhaseBudgetHoursFieldId?: string | null;
+
+  // NEU Field Mappings
+  asanaPhaseTypeFieldId?: string | null;
+  asanaZuordnungFieldId?: string | null;
+  asanaSollStundenFieldId?: string | null;
+
   timetacAccountId?: string | null;
   timetacApiToken?: string | null;
 }

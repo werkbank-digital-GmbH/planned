@@ -8,8 +8,9 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 
 import { AsanaConnectionCard } from './AsanaConnectionCard';
-import { AsanaFieldMappingCard } from './AsanaFieldMappingCard';
+import { AsanaSourceConfigCard } from './AsanaSourceConfigCard';
 import { AsanaSyncCard } from './AsanaSyncCard';
+import { AsanaTaskFieldMappingCard } from './AsanaTaskFieldMappingCard';
 
 /**
  * Asana Integration Konfigurationsseite (Admin only)
@@ -25,7 +26,7 @@ export default async function AsanaIntegrationPage() {
     redirect('/login');
   }
 
-  // User-Rolle prüfen
+  // User-Rolle prufen
   const { data: userData } = await supabase
     .from('users')
     .select('role, tenant_id')
@@ -39,16 +40,17 @@ export default async function AsanaIntegrationPage() {
   // Integration Credentials laden
   const { data: credentials } = await supabase
     .from('integration_credentials')
-    .select('asana_access_token, asana_workspace_id')
+    .select('asana_access_token, asana_workspace_id, asana_source_project_id, asana_team_id')
     .eq('tenant_id', userData.tenant_id)
     .single();
 
   const isConnected = !!credentials?.asana_access_token;
   const workspaceId = credentials?.asana_workspace_id;
+  const isConfigured = !!(credentials?.asana_source_project_id && credentials?.asana_team_id);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      {/* Header mit Zurück-Link */}
+      {/* Header mit Zuruck-Link */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/einstellungen/integrationen">
@@ -66,11 +68,32 @@ export default async function AsanaIntegrationPage() {
       {/* Verbindungs-Status */}
       <AsanaConnectionCard isConnected={isConnected} workspaceId={workspaceId ?? undefined} />
 
-      {/* Sync und Mapping nur wenn verbunden */}
+      {/* Konfiguration und Sync nur wenn verbunden */}
       {isConnected && (
         <>
-          <AsanaSyncCard />
-          <AsanaFieldMappingCard />
+          {/* Quell-Konfiguration */}
+          <AsanaSourceConfigCard />
+
+          {/* Custom Field Mapping */}
+          <AsanaTaskFieldMappingCard />
+
+          {/* Sync - nur wenn konfiguriert */}
+          {isConfigured ? (
+            <AsanaSyncCard />
+          ) : (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardHeader>
+                <CardTitle className="text-base text-amber-800">
+                  Konfiguration erforderlich
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-amber-700">
+                <p>
+                  Bitte wahlen Sie oben ein Quell-Projekt und ein Team aus, bevor Sie synchronisieren konnen.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
 
@@ -81,16 +104,16 @@ export default async function AsanaIntegrationPage() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-gray-600">
           <p>
-            <strong>1. Verbinden:</strong> Autorisieren Sie Planned für Ihren Asana Workspace.
+            <strong>1. Verbinden:</strong> Autorisieren Sie Planned fur Ihren Asana Workspace.
           </p>
           <p>
-            <strong>2. Synchronisieren:</strong> Projekte und deren Sections werden als Phasen importiert.
+            <strong>2. Quell-Konfiguration:</strong> Wahlen Sie das Projekt mit Ihren Phasen-Tasks (z.B. &quot;Jahresplanung&quot;) und das Team mit Ihren Bauvorhaben.
           </p>
           <p>
-            <strong>3. Field Mapping:</strong> Ordnen Sie Asana Custom Fields Planned-Feldern zu.
+            <strong>3. Field Mapping:</strong> Ordnen Sie Asana Custom Fields den Phasen-Eigenschaften zu.
           </p>
           <p>
-            <strong>4. Bidirektional:</strong> Änderungen in Planned werden zurück zu Asana synchronisiert.
+            <strong>4. Synchronisieren:</strong> Tasks werden als Phasen importiert, zugehorige Projekte als Bauvorhaben.
           </p>
         </CardContent>
       </Card>

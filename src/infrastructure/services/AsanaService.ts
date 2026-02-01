@@ -3,11 +3,15 @@ import type {
   AsanaProject,
   AsanaSection,
   AsanaSyncConfig,
+  AsanaTask,
+  AsanaTaskSyncConfig,
+  AsanaTeam,
   AsanaTokenResponse,
   AsanaWorkspace,
   IAsanaService,
   MappedPhaseData,
   MappedProjectData,
+  MappedTaskPhaseData,
 } from '@/application/ports/services/IAsanaService';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -172,7 +176,137 @@ export class AsanaService implements IAsanaService {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // MAPPING
+  // NEU: TEAM & TASK API (für Task-basierte Phasen)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async getTeams(workspaceId: string, accessToken: string): Promise<AsanaTeam[]> {
+    const response = await this.request<AsanaTeam[]>(
+      `/workspaces/${workspaceId}/teams`,
+      accessToken
+    );
+    return response.data;
+  }
+
+  async getTeamProjects(
+    teamGid: string,
+    accessToken: string,
+    options?: { archived?: boolean }
+  ): Promise<AsanaProject[]> {
+    const params = new URLSearchParams({
+      opt_fields: 'name,archived,custom_fields,custom_fields.gid,custom_fields.name,custom_fields.display_value,custom_fields.number_value,custom_fields.text_value',
+    });
+
+    if (options?.archived !== undefined) {
+      params.set('archived', String(options.archived));
+    }
+
+    const response = await this.request<AsanaProject[]>(
+      `/teams/${teamGid}/projects?${params}`,
+      accessToken
+    );
+    return response.data;
+  }
+
+  async getTasksFromProject(
+    projectGid: string,
+    accessToken: string
+  ): Promise<AsanaTask[]> {
+    // Tasks mit allen relevanten Feldern laden
+    const params = new URLSearchParams({
+      opt_fields: [
+        'name',
+        'completed',
+        'start_on',
+        'due_on',
+        'custom_fields',
+        'custom_fields.gid',
+        'custom_fields.name',
+        'custom_fields.display_value',
+        'custom_fields.number_value',
+        'custom_fields.text_value',
+        'custom_fields.enum_value',
+        'custom_fields.enum_value.gid',
+        'custom_fields.enum_value.name',
+        'projects',
+        'projects.gid',
+        'projects.name',
+      ].join(','),
+    });
+
+    const response = await this.request<AsanaTask[]>(
+      `/projects/${projectGid}/tasks?${params}`,
+      accessToken
+    );
+    return response.data;
+  }
+
+  mapTaskToPhase(
+    task: AsanaTask,
+    config: AsanaTaskSyncConfig,
+    teamProjectGids: Set<string>
+  ): MappedTaskPhaseData | null {
+    // Finde das "andere" Projekt (nicht das sourceProject) aus task.projects[]
+    const otherProject = task.projects.find(
+      (p) => p.gid !== config.sourceProjectId && teamProjectGids.has(p.gid)
+    );
+
+    // Wenn kein passendes Projekt gefunden → Skip
+    if (!otherProject) {
+      return null;
+    }
+
+    // Custom Field Values extrahieren
+    const getCustomFieldValue = (
+      fieldId?: string
+    ): { text?: string; number?: number; enum?: string } => {
+      if (!fieldId || !task.custom_fields) return {};
+
+      const field = task.custom_fields.find((f) => f.gid === fieldId);
+      if (!field) return {};
+
+      return {
+        text: field.text_value ?? field.display_value ?? undefined,
+        number: field.number_value ?? undefined,
+        enum: field.enum_value?.name ?? undefined,
+      };
+    };
+
+    // Phasen-Name: Custom Field "Projektphase" oder Task-Name
+    const phaseTypeValue = getCustomFieldValue(config.phaseTypeFieldId);
+    const name = phaseTypeValue.enum || phaseTypeValue.text || task.name;
+
+    // Bereich aus "Zuordnung" Custom Field
+    const zuordnungValue = getCustomFieldValue(config.zuordnungFieldId);
+    let bereich: 'produktion' | 'montage' = 'produktion';
+    if (zuordnungValue.enum || zuordnungValue.text) {
+      const value = (zuordnungValue.enum || zuordnungValue.text || '').toLowerCase();
+      if (value.includes('montage') || value.includes('baustelle')) {
+        bereich = 'montage';
+      }
+    }
+
+    // Soll-Stunden
+    const sollStundenValue = getCustomFieldValue(config.sollStundenFieldId);
+    const budgetHours = sollStundenValue.number ?? null;
+
+    // Dates parsen
+    const startDate = task.start_on ? new Date(task.start_on) : null;
+    const endDate = task.due_on ? new Date(task.due_on) : null;
+
+    return {
+      asanaGid: task.gid,
+      name,
+      bereich,
+      startDate,
+      endDate,
+      budgetHours,
+      projectAsanaGid: otherProject.gid,
+      projectName: otherProject.name,
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // LEGACY MAPPING (Section-basiert)
   // ─────────────────────────────────────────────────────────────────────────
 
   mapToProject(

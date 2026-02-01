@@ -7,12 +7,18 @@ export interface AsanaWorkspace {
   name: string;
 }
 
+export interface AsanaTeam {
+  gid: string;
+  name: string;
+}
+
 export interface AsanaCustomField {
   gid: string;
   name: string;
   display_value: string | null;
   number_value: number | null;
   text_value: string | null;
+  enum_value?: { gid: string; name: string } | null;
 }
 
 export interface AsanaSection {
@@ -27,6 +33,7 @@ export interface AsanaCustomFieldDefinition {
   gid: string;
   name: string;
   resource_subtype: 'text' | 'number' | 'enum' | 'multi_enum' | 'date' | 'people';
+  enum_options?: Array<{ gid: string; name: string }>;
 }
 
 export interface AsanaProject {
@@ -37,6 +44,19 @@ export interface AsanaProject {
   sections?: AsanaSection[];
 }
 
+/**
+ * Asana Task (NEU für Task-basierte Phasen)
+ */
+export interface AsanaTask {
+  gid: string;
+  name: string;
+  completed: boolean;
+  start_on: string | null;      // ISO Date "YYYY-MM-DD"
+  due_on: string | null;        // ISO Date "YYYY-MM-DD"
+  custom_fields?: AsanaCustomField[];
+  projects: Array<{ gid: string; name: string }>;  // Multi-Project Membership
+}
+
 export interface AsanaUser {
   gid: string;
   name: string;
@@ -44,7 +64,7 @@ export interface AsanaUser {
 }
 
 /**
- * Konfiguration für Asana Sync
+ * Konfiguration für Asana Sync (Legacy: Section-basiert)
  */
 export interface AsanaSyncConfig {
   workspaceId: string;
@@ -61,6 +81,23 @@ export interface AsanaSyncConfig {
 }
 
 /**
+ * Konfiguration für Task-basierten Asana Sync (NEU)
+ */
+export interface AsanaTaskSyncConfig {
+  workspaceId: string;
+  /** GID des Quell-Projekts (z.B. "Jahresplanung") */
+  sourceProjectId: string;
+  /** GID des Teams dessen Projekte als Bauvorhaben importiert werden */
+  teamId: string;
+  /** Custom Field GID für Projektphase (Dropdown) */
+  phaseTypeFieldId?: string;
+  /** Custom Field GID für Zuordnung/Bereich (Dropdown) */
+  zuordnungFieldId?: string;
+  /** Custom Field GID für Soll-Stunden (Number) */
+  sollStundenFieldId?: string;
+}
+
+/**
  * Gemappte Projekt-Daten für Import
  */
 export interface MappedProjectData {
@@ -73,13 +110,29 @@ export interface MappedProjectData {
 }
 
 /**
- * Gemappte Phasen-Daten für Import
+ * Gemappte Phasen-Daten für Import (Legacy: Section-basiert)
  */
 export interface MappedPhaseData {
   asanaGid: string;
   name: string;
   bereich: 'produktion' | 'montage';
   budgetHours?: number;
+}
+
+/**
+ * Gemappte Phasen-Daten für Task-basierten Import (NEU)
+ */
+export interface MappedTaskPhaseData {
+  asanaGid: string;           // Task GID
+  name: string;               // Task Name oder Projektphase-Custom-Field
+  bereich: 'produktion' | 'montage';
+  startDate: Date | null;     // Task.start_on
+  endDate: Date | null;       // Task.due_on
+  budgetHours: number | null; // Soll-Stunden Custom Field
+  /** GID des zugehörigen Projekts (aus task.projects[]) */
+  projectAsanaGid: string;
+  /** Name des zugehörigen Projekts */
+  projectName: string;
 }
 
 /**
@@ -181,6 +234,43 @@ export interface IAsanaService {
    * Lädt alle Sections eines Projekts.
    */
   getSections(projectId: string, accessToken: string): Promise<AsanaSection[]>;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // NEU: Team & Task API (für Task-basierte Phasen)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Lädt alle Teams eines Workspaces.
+   */
+  getTeams(workspaceId: string, accessToken: string): Promise<AsanaTeam[]>;
+
+  /**
+   * Lädt alle Projekte eines Teams.
+   */
+  getTeamProjects(
+    teamGid: string,
+    accessToken: string,
+    options?: { archived?: boolean }
+  ): Promise<AsanaProject[]>;
+
+  /**
+   * Lädt alle Tasks eines Projekts mit Custom Fields und Projects (Multi-Membership).
+   */
+  getTasksFromProject(projectGid: string, accessToken: string): Promise<AsanaTask[]>;
+
+  /**
+   * Mappt einen Asana-Task auf Phasen-Daten.
+   * Findet das "andere" Projekt (nicht sourceProject) aus task.projects[].
+   */
+  mapTaskToPhase(
+    task: AsanaTask,
+    config: AsanaTaskSyncConfig,
+    teamProjectGids: Set<string>
+  ): MappedTaskPhaseData | null;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Legacy Mapping (Section-basiert)
+  // ─────────────────────────────────────────────────────────────────────────
 
   /**
    * Mappt ein Asana-Projekt auf interne Projektdaten.
