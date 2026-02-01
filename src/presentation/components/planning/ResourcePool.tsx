@@ -1,6 +1,7 @@
 'use client';
 
-import { Truck, Users } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
+import { Trash2, Truck, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PoolItem } from '@/application/queries';
@@ -87,15 +88,28 @@ function isAvailableInWeek(item: PoolItem, weekDates: Date[], allDates: Date[]):
  *
  * Zeigt alle Mitarbeiter und Ressourcen mit deren Verfügbarkeit.
  * Items können per Drag & Drop auf Phasen-Zellen gezogen werden.
+ * Allocations können hierher gezogen werden um sie zu löschen.
  *
  * Features:
  * - Filter-Tabs: Alle / Mitarbeiter / Fuhrpark (links neben Titel)
  * - Wochenansicht: Gruppierung nach Tagen (Mo-Fr)
  * - Monatsansicht: Gruppierung nach Kalenderwochen
  * - Verfügbarkeits-Indikatoren pro Tag/Woche
+ * - Drop-Zone zum Löschen von Allocations
  */
 export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: ResourcePoolProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
+
+  // Drop-Zone für Allocation-Löschung
+  const { setNodeRef, isOver, active } = useDroppable({
+    id: 'pool-delete-zone',
+    data: { type: 'pool' },
+  });
+
+  // Zeige roten Rand wenn eine Allocation oder Allocation-Span darüber schwebt
+  const dragType = active?.data?.current?.type;
+  const isDraggingAllocation = dragType === 'allocation' || dragType === 'allocation-span';
+  const showDeleteHint = isOver && isDraggingAllocation;
 
   // Filter anwenden
   const filteredItems = poolItems.filter((item) => {
@@ -112,12 +126,23 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
   // Wochenansicht: Nach Tagen gruppieren
   if (viewMode === 'week') {
     return (
-      <Card className="bg-gray-50">
+      <Card
+        ref={setNodeRef}
+        className={cn(
+          'bg-gray-50 transition-all',
+          showDeleteHint && 'ring-2 ring-red-400 bg-red-50',
+          isDraggingAllocation && !isOver && 'ring-1 ring-dashed ring-gray-300'
+        )}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center gap-4">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4" />
-              Ressourcen-Pool
+              {showDeleteHint ? (
+                <Trash2 className="h-4 w-4 text-red-500" />
+              ) : (
+                <Users className="h-4 w-4" />
+              )}
+              {showDeleteHint ? 'Hier ablegen zum Entfernen' : 'Ressourcen-Pool'}
             </CardTitle>
 
             {/* Filter Tabs - jetzt links */}
@@ -216,12 +241,23 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
   const weekGroups = groupDatesByWeek(periodDates);
 
   return (
-    <Card className="bg-gray-50">
+    <Card
+      ref={setNodeRef}
+      className={cn(
+        'bg-gray-50 transition-all',
+        showDeleteHint && 'ring-2 ring-red-400 bg-red-50',
+        isDraggingAllocation && !isOver && 'ring-1 ring-dashed ring-gray-300'
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center gap-4">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Users className="h-4 w-4" />
-            Ressourcen-Pool
+            {showDeleteHint ? (
+              <Trash2 className="h-4 w-4 text-red-500" />
+            ) : (
+              <Users className="h-4 w-4" />
+            )}
+            {showDeleteHint ? 'Hier ablegen zum Entfernen' : 'Ressourcen-Pool'}
           </CardTitle>
 
           {/* Filter Tabs - jetzt links */}

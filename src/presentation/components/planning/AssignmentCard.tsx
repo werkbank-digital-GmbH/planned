@@ -41,7 +41,11 @@ export function AssignmentCard({ allocation, compact = false }: AssignmentCardPr
     id: `allocation-${allocation.id}`,
     data: {
       type: 'allocation',
-      allocation,
+      allocationId: allocation.id,
+      sourceUserId: allocation.user?.id,
+      sourceResourceId: allocation.resource?.id,
+      sourceDate: allocation.date,
+      projectPhaseId: allocation.projectPhase.id,
     },
   });
 

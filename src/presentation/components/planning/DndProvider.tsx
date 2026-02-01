@@ -17,6 +17,7 @@ import { useState, useCallback, type ReactNode } from 'react';
 
 import {
   createAllocationAction,
+  deleteAllocationAction,
   moveAllocationAction,
 } from '@/presentation/actions/allocations';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
@@ -25,12 +26,14 @@ import { useUndo } from '@/presentation/contexts/UndoContext';
 import { formatDateISO, getMonday, getWeekDates } from '@/lib/date-utils';
 
 import { AllocationCardOverlay } from './AllocationCardOverlay';
+import { AllocationSpanOverlay } from './AllocationSpanOverlay';
 import { PoolItemOverlay } from './PoolItemOverlay';
 import { ProjectPhaseOverlay } from './ProjectPhaseOverlay';
 import {
   type DragData,
   type DropZoneData,
   isAllocationDragData,
+  isAllocationSpanDragData,
   isPoolItemDragData,
   isProjectPhaseDragData,
   parseDropZoneId,
@@ -121,32 +124,80 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
           // Hole Original-Allocation für Undo
           const originalAllocation = getAllocationById(dragData.allocationId);
 
-          // Allocation verschieben
-          const result = await moveAllocationAction({
-            allocationId: dragData.allocationId,
-            newDate: formatDateISO(dropZone.date),
-          });
+          // Fall 1: Drop auf Pool = Löschen
+          if (dropZone.type === 'pool') {
+            if (!originalAllocation) {
+              console.error('Delete failed: Allocation not found');
+              return;
+            }
 
-          if (result.success && originalAllocation) {
-            // Push Undo Action
-            pushAction({
-              type: 'MOVE_ALLOCATION',
+            const result = await deleteAllocationAction({
               allocationId: dragData.allocationId,
-              from: {
-                userId: originalAllocation.user?.id,
-                resourceId: originalAllocation.resource?.id,
-                date: originalAllocation.date.toISOString().split('T')[0],
-                projectPhaseId: originalAllocation.projectPhase.id,
-              },
-              to: {
-                userId: dropZone.userId,
-                resourceId: dropZone.resourceId,
-                date: formatDateISO(dropZone.date),
-                projectPhaseId: result.data.allocation.projectPhaseId,
-              },
             });
-          } else if (!result.success) {
-            console.error('Move failed:', result.error.message);
+
+            if (result.success) {
+              // Push Undo Action für Delete
+              pushAction({
+                type: 'DELETE_ALLOCATION',
+                allocation: {
+                  id: originalAllocation.id,
+                  tenantId: originalAllocation.tenantId,
+                  userId: originalAllocation.user?.id,
+                  resourceId: originalAllocation.resource?.id,
+                  projectPhaseId: originalAllocation.projectPhase.id,
+                  date: originalAllocation.date.toISOString().split('T')[0],
+                  plannedHours: originalAllocation.plannedHours ?? 8,
+                  notes: originalAllocation.notes,
+                },
+              });
+            } else {
+              console.error('Delete failed:', result.error.message);
+            }
+          } else {
+            // Fall 2: Drop auf Phase/Cell = Verschieben
+            const moveParams: {
+              allocationId: string;
+              newDate?: string;
+              newProjectPhaseId?: string;
+            } = {
+              allocationId: dragData.allocationId,
+            };
+
+            // Datum setzen
+            moveParams.newDate = formatDateISO(dropZone.date);
+
+            // Phase ändern wenn Drop auf Phase-Zelle mit anderer Phase
+            if (dropZone.type === 'phase' && dropZone.phaseId) {
+              const currentPhaseId = originalAllocation?.projectPhase.id;
+              if (dropZone.phaseId !== currentPhaseId) {
+                moveParams.newProjectPhaseId = dropZone.phaseId;
+              }
+            }
+
+            // Allocation verschieben
+            const result = await moveAllocationAction(moveParams);
+
+            if (result.success && originalAllocation) {
+              // Push Undo Action
+              pushAction({
+                type: 'MOVE_ALLOCATION',
+                allocationId: dragData.allocationId,
+                from: {
+                  userId: originalAllocation.user?.id,
+                  resourceId: originalAllocation.resource?.id,
+                  date: originalAllocation.date.toISOString().split('T')[0],
+                  projectPhaseId: originalAllocation.projectPhase.id,
+                },
+                to: {
+                  userId: dropZone.userId,
+                  resourceId: dropZone.resourceId,
+                  date: formatDateISO(dropZone.date),
+                  projectPhaseId: result.data.allocation.projectPhaseId,
+                },
+              });
+            } else if (!result.success) {
+              console.error('Move failed:', result.error.message);
+            }
           }
         } else if (isProjectPhaseDragData(dragData)) {
           // Neue Allocation aus Sidebar erstellen
@@ -174,6 +225,72 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
             });
           } else {
             console.error('Create failed:', result.error.message);
+          }
+        } else if (isAllocationSpanDragData(dragData)) {
+          // Allocation-Span verschieben oder löschen
+          const { allocationIds } = dragData;
+
+          // Fall 1: Drop auf Pool = Alle Allocations im Span löschen
+          if (dropZone.type === 'pool') {
+            // Sammle alle Original-Allocations für Undo
+            const originalAllocations = allocationIds
+              .map((id) => getAllocationById(id))
+              .filter((a): a is NonNullable<typeof a> => a !== undefined);
+
+            // Lösche alle Allocations parallel
+            const results = await Promise.all(
+              allocationIds.map((id) => deleteAllocationAction({ allocationId: id }))
+            );
+
+            const successfulDeletes = results.filter((r) => r.success);
+            if (successfulDeletes.length > 0 && originalAllocations.length > 0) {
+              // Batch-Undo für alle gelöschten Allocations
+              pushAction({
+                type: 'BATCH_DELETE',
+                allocations: originalAllocations.map((a) => ({
+                  id: a.id,
+                  tenantId: a.tenantId,
+                  userId: a.user?.id,
+                  resourceId: a.resource?.id,
+                  projectPhaseId: a.projectPhase.id,
+                  date: a.date.toISOString().split('T')[0],
+                  plannedHours: a.plannedHours ?? 8,
+                  notes: a.notes,
+                })),
+              });
+            }
+          } else if (dropZone.type === 'phase' && dropZone.phaseId) {
+            // Fall 2: Drop auf Phase-Zelle = Alle Allocations verschieben
+            // Berechne den Offset zwischen dem ersten Tag des Spans und dem Drop-Datum
+            const firstAllocation = getAllocationById(allocationIds[0]);
+            if (!firstAllocation) return;
+
+            const firstDate = firstAllocation.date;
+            const dropDate = dropZone.date;
+            const dayOffset =
+              Math.round((dropDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+
+            // Verschiebe alle Allocations mit dem gleichen Offset
+            await Promise.all(
+              allocationIds.map((id) => {
+                const allocation = getAllocationById(id);
+                if (!allocation) return Promise.resolve({ success: false, error: { message: 'Not found' } });
+
+                const newDate = new Date(allocation.date);
+                newDate.setDate(newDate.getDate() + dayOffset);
+
+                return moveAllocationAction({
+                  allocationId: id,
+                  newDate: formatDateISO(newDate),
+                  newProjectPhaseId:
+                    dropZone.phaseId !== allocation.projectPhase.id
+                      ? dropZone.phaseId
+                      : undefined,
+                });
+              })
+            );
+            // Für Undo: Könnte als BATCH_MOVE implementiert werden
+            // Aktuell nicht im Undo-System vorhanden
           }
         } else if (isPoolItemDragData(dragData)) {
           // Neues Allocation aus Pool erstellen (auf Phase-Zelle)
@@ -244,7 +361,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         console.error('DnD action failed:', error);
       }
     },
-    [refresh, getAllocationById, pushAction]
+    [refresh, getAllocationById, pushAction, viewMode]
   );
 
   const handleDragCancel = useCallback(() => {
@@ -277,6 +394,13 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         )}
         {activeData && isPoolItemDragData(activeData) && (
           <PoolItemOverlay itemName={activeData.itemName} itemType={activeData.itemType} />
+        )}
+        {activeData && isAllocationSpanDragData(activeData) && (
+          <AllocationSpanOverlay
+            displayName={activeData.displayName}
+            spanDays={activeData.spanDays}
+            isUser={!!activeData.userId}
+          />
         )}
       </DragOverlay>
     </DndContext>

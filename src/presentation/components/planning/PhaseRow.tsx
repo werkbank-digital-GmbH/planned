@@ -1,6 +1,7 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
+import { useMemo } from 'react';
 
 import type { PhaseRowData } from '@/application/queries';
 
@@ -10,7 +11,12 @@ import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
 import { AssignmentCard } from './AssignmentCard';
+import { SpanningAssignmentCard } from './SpanningAssignmentCard';
 import { createPhaseDropZoneId } from './types/dnd';
+import {
+  groupConsecutiveAllocations,
+  getSpannedAllocationIds,
+} from './utils/allocation-grouping';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -58,9 +64,18 @@ interface DayCellProps {
   date: Date;
   allocations: PhaseRowData['dayAllocations'][string];
   isActiveThisWeek: boolean;
+  /** IDs der Allocations die Teil eines Multi-Tag-Spans sind (werden nicht angezeigt) */
+  spannedAllocationIds: Set<string>;
 }
 
-function DayCell({ phaseId, projectId, date, allocations, isActiveThisWeek }: DayCellProps) {
+function DayCell({
+  phaseId,
+  projectId,
+  date,
+  allocations,
+  isActiveThisWeek,
+  spannedAllocationIds,
+}: DayCellProps) {
   const dateKey = formatDateISO(date);
   const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
 
@@ -76,6 +91,9 @@ function DayCell({ phaseId, projectId, date, allocations, isActiveThisWeek }: Da
 
   const isToday = formatDateISO(new Date()) === dateKey;
 
+  // Filtere Allocations, die Teil eines Spans sind (werden über SpanningAssignmentCard angezeigt)
+  const singleAllocations = allocations.filter((a) => !spannedAllocationIds.has(a.id));
+
   return (
     <div
       ref={setNodeRef}
@@ -87,7 +105,7 @@ function DayCell({ phaseId, projectId, date, allocations, isActiveThisWeek }: Da
         !isActiveThisWeek && 'bg-gray-50'
       )}
     >
-      {allocations.map((allocation) => (
+      {singleAllocations.map((allocation) => (
         <AssignmentCard key={allocation.id} allocation={allocation} />
       ))}
     </div>
@@ -104,10 +122,23 @@ function DayCell({ phaseId, projectId, date, allocations, isActiveThisWeek }: Da
  * Zeigt:
  * - Phasenname mit Bereich-Badge (PRODUKTION/MONTAGE/EXTERN)
  * - 5 Tageszellen mit zugewiesenen Mitarbeitern/Ressourcen
+ * - Multi-Tag-Spans als zusammenhängende Blöcke (z.B. "Mo-Fr")
  * - Drop-Zones für Drag & Drop aus dem Pool
  */
 export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
   const { isActiveThisWeek } = phase;
+
+  // Gruppiere aufeinanderfolgende Allocations zu Spans
+  const spans = useMemo(
+    () => groupConsecutiveAllocations(phase.dayAllocations, weekDates),
+    [phase.dayAllocations, weekDates]
+  );
+
+  // IDs der Allocations die Teil eines Multi-Tag-Spans sind
+  const spannedAllocationIds = useMemo(() => getSpannedAllocationIds(spans), [spans]);
+
+  // Multi-Tag-Spans (spanDays > 1)
+  const multiDaySpans = useMemo(() => spans.filter((s) => s.spanDays > 1), [spans]);
 
   // Berechne die Summe der geplanten Stunden für diese Woche aus den Allocations
   const weeklyPlannedHours = Object.values(phase.dayAllocations)
@@ -147,22 +178,47 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
         </div>
       </div>
 
-      {/* 5 Tageszellen */}
-      {weekDates.map((date) => {
-        const dateKey = formatDateISO(date);
-        const allocations = phase.dayAllocations[dateKey] ?? [];
+      {/* 5 Tageszellen + Spanning Cards */}
+      <div className="col-span-5 relative">
+        {/* Grid für die Tageszellen */}
+        <div className="grid grid-cols-5">
+          {weekDates.map((date) => {
+            const dateKey = formatDateISO(date);
+            const allocations = phase.dayAllocations[dateKey] ?? [];
 
-        return (
-          <DayCell
-            key={dateKey}
-            phaseId={phase.phase.id}
-            projectId={projectId}
-            date={date}
-            allocations={allocations}
-            isActiveThisWeek={isActiveThisWeek}
-          />
-        );
-      })}
+            return (
+              <DayCell
+                key={dateKey}
+                phaseId={phase.phase.id}
+                projectId={projectId}
+                date={date}
+                allocations={allocations}
+                isActiveThisWeek={isActiveThisWeek}
+                spannedAllocationIds={spannedAllocationIds}
+              />
+            );
+          })}
+        </div>
+
+        {/* Multi-Tag-Spans (absolut positioniert über den Zellen) */}
+        {multiDaySpans.length > 0 && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="grid grid-cols-5 h-full">
+              {multiDaySpans.map((span) => (
+                <div
+                  key={span.allocations[0].id}
+                  className="pointer-events-auto p-1"
+                  style={{
+                    gridColumn: `${span.startDayIndex + 1} / span ${span.spanDays}`,
+                  }}
+                >
+                  <SpanningAssignmentCard span={span} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
