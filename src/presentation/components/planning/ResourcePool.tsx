@@ -189,6 +189,7 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
                             item={item}
                             weekDates={weekDates}
                             compact
+                            contextKey={`day-${dayIndex}`}
                           />
                         ))
                       ) : (
@@ -302,6 +303,7 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
                           item={item}
                           weekDates={dates}
                           compact
+                          contextKey={weekKey}
                         />
                       ))
                     ) : (

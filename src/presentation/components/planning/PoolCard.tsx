@@ -15,6 +15,8 @@ interface PoolCardProps {
   item: PoolItem;
   weekDates: Date[];
   compact?: boolean;
+  /** Eindeutiger Kontext (z.B. "day-0", "KW5") um mehrere Karten für dasselbe Item zu unterscheiden */
+  contextKey?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -53,8 +55,11 @@ function getWeekdayShort(date: Date): string {
  * - Abwesenheits-Label (wenn vorhanden)
  * - 5 Verfügbarkeits-Punkte (Mo-Fr)
  */
-export function PoolCard({ item, weekDates, compact = false }: PoolCardProps) {
-  const draggableId = `pool-${item.type}-${item.id}`;
+export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolCardProps) {
+  // Eindeutige ID: Mit contextKey falls mehrere Karten für dasselbe Item existieren
+  const draggableId = contextKey
+    ? `pool-${item.type}-${item.id}-${contextKey}`
+    : `pool-${item.type}-${item.id}`;
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: draggableId,

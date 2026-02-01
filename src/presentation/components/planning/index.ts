@@ -15,6 +15,7 @@ export { PlanningDndProvider } from './DndProvider';
 export { PlanningGrid } from './PlanningGrid';
 export { PlanningKeyboardHandler } from './PlanningKeyboardHandler';
 export { PlanningSidebar } from './PlanningSidebar';
+export { PoolItemOverlay } from './PoolItemOverlay';
 export { ProjectList } from './ProjectList';
 export { ProjectPhaseOverlay } from './ProjectPhaseOverlay';
 export { ProjectSearch } from './ProjectSearch';

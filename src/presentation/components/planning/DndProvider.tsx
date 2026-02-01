@@ -25,11 +25,13 @@ import { useUndo } from '@/presentation/contexts/UndoContext';
 import { formatDateISO } from '@/lib/date-utils';
 
 import { AllocationCardOverlay } from './AllocationCardOverlay';
+import { PoolItemOverlay } from './PoolItemOverlay';
 import { ProjectPhaseOverlay } from './ProjectPhaseOverlay';
 import {
   type DragData,
   type DropZoneData,
   isAllocationDragData,
+  isPoolItemDragData,
   isProjectPhaseDragData,
   parseDropZoneId,
 } from './types/dnd';
@@ -171,6 +173,38 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
           } else {
             console.error('Create failed:', result.error.message);
           }
+        } else if (isPoolItemDragData(dragData)) {
+          // Neues Allocation aus Pool erstellen (auf Phase-Zelle)
+          if (dropZone.type !== 'phase' || !dropZone.phaseId) {
+            console.error('Pool item kann nur auf Phase-Zellen gezogen werden');
+            return;
+          }
+
+          const result = await createAllocationAction({
+            projectPhaseId: dropZone.phaseId,
+            date: formatDateISO(dropZone.date),
+            userId: dragData.itemType === 'user' ? dragData.itemId : undefined,
+            resourceId: dragData.itemType === 'resource' ? dragData.itemId : undefined,
+          });
+
+          if (result.success) {
+            // Push Undo Action
+            pushAction({
+              type: 'CREATE_ALLOCATION',
+              allocation: {
+                id: result.data.allocation.id,
+                tenantId: result.data.allocation.tenantId,
+                userId: result.data.allocation.userId,
+                resourceId: result.data.allocation.resourceId,
+                projectPhaseId: result.data.allocation.projectPhaseId,
+                date: result.data.allocation.date,
+                plannedHours: result.data.allocation.plannedHours ?? 8,
+                notes: result.data.allocation.notes,
+              },
+            });
+          } else {
+            console.error('Create from pool failed:', result.error.message);
+          }
         }
 
         // Daten neu laden
@@ -209,6 +243,9 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         )}
         {activeData && isProjectPhaseDragData(activeData) && (
           <ProjectPhaseOverlay phaseName={activeData.phaseName} />
+        )}
+        {activeData && isPoolItemDragData(activeData) && (
+          <PoolItemOverlay itemName={activeData.itemName} itemType={activeData.itemType} />
         )}
       </DragOverlay>
     </DndContext>

@@ -10,6 +10,7 @@ import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
 import { AssignmentCard } from './AssignmentCard';
+import { createPhaseDropZoneId } from './types/dnd';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -61,7 +62,7 @@ interface DayCellProps {
 
 function DayCell({ phaseId, projectId, date, allocations, isActiveThisWeek }: DayCellProps) {
   const dateKey = formatDateISO(date);
-  const droppableId = `phase-${phaseId}-${dateKey}`;
+  const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
 
   const { setNodeRef, isOver } = useDroppable({
     id: droppableId,
