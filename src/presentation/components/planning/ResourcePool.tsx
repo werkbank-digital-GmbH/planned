@@ -108,9 +108,6 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
   // Zähler
   const userCount = poolItems.filter((p) => p.type === 'user').length;
   const resourceCount = poolItems.filter((p) => p.type === 'resource').length;
-  const availableCount = poolItems.filter(
-    (p) => p.availability.some((a) => a.status === 'available')
-  ).length;
 
   // Wochenansicht: Nach Tagen gruppieren
   if (viewMode === 'week') {
@@ -158,10 +155,6 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
                 );
               })}
             </div>
-
-            <Badge variant="secondary" className="text-xs ml-auto">
-              {availableCount} verfügbar
-            </Badge>
           </div>
         </CardHeader>
 
@@ -265,10 +258,6 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
               );
             })}
           </div>
-
-          <Badge variant="secondary" className="text-xs ml-auto">
-            {availableCount} verfügbar
-          </Badge>
         </div>
       </CardHeader>
 
