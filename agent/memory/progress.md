@@ -7,7 +7,7 @@
 ## Session-Status
 
 **Letzte Aktualisierung:** 2026-02-01
-**Projekt-Status:** MVP größtenteils implementiert, Integrationen verbessert
+**Projekt-Status:** MVP größtenteils implementiert, Integration Use Cases getestet
 
 ---
 
@@ -16,7 +16,7 @@
 | Layer | Dateien | Status | Test-Coverage |
 |-------|---------|--------|---------------|
 | Domain | 15 | ✅ 100% | 95% |
-| Application | 35 | ✅ 95% | 75% |
+| Application | 35 | ✅ 95% | 85% |
 | Infrastructure | 30 | ✅ 98% | 30% |
 | Presentation | 150+ | ⚠️ 95% | 5% |
 
@@ -69,50 +69,60 @@
 
 1. **Asana Integration UI** – Config-Seite, Projekt-Auswahl
 2. **TimeTac Integration UI** – API-Key Eingabe, User/Projekt-Mapping
-3. **Test-Coverage** – Repository & Server Action Tests
-4. **Test-Fixes** – Veraltete Mocks in Test-Dateien aktualisieren
+3. **Test-Coverage** – Repository & Server Action Tests (Integration Use Cases ✅ erledigt)
 
 ---
 
 ## Letzte Session
 
-**Datum:** 2026-02-01
+**Datum:** 2026-02-01 (Task D: Integration Use Cases Tests)
 
 ### Erledigte Aufgaben:
-- ✅ 5 Debug-Logs entfernt aus:
-  - `SupabaseProjectPhaseRepository.ts` (2 Stellen)
-  - `allocations.ts` (2 Stellen)
-  - `api/webhooks/asana/route.ts` (1 Stelle)
-- ✅ Token-Refresh Fix in `UpdateAsanaPhaseUseCase.ts`:
-  - Interface erweitert mit `update()` Methode
-  - Nach `refreshAccessToken()` werden neue Tokens in DB gespeichert
-- ✅ Token-Refresh Fix in `integrations.ts` Server Action:
-  - `getAsanaAccessToken()` prüft jetzt Token-Ablauf
-  - Automatische Erneuerung mit Verschlüsselung
-  - Fehlerbehandlung bei abgelaufenen Refresh-Tokens
+- ✅ **54 neue Tests für Integration Use Cases geschrieben**
+- ✅ 6 neue Test-Dateien erstellt
+- ✅ ESLint-Fehler in neuen Tests behoben
 
-### Geänderte Dateien:
-| Datei | Änderung |
-|-------|----------|
-| `src/infrastructure/repositories/SupabaseProjectPhaseRepository.ts` | Debug-Logs entfernt |
-| `src/presentation/actions/allocations.ts` | Debug-Logs entfernt |
-| `src/app/api/webhooks/asana/route.ts` | Debug-Log entfernt |
-| `src/application/use-cases/integrations/UpdateAsanaPhaseUseCase.ts` | Token-Refresh persistiert |
-| `src/presentation/actions/integrations.ts` | Token-Refresh implementiert |
+### Neue Test-Dateien:
+| Test-Datei | Tests | Use Case |
+|------------|-------|----------|
+| `ConnectTimeTacUseCase.test.ts` | 5 | API-Key Validierung, Account-Info |
+| `SyncAsanaProjectsUseCase.test.ts` | 13 | Projekt-Sync, Token-Refresh, Archivierung |
+| `UpdateAsanaPhaseUseCase.test.ts` | 10 | Phase-Update, Bidirektionaler Sync |
+| `SyncTimeTacAbsencesUseCase.test.ts` | 10 | Abwesenheits-Sync, Konflikt-Erkennung |
+| `SyncTimeTacTimeEntriesUseCase.test.ts` | 12 | TimeEntry-Sync, Projekt-Mapping |
+| `UnlinkProjectUseCase.test.ts` | 4 | Asana-Verknüpfung entfernen |
+| **Gesamt** | **54** | |
+
+### Test-Kategorien pro Use Case:
+- Happy Path (Erfolgreicher Durchlauf)
+- Validation Errors (Ungültige Inputs)
+- Auth Errors (Fehlende/abgelaufene Tokens)
+- Token Refresh (Automatische Erneuerung + Persistierung)
+- External Service Errors (API-Fehler)
 
 ### Guard-Ergebnisse:
-- ESLint: ⚠️ 7 Warnings (legitime Server-Logs in Webhook)
-- TypeScript: ⚠️ Pre-existing Fehler in Test-Dateien
-- Vitest: ✅ 561 Tests grün
+- ESLint: ⚠️ 7 Warnings (bekannte Server-Logs)
+- TypeScript: ✅ **Keine Fehler**
+- Vitest: ✅ **615 Tests grün** (vorher 561)
 
 ---
 
-## Bekannte Pre-existing Issues
+## Bekannte Issues
 
-### TypeScript-Fehler in Tests (nicht durch diese Session):
-- Veraltete Mocks fehlen `findByTenantWithTimetacId`, `updateTimetacId`
-- Deutsche Absence-Types (`urlaub`) vs. englische (`vacation`)
-- Fehlende Typ-Exports in `database.types`
+### ESLint Warnings (akzeptiert)
+- 7× `no-console` in `api/webhooks/asana/route.ts` – legitime Server-Logs für Monitoring
+
+---
+
+## Technische Schulden / Backlog
+
+### 🔜 Logger einführen (geplant)
+- **Priorität:** Mittel
+- **Grund:** Die `console.log` Statements in Server-Code (z.B. Webhook-Handler) sollten durch einen strukturierten Logger ersetzt werden
+- **Empfehlung:** `pino` oder `winston` für strukturiertes Logging mit Log-Levels, Timestamps und optional JSON-Output
+- **Betroffene Stellen:**
+  - `src/app/api/webhooks/asana/route.ts` (7 console.log/error Aufrufe)
+  - Zukünftige Server Actions und API Routes
 
 ---
 
