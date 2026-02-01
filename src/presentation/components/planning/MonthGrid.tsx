@@ -325,6 +325,11 @@ function MonthDayCell({ phaseId, projectId, date, totalHours, bereichColor, allo
 function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
   const bereichColor = getBereichColor(phase.phase.bereich);
 
+  // Berechne die Summe der geplanten Stunden für diesen Monat aus den Allocations
+  const monthlyPlannedHours = Object.values(phase.dayAllocations)
+    .flat()
+    .reduce((sum, allocation) => sum + (allocation.plannedHours ?? 0), 0);
+
   return (
     <div
       className="flex items-center border-t border-gray-100"
@@ -341,7 +346,15 @@ function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
             bereichColor.replace('text-', 'bg-').replace('-700', '-500')
           )}
         />
-        <span className="text-sm truncate">{phase.phase.name}</span>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm truncate block">{phase.phase.name}</span>
+          {/* Stunden-Info: Geplant diesen Monat / Budget */}
+          {phase.phase.budgetHours !== undefined && (
+            <div className="text-[10px] text-gray-500">
+              {monthlyPlannedHours}h / {phase.phase.budgetHours}h
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Tageszellen mit Allocations - jetzt Droppable! */}

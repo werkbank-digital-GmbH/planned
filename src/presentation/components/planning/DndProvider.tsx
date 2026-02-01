@@ -22,7 +22,7 @@ import {
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useUndo } from '@/presentation/contexts/UndoContext';
 
-import { formatDateISO } from '@/lib/date-utils';
+import { formatDateISO, getMonday, getWeekDates } from '@/lib/date-utils';
 
 import { AllocationCardOverlay } from './AllocationCardOverlay';
 import { PoolItemOverlay } from './PoolItemOverlay';
@@ -61,7 +61,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
   const [activeData, setActiveData] = useState<DragData | null>(null);
   // overData wird für zukünftiges visuelles Feedback verwendet
   const [, setOverData] = useState<DropZoneData | null>(null);
-  const { refresh, getAllocationById } = usePlanning();
+  const { refresh, getAllocationById, viewMode } = usePlanning();
   const { pushAction } = useUndo();
 
   // Sensor-Konfiguration
@@ -181,13 +181,19 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
             return;
           }
 
-          // Bestimme die Daten für die Allocations:
-          // - Wochenansicht (1 Tag im dates Array): Nur diesen Tag
-          // - Monatsansicht (5 Tage im dates Array): Alle 5 Werktage der Woche
-          const datesToCreate =
-            dragData.dates.length > 1
-              ? dragData.dates // Monatsansicht: Alle Werktage der Woche
-              : [formatDateISO(dropZone.date)]; // Wochenansicht: Nur der Drop-Tag
+          // Wochenansicht: 1 Allocation für den Drop-Tag
+          // Monatsansicht: 5 Allocations für alle Werktage der Woche (Mo-Fr)
+          let datesToCreate: string[];
+
+          if (viewMode === 'month') {
+            // Monatsansicht: Alle 5 Werktage der Woche des Drop-Datums
+            const monday = getMonday(dropZone.date);
+            const weekDates = getWeekDates(monday);
+            datesToCreate = weekDates.map((d) => formatDateISO(d));
+          } else {
+            // Wochenansicht: Nur der Drop-Tag
+            datesToCreate = [formatDateISO(dropZone.date)];
+          }
 
           // Erstelle Allocations für alle Daten parallel
           const results = await Promise.all(
