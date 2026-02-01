@@ -7,7 +7,7 @@
 ## Session-Status
 
 **Letzte Aktualisierung:** 2026-02-01
-**Projekt-Status:** MVP größtenteils implementiert, Integration Use Cases getestet
+**Projekt-Status:** MVP größtenteils implementiert, Planning-Komponenten getestet
 
 ---
 
@@ -18,7 +18,8 @@
 | Domain | 15 | ✅ 100% | 95% |
 | Application | 35 | ✅ 95% | 85% |
 | Infrastructure | 30 | ✅ 98% | 30% |
-| Presentation | 150+ | ⚠️ 95% | 5% |
+| Presentation | 150+ | ⚠️ 95% | 8% |
+| **Planning Components** | 38 | ✅ | **57 Tests** |
 
 **Detaillierte Analyse:** Siehe `agent/memory/codebaseAnalysis.md`
 
@@ -69,57 +70,51 @@
 
 1. ~~**Asana Integration UI**~~ ✅ ERLEDIGT
 2. ~~**TimeTac Integration UI**~~ ✅ ERLEDIGT
-3. **Test-Coverage** – Repository & Server Action Tests
-4. **Ressourcen-Verwaltung UI** – `/einstellungen/ressourcen`
-5. **Profil Mobile** – `/profil` Mobile-Ansicht
+3. ~~**Planning Component Tests**~~ ✅ ERLEDIGT (57 Tests)
+4. **Resize-Feature** – Allocation-Dauer per Drag ändern (Sicherheitsnetz vorhanden)
+5. **Repository & Server Action Tests** – Test-Coverage weiter erhöhen
+6. **Ressourcen-Verwaltung UI** – `/einstellungen/ressourcen`
 
 ---
 
 ## Letzte Session
 
-**Datum:** 2026-02-01 (Task B: Integration UI)
+**Datum:** 2026-02-01 (Planning Component Tests)
 
 ### Erledigte Aufgaben:
-- ✅ **Asana Integration UI** komplett implementiert
-- ✅ **TimeTac Integration UI** komplett implementiert
-- ✅ Neue Server Actions hinzugefügt
+- ✅ **Planning Component Tests** als Sicherheitsnetz für Resize-Feature
+- ✅ **57 neue Tests** für kritische DnD-Komponenten
+- ✅ Alle Tests grün, TypeScript fehlerfrei
 
-### Neue Dateien:
-| Datei | Beschreibung |
-|-------|--------------|
-| `src/app/(dashboard)/einstellungen/integrationen/asana/page.tsx` | Asana Config-Seite |
-| `src/app/(dashboard)/einstellungen/integrationen/asana/AsanaConnectionCard.tsx` | Verbindungs-Status |
-| `src/app/(dashboard)/einstellungen/integrationen/asana/AsanaSyncCard.tsx` | Projekt-Sync |
-| `src/app/(dashboard)/einstellungen/integrationen/asana/AsanaFieldMappingCard.tsx` | Custom Field Mapping |
-| `src/app/(dashboard)/einstellungen/integrationen/timetac/page.tsx` | TimeTac Config-Seite |
-| `src/app/(dashboard)/einstellungen/integrationen/timetac/TimeTacConnectionCard.tsx` | API-Key Formular |
-| `src/app/(dashboard)/einstellungen/integrationen/timetac/TimeTacMappingCard.tsx` | Projekt-Mapping |
+### Neue Test-Dateien:
+| Datei | Tests | Beschreibung |
+|-------|-------|--------------|
+| `__tests__/dnd-types.test.ts` | 23 | Helper Functions & Type Guards |
+| `__tests__/SpanningAssignmentCard.test.tsx` | 15 | Multi-Tag Allocation Cards |
+| `__tests__/AssignmentCard.test.tsx` | 19 | Single-Tag Allocation Cards |
 
-### Neue Server Actions (in `integrations.ts`):
-| Action | Funktion |
-|--------|----------|
-| `connectTimeTac()` | TimeTac mit API-Key verbinden |
-| `disconnectTimeTac()` | TimeTac-Verbindung trennen |
-| `disconnectAsana()` | Asana-Verbindung trennen |
-| `getAsanaConnectionStatus()` | Asana-Verbindungsstatus |
-| `getTimeTacConnectionStatus()` | TimeTac-Verbindungsstatus |
+### Getestete Funktionalität:
+**DnD Types:**
+- `createDropZoneId()` – Drop-Zone ID Erstellung
+- `createPhaseDropZoneId()` – Phase Drop-Zone ID
+- `parseDropZoneId()` – ID Parsing (user, resource, phase, pool)
+- Type Guards für alle Drag-Data Types
 
-### Features der Integration UI:
-**Asana:**
-- OAuth-Verbindung über Button
-- Projekt-Sync mit Erfolgs-/Fehlermeldungen
-- Custom Field Mapping (Projektnummer, Soll-Produktion, Soll-Montage)
-- Verbindung trennen
+**SpanningAssignmentCard:**
+- Span-Labels (Mo-Fr, X Tage)
+- User vs Resource Styling
+- Drag-Data Korrektheit
 
-**TimeTac:**
-- API-Key Eingabe mit Validierung
-- Projekt-Mapping (TimeTac Projekt → Planned Phase)
-- Verbindung trennen / API-Key ändern
+**AssignmentCard:**
+- Name-Formatierung (M.Bauer)
+- Absence-Konflikt Anzeige
+- Compact-Mode
+- Drag-Data Korrektheit
 
 ### Guard-Ergebnisse:
 - ESLint: ⚠️ 7 Warnings (bekannte Server-Logs)
 - TypeScript: ✅ **Keine Fehler**
-- Vitest: ✅ **615 Tests grün**
+- Vitest: ✅ **672 Tests grün** (+57 neue)
 
 ---
 
