@@ -27,7 +27,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 import type { Database } from '@/lib/database.types';
-import { clientEnv } from '@/lib/env';
+import { clientEnv } from '@/lib/env-client';
 
 /**
  * Erstellt einen Supabase-Client für Client Components (Browser)

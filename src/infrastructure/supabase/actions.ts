@@ -28,7 +28,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 import type { Database } from '@/lib/database.types';
-import { env } from '@/lib/env';
+import { env } from '@/lib/env-server';
 
 /**
  * Erstellt einen Supabase-Client für Server Actions

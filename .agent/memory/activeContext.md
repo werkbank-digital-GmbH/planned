@@ -50,9 +50,20 @@
    - **Hotfix:** Hydration-Guard hinzugefügt
    - Commit: `ced74d6`
 
-### Geplante Features
+8. **Agentic Operating System (AOS)** ✅
+   - Memory Bank mit 7 Dateien (projectBrief, activeContext, progress, etc.)
+   - Skills: TDD-Architect, Code-Review
+   - Commands: /boot, /memo, /gardener
+   - CLAUDE.md System-Prompt
+   - AOS_SETUP_GUIDE.md für andere Projekte
+   - aos-template.zip als portable Vorlage
+   - Commit: `8c6e842`
 
-Keine offenen Aufgaben aus dieser Sprint-Phase.
+### Geplante Features (Nächste Sprint-Phase)
+
+- [ ] Monatsansicht bis zum rechten Rand erweitern
+- [ ] Mehr Spacing zwischen Projekten im PlanningGrid
+- [ ] Vertikales Scrolling im Planungsbereich
 
 ## Wichtige Entscheidungen
 

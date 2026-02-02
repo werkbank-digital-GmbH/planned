@@ -27,7 +27,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 import type { Database } from '@/lib/database.types';
-import { env } from '@/lib/env';
+import { env } from '@/lib/env-server';
 
 /**
  * Erstellt einen Supabase Admin-Client mit Service Role Key

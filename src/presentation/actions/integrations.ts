@@ -38,7 +38,7 @@ import { AsanaService } from '@/infrastructure/services/AsanaService';
 import { createEncryptionService } from '@/infrastructure/services/EncryptionService';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 
-import { env } from '@/lib/env';
+import { env } from '@/lib/env-server';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
