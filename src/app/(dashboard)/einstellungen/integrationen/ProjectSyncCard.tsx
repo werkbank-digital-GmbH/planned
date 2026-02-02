@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, Building2, CheckCircle, Loader2, RefreshCw, Save } from 'lucide-react';
+import { AlertCircle, ArrowRight, Building2, CheckCircle, Loader2, RefreshCw, Save } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
@@ -250,89 +250,103 @@ export function ProjectSyncCard() {
               Keine Custom Fields im Quell-Projekt gefunden.
             </p>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {/* Projektphase */}
-              <div className="space-y-2">
-                <Label htmlFor="phaseType">Projektphase</Label>
-                <Select
-                  value={config.phaseTypeFieldId ?? NONE_VALUE}
-                  onValueChange={(v) => handleChange('phaseTypeFieldId', v)}
-                >
-                  <SelectTrigger id="phaseType">
-                    <SelectValue placeholder="Field auswählen..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE_VALUE}>Task-Name verwenden</SelectItem>
-                    {enumFields.map((field) => (
-                      <SelectItem key={field.gid} value={field.gid}>
-                        {field.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="rounded-lg border">
+              {/* Header */}
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b bg-gray-50 px-4 py-3">
+                <span className="text-sm font-medium text-gray-600">Asana</span>
+                <span className="w-4" />
+                <span className="text-sm font-medium text-gray-600">planned.</span>
               </div>
 
-              {/* Zuordnung */}
-              <div className="space-y-2">
-                <Label htmlFor="zuordnung">Zuordnung (Bereich)</Label>
-                <Select
-                  value={config.zuordnungFieldId ?? NONE_VALUE}
-                  onValueChange={(v) => handleChange('zuordnungFieldId', v)}
-                >
-                  <SelectTrigger id="zuordnung">
-                    <SelectValue placeholder="Field auswählen..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
-                    {enumFields.map((field) => (
-                      <SelectItem key={field.gid} value={field.gid}>
-                        {field.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Mapping Rows */}
+              <div className="divide-y">
+                {/* Projektphase → Phasen-Name */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+                  <Select
+                    value={config.phaseTypeFieldId ?? NONE_VALUE}
+                    onValueChange={(v) => handleChange('phaseTypeFieldId', v)}
+                  >
+                    <SelectTrigger id="phaseType">
+                      <SelectValue placeholder="Field auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>Task-Name verwenden</SelectItem>
+                      {enumFields.map((field) => (
+                        <SelectItem key={field.gid} value={field.gid}>
+                          {field.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">Phasen-Name</span>
+                </div>
 
-              {/* Soll-Stunden */}
-              <div className="space-y-2">
-                <Label htmlFor="sollStunden">Soll-Stunden</Label>
-                <Select
-                  value={config.sollStundenFieldId ?? NONE_VALUE}
-                  onValueChange={(v) => handleChange('sollStundenFieldId', v)}
-                >
-                  <SelectTrigger id="sollStunden">
-                    <SelectValue placeholder="Field auswählen..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
-                    {numberFields.map((field) => (
-                      <SelectItem key={field.gid} value={field.gid}>
-                        {field.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Zuordnung → Bereich */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+                  <Select
+                    value={config.zuordnungFieldId ?? NONE_VALUE}
+                    onValueChange={(v) => handleChange('zuordnungFieldId', v)}
+                  >
+                    <SelectTrigger id="zuordnung">
+                      <SelectValue placeholder="Field auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
+                      {enumFields.map((field) => (
+                        <SelectItem key={field.gid} value={field.gid}>
+                          {field.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">Bereich</span>
+                </div>
 
-              {/* Ist-Stunden */}
-              <div className="space-y-2">
-                <Label htmlFor="istStunden">Ist-Stunden</Label>
-                <Select
-                  value={config.istStundenFieldId ?? NONE_VALUE}
-                  onValueChange={(v) => handleChange('istStundenFieldId', v)}
-                >
-                  <SelectTrigger id="istStunden">
-                    <SelectValue placeholder="Field auswählen..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
-                    {numberFields.map((field) => (
-                      <SelectItem key={field.gid} value={field.gid}>
-                        {field.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Soll-Stunden → Budget (Soll) */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+                  <Select
+                    value={config.sollStundenFieldId ?? NONE_VALUE}
+                    onValueChange={(v) => handleChange('sollStundenFieldId', v)}
+                  >
+                    <SelectTrigger id="sollStunden">
+                      <SelectValue placeholder="Field auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
+                      {numberFields.map((field) => (
+                        <SelectItem key={field.gid} value={field.gid}>
+                          {field.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">Budget (Soll)</span>
+                </div>
+
+                {/* Ist-Stunden → Ist-Stunden */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+                  <Select
+                    value={config.istStundenFieldId ?? NONE_VALUE}
+                    onValueChange={(v) => handleChange('istStundenFieldId', v)}
+                  >
+                    <SelectTrigger id="istStunden">
+                      <SelectValue placeholder="Field auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
+                      {numberFields.map((field) => (
+                        <SelectItem key={field.gid} value={field.gid}>
+                          {field.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">Ist-Stunden</span>
+                </div>
               </div>
             </div>
           )}
