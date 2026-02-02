@@ -266,7 +266,6 @@ export async function POST(request: Request) {
 
     // Die Workspace-GID ist nicht direkt im Event, daher müssen wir
     // den Tenant über die Resource-GID finden
-    // Für jetzt verarbeiten wir ohne Signatur-Check (TODO: verbessern)
 
     // Suche nach dem Projekt/der Phase in der DB um den Tenant zu finden
     const supabase = createAdminSupabaseClient();
@@ -296,10 +295,9 @@ export async function POST(request: Request) {
     }
 
     // Bei neuen Projekten kennen wir den Tenant noch nicht
-    // In diesem Fall müssen wir über die Workspace-Credentials gehen
+    // In diesem Fall loggen wir das Event für spätere Verarbeitung beim nächsten Sync
     if (!tenantId && firstEvent.action === 'added') {
-      // TODO: Implementiere Workspace-Lookup
-      console.warn('[Asana Webhook] Cannot determine tenant for new resource');
+      console.log('[Asana Webhook] New resource detected, will be synced on next cron run');
       return NextResponse.json({ ok: true });
     }
 
