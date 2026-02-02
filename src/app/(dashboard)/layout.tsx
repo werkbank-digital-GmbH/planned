@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
 import { DesktopNavigation } from '@/presentation/components/navigation';
+import { SyncNotificationListener } from '@/presentation/components/notifications/SyncNotificationListener';
+import { SyncToast } from '@/presentation/components/notifications/SyncToast';
 
 /**
  * Dashboard Layout
@@ -42,6 +44,10 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       <DesktopNavigation user={user} />
       <main className="p-6">{children}</main>
+
+      {/* Sync Notifications */}
+      <SyncNotificationListener />
+      <SyncToast />
     </div>
   );
 }

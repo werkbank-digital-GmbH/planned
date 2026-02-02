@@ -6,12 +6,20 @@ import type { AsanaWebhookEvent } from '@/application/ports/services/IAsanaServi
 
 import { createAdminSupabaseClient } from '@/infrastructure/supabase';
 
+import type { SyncDetail } from '@/presentation/stores/notificationStore';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface WebhookPayload {
   events: AsanaWebhookEvent[];
+}
+
+interface ProcessedEvent {
+  type: 'projects' | 'phases';
+  action: 'created' | 'updated' | 'deleted';
+  name: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -45,8 +53,12 @@ function verifySignature(body: string, signature: string, secret: string): boole
 
 /**
  * Verarbeitet ein einzelnes Webhook-Event.
+ * Gibt das verarbeitete Event zurück für die Notification.
  */
-async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
+async function processEvent(
+  event: AsanaWebhookEvent,
+  tenantId: string
+): Promise<ProcessedEvent | null> {
   const supabase = createAdminSupabaseClient();
   const { action, resource, parent } = event;
 
@@ -55,24 +67,25 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
   // ─────────────────────────────────────────────────────────────────────────
 
   if (resource.resource_type === 'project') {
+    const name = resource.name ?? 'Unbenanntes Projekt';
+
     if (action === 'added') {
-      // Neues Projekt - in die Datenbank einfügen
       const { error } = await supabase.from('projects').insert({
         tenant_id: tenantId,
         asana_gid: resource.gid,
-        name: resource.name ?? 'Unbenanntes Projekt',
+        name,
         status: 'planning',
       });
 
       if (error) {
         console.error('[Asana Webhook] Error creating project:', error);
-      } else {
-        console.log(`[Asana Webhook] Created project ${resource.gid}`);
+        return null;
       }
+      console.log(`[Asana Webhook] Created project ${resource.gid}`);
+      return { type: 'projects', action: 'created', name };
     }
 
     if (action === 'changed' && resource.name) {
-      // Projekt wurde umbenannt
       const { error } = await supabase
         .from('projects')
         .update({ name: resource.name, updated_at: new Date().toISOString() })
@@ -81,13 +94,13 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
 
       if (error) {
         console.error('[Asana Webhook] Error updating project:', error);
-      } else {
-        console.log(`[Asana Webhook] Updated project ${resource.gid}`);
+        return null;
       }
+      console.log(`[Asana Webhook] Updated project ${resource.gid}`);
+      return { type: 'projects', action: 'updated', name: resource.name };
     }
 
     if (action === 'deleted' || action === 'removed') {
-      // Projekt wurde gelöscht/archiviert - Soft-Delete
       const { error } = await supabase
         .from('projects')
         .update({ status: 'completed', updated_at: new Date().toISOString() })
@@ -96,9 +109,10 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
 
       if (error) {
         console.error('[Asana Webhook] Error soft-deleting project:', error);
-      } else {
-        console.log(`[Asana Webhook] Soft-deleted project ${resource.gid}`);
+        return null;
       }
+      console.log(`[Asana Webhook] Soft-deleted project ${resource.gid}`);
+      return { type: 'projects', action: 'deleted', name };
     }
   }
 
@@ -107,15 +121,14 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
   // ─────────────────────────────────────────────────────────────────────────
 
   if (resource.resource_type === 'section') {
-    // Finde das zugehörige Projekt
     const projectGid = parent?.gid;
+    const name = resource.name ?? 'Unbenannte Phase';
 
     if (!projectGid) {
       console.warn('[Asana Webhook] Section event without parent project');
-      return;
+      return null;
     }
 
-    // Projekt-ID aus DB holen
     const { data: project } = await supabase
       .from('projects')
       .select('id')
@@ -125,31 +138,30 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
 
     if (!project) {
       console.warn(`[Asana Webhook] Project not found for GID ${projectGid}`);
-      return;
+      return null;
     }
 
     if (action === 'added') {
-      // Neue Section/Phase erstellen
-      const bereich = deriveBereichFromName(resource.name ?? '');
+      const bereich = deriveBereichFromName(name);
 
       const { error } = await supabase.from('project_phases').insert({
         tenant_id: tenantId,
         project_id: project.id,
         asana_gid: resource.gid,
-        name: resource.name ?? 'Unbenannte Phase',
+        name,
         bereich,
         sort_order: 0,
       });
 
       if (error) {
         console.error('[Asana Webhook] Error creating phase:', error);
-      } else {
-        console.log(`[Asana Webhook] Created phase ${resource.gid}`);
+        return null;
       }
+      console.log(`[Asana Webhook] Created phase ${resource.gid}`);
+      return { type: 'phases', action: 'created', name };
     }
 
     if (action === 'changed' && resource.name) {
-      // Phase wurde umbenannt
       const bereich = deriveBereichFromName(resource.name);
 
       const { error } = await supabase
@@ -164,13 +176,13 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
 
       if (error) {
         console.error('[Asana Webhook] Error updating phase:', error);
-      } else {
-        console.log(`[Asana Webhook] Updated phase ${resource.gid}`);
+        return null;
       }
+      console.log(`[Asana Webhook] Updated phase ${resource.gid}`);
+      return { type: 'phases', action: 'updated', name: resource.name };
     }
 
     if (action === 'deleted' || action === 'removed') {
-      // Phase wurde gelöscht - Hard-Delete (Sections haben keinen Archive-Status)
       const { error } = await supabase
         .from('project_phases')
         .delete()
@@ -179,11 +191,36 @@ async function processEvent(event: AsanaWebhookEvent, tenantId: string) {
 
       if (error) {
         console.error('[Asana Webhook] Error deleting phase:', error);
-      } else {
-        console.log(`[Asana Webhook] Deleted phase ${resource.gid}`);
+        return null;
       }
+      console.log(`[Asana Webhook] Deleted phase ${resource.gid}`);
+      return { type: 'phases', action: 'deleted', name };
     }
   }
+
+  return null;
+}
+
+/**
+ * Sendet eine Sync-Benachrichtigung an alle Clients des Tenants via Supabase Realtime.
+ */
+async function broadcastSyncNotification(tenantId: string, details: SyncDetail[]) {
+  if (details.length === 0) return;
+
+  const supabase = createAdminSupabaseClient();
+  const channel = supabase.channel(`tenant:${tenantId}`);
+
+  await channel.send({
+    type: 'broadcast',
+    event: 'sync_notification',
+    payload: {
+      direction: 'incoming',
+      summary: 'Asana hat ein Update gesendet',
+      details,
+    },
+  });
+
+  await supabase.removeChannel(channel);
 }
 
 /**
@@ -321,9 +358,23 @@ export async function POST(request: Request) {
       }
     }
 
-    // Events verarbeiten
+    // Events verarbeiten und Details sammeln
+    const processedEvents: ProcessedEvent[] = [];
     for (const event of payload.events) {
-      await processEvent(event, tenantId);
+      const result = await processEvent(event, tenantId);
+      if (result) {
+        processedEvents.push(result);
+      }
+    }
+
+    // Sync-Benachrichtigung an Clients senden
+    if (processedEvents.length > 0) {
+      const details: SyncDetail[] = processedEvents.map((e) => ({
+        type: e.type,
+        action: e.action,
+        name: e.name,
+      }));
+      await broadcastSyncNotification(tenantId, details);
     }
 
     // Log sync operation
