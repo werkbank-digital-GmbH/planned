@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { createBrowserSupabaseClient } from '@/infrastructure/supabase/client';
 
@@ -14,25 +14,43 @@ import { useNotificationStore } from '@/presentation/stores/notificationStore';
  * Empfängt Broadcasts vom Webhook-Handler und zeigt Toast-Benachrichtigungen an.
  */
 export function SyncNotificationListener() {
+  const [isMounted, setIsMounted] = useState(false);
   const { tenant } = useTenant();
   const showNotification = useNotificationStore((s) => s.showNotification);
 
+  // Hydration-Guard: Erst nach Client-Mount ausführen
   useEffect(() => {
-    if (!tenant?.id) return;
+    setIsMounted(true);
+  }, []);
 
-    const supabase = createBrowserSupabaseClient();
-    const channel = supabase.channel(`tenant:${tenant.id}`);
+  useEffect(() => {
+    // Nicht ausführen bis hydrated und tenant vorhanden
+    if (!isMounted || !tenant?.id) return;
 
-    channel
-      .on('broadcast', { event: 'sync_notification' }, ({ payload }) => {
-        showNotification(payload);
-      })
-      .subscribe();
+    let channel: ReturnType<
+      ReturnType<typeof createBrowserSupabaseClient>['channel']
+    > | null = null;
+
+    try {
+      const supabase = createBrowserSupabaseClient();
+      channel = supabase.channel(`tenant:${tenant.id}`);
+
+      channel
+        .on('broadcast', { event: 'sync_notification' }, ({ payload }) => {
+          showNotification(payload);
+        })
+        .subscribe();
+    } catch (error) {
+      console.error('[SyncNotificationListener] Error:', error);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        const supabase = createBrowserSupabaseClient();
+        supabase.removeChannel(channel);
+      }
     };
-  }, [tenant?.id, showNotification]);
+  }, [isMounted, tenant?.id, showNotification]);
 
   return null;
 }
