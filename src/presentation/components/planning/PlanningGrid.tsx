@@ -1,8 +1,9 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { GripHorizontal, Loader2 } from 'lucide-react';
 
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
+import { useResizable } from '@/presentation/hooks/useResizable';
 
 import { getDayNameShort, isToday } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
@@ -61,6 +62,52 @@ function GridHeader({ weekDates }: GridHeaderProps) {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+// RESIZABLE RESOURCE POOL WRAPPER
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface ResizablePoolWrapperProps {
+  children: React.ReactNode;
+}
+
+function ResizablePoolWrapper({ children }: ResizablePoolWrapperProps) {
+  const { height, isDragging, handleMouseDown, handleTouchStart } = useResizable({
+    defaultHeight: 180,
+    minHeight: 80,
+    maxHeight: 400,
+    storageKey: 'planning-resource-pool-height',
+  });
+
+  return (
+    <div
+      className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] -mx-6 px-6 -mb-6 pb-6 flex flex-col"
+      style={{ height: height + 24 }} // +24 für padding
+    >
+      {/* Resize Handle */}
+      <div
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        className={cn(
+          'h-3 cursor-ns-resize flex items-center justify-center shrink-0',
+          'hover:bg-gray-200/50 transition-colors rounded-t',
+          isDragging && 'bg-blue-100'
+        )}
+      >
+        <GripHorizontal className="h-4 w-4 text-gray-400" />
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-hidden min-h-0">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
 /**
  * Haupt-Grid der Planungsansicht (Projekt-zentriert).
  *
@@ -68,7 +115,7 @@ function GridHeader({ weekDates }: GridHeaderProps) {
  * - Header mit Wochentagen
  * - Projekte als aufklappbare Zeilen
  * - Phasen als Unterzeilen mit zugewiesenen Mitarbeitern
- * - Ressourcen-Pool am unteren Rand für Drag & Drop
+ * - Ressourcen-Pool am unteren Rand für Drag & Drop (resizable)
  */
 export function PlanningGrid() {
   const {
@@ -90,10 +137,10 @@ export function PlanningGrid() {
       <div className="space-y-4">
         <MonthGrid />
 
-        {/* Ressourcen-Pool - Sticky am unteren Bildschirmrand */}
-        <div className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pt-4 -mx-6 px-6 -mb-6 pb-6">
+        {/* Resizable Ressourcen-Pool */}
+        <ResizablePoolWrapper>
           <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
-        </div>
+        </ResizablePoolWrapper>
       </div>
     );
   }
@@ -148,10 +195,10 @@ export function PlanningGrid() {
         )}
       </div>
 
-      {/* Ressourcen-Pool - Sticky am unteren Bildschirmrand */}
-      <div className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pt-4 -mx-6 px-6 -mb-6 pb-6">
+      {/* Resizable Ressourcen-Pool */}
+      <ResizablePoolWrapper>
         <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
-      </div>
+      </ResizablePoolWrapper>
     </div>
   );
 }

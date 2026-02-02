@@ -10,7 +10,7 @@ import { Badge } from '@/presentation/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 import type { ViewMode } from '@/presentation/contexts/PlanningContext';
 
-import { formatDateISO, getDayNameShort, getCalendarWeek } from '@/lib/date-utils';
+import { formatDateISO, getCalendarWeek } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
 import { PoolCard } from './PoolCard';
@@ -123,103 +123,94 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
   const userCount = poolItems.filter((p) => p.type === 'user').length;
   const resourceCount = poolItems.filter((p) => p.type === 'resource').length;
 
-  // Wochenansicht: Nach Tagen gruppieren
+  // Wochenansicht: Nach Tagen gruppieren (aligned mit PlanningGrid)
   if (viewMode === 'week') {
     return (
       <Card
         ref={setNodeRef}
         className={cn(
-          'bg-gray-50 transition-all',
+          'bg-gray-50 transition-all h-full flex flex-col',
           showDeleteHint && 'ring-2 ring-red-400 bg-red-50',
           isDraggingAllocation && !isOver && 'ring-1 ring-dashed ring-gray-300'
         )}
       >
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-4">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              {showDeleteHint ? (
-                <Trash2 className="h-4 w-4 text-red-500" />
-              ) : (
-                <Users className="h-4 w-4" />
-              )}
-              {showDeleteHint ? 'Hier ablegen zum Entfernen' : 'Ressourcen-Pool'}
-            </CardTitle>
-
-            {/* Filter Tabs - jetzt links */}
-            <div className="flex items-center gap-1 p-1 bg-white rounded-lg border">
-              {FILTER_TABS.map((tab) => {
-                const count =
-                  tab.value === 'all'
-                    ? poolItems.length
-                    : tab.value === 'users'
-                      ? userCount
-                      : resourceCount;
-
-                return (
-                  <button
-                    key={tab.value}
-                    onClick={() => setActiveTab(tab.value)}
-                    className={cn(
-                      'flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors',
-                      activeTab === tab.value
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-600 hover:text-gray-900'
-                    )}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                    <span
-                      className={cn(
-                        'ml-1',
-                        activeTab === tab.value ? 'text-gray-500' : 'text-gray-400'
-                      )}
-                    >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent>
+        <CardContent className="p-0 flex-1 overflow-hidden min-h-0">
           {filteredItems.length > 0 ? (
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-[280px_repeat(5,1fr)] h-full">
+              {/* Erste Spalte: Label + Filter */}
+              <div className="border-r border-gray-200 p-3 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  {showDeleteHint ? (
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  ) : (
+                    <Users className="h-4 w-4 text-gray-500" />
+                  )}
+                  <span className="text-sm font-medium text-gray-700">
+                    {showDeleteHint ? 'Hier ablegen zum Entfernen' : 'Verfügbar'}
+                  </span>
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex flex-wrap items-center gap-1">
+                  {FILTER_TABS.map((tab) => {
+                    const count =
+                      tab.value === 'all'
+                        ? poolItems.length
+                        : tab.value === 'users'
+                          ? userCount
+                          : resourceCount;
+
+                    return (
+                      <button
+                        key={tab.value}
+                        onClick={() => setActiveTab(tab.value)}
+                        className={cn(
+                          'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors',
+                          activeTab === tab.value
+                            ? 'bg-white text-gray-900 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900'
+                        )}
+                      >
+                        {tab.icon}
+                        <span className="hidden sm:inline">{tab.label}</span>
+                        <span
+                          className={cn(
+                            activeTab === tab.value ? 'text-gray-500' : 'text-gray-400'
+                          )}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tages-Spalten: Aligned mit PlanningGrid */}
               {weekDates.map((date, dayIndex) => {
-                // Filtere Ressourcen, die an diesem Tag verfügbar sind
                 const availableOnDay = filteredItems.filter((item) =>
                   isAvailableOnDate(item, dayIndex)
                 );
 
                 return (
-                  <div key={date.toISOString()} className="flex flex-col">
-                    {/* Tag-Header */}
-                    <div className="text-center pb-2 border-b mb-2">
-                      <div className="font-medium text-sm">{getDayNameShort(dayIndex)}</div>
-                      <div className="text-xs text-gray-500">
-                        {date.getDate()}.{date.getMonth() + 1}.
-                      </div>
-                      <Badge variant="outline" className="text-[10px] mt-1">
-                        {availableOnDay.length} verfügbar
-                      </Badge>
-                    </div>
-
-                    {/* Verfügbare Ressourcen für diesen Tag */}
-                    <div className="flex flex-col gap-1.5 min-h-[100px]">
+                  <div
+                    key={date.toISOString()}
+                    className="border-r border-gray-200 last:border-r-0 p-2 overflow-y-auto"
+                  >
+                    <div className="flex flex-col gap-1">
                       {availableOnDay.length > 0 ? (
                         availableOnDay.map((item) => (
                           <PoolCard
                             key={`${item.type}-${item.id}-${dayIndex}`}
                             item={item}
-                            weekDates={[date]} // Nur dieser eine Tag (Wochenansicht = 1 Allocation)
+                            weekDates={[date]}
                             compact
                             contextKey={`day-${dayIndex}`}
                           />
                         ))
                       ) : (
                         <div className="text-center text-xs text-gray-400 py-4">
-                          Keine verfügbar
+                          –
                         </div>
                       )}
                     </div>
@@ -244,12 +235,12 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
     <Card
       ref={setNodeRef}
       className={cn(
-        'bg-gray-50 transition-all',
+        'bg-gray-50 transition-all h-full flex flex-col',
         showDeleteHint && 'ring-2 ring-red-400 bg-red-50',
         isDraggingAllocation && !isOver && 'ring-1 ring-dashed ring-gray-300'
       )}
     >
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 shrink-0">
         <div className="flex items-center gap-4">
           <CardTitle className="flex items-center gap-2 text-sm">
             {showDeleteHint ? (
@@ -298,7 +289,7 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="flex-1 overflow-y-auto min-h-0">
         {filteredItems.length > 0 ? (
           <div
             className="grid gap-4"
@@ -331,7 +322,7 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
                   </div>
 
                   {/* Verfügbare Ressourcen für diese Woche */}
-                  <div className="flex flex-col gap-1.5 min-h-[100px]">
+                  <div className="flex flex-col gap-1.5">
                     {availableInWeek.length > 0 ? (
                       availableInWeek.map((item) => (
                         <PoolCard
