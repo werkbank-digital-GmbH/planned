@@ -6,18 +6,14 @@ import { AlertCircle, Truck, User } from 'lucide-react';
 import type { AllocationWithDetails } from '@/application/queries';
 
 import { createAllocationAction } from '@/presentation/actions/allocations';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/presentation/components/ui/tooltip';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
 import { formatDateISO, getWeekDates } from '@/lib/date-utils';
-import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
+
+import { AllocationPopover, type AllocationPopoverData } from './AllocationPopover';
+import * as styles from './assignment-card.styles';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -172,49 +168,58 @@ export function AssignmentCard({
   const hasConflict = allocation.hasAbsenceConflict;
   const isDragging = isMoveDragging;
 
+  // Popover-Daten zusammenstellen
+  const popoverData: AllocationPopoverData = {
+    displayName,
+    fullName: allocation.user?.fullName ?? allocation.resource?.name,
+    isUser,
+    spanDays: 1,
+    plannedHours: allocation.plannedHours ?? 8,
+    actualHours: allocation.actualHours,
+    phaseName: allocation.projectPhase.name,
+    projectName: allocation.project.name,
+    notes: allocation.notes ?? undefined,
+    conflictType: hasConflict ? allocation.absenceType ?? undefined : undefined,
+  };
+
   const cardContent = (
     <div
       ref={setMoveRef}
       style={style}
       className={cn(
-        'group relative flex items-center gap-1 px-1.5 py-0.5 rounded text-xs',
-        'transition-colors select-none',
-        isUser ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800',
-        hasConflict && 'ring-2 ring-red-400',
-        isDragging && 'opacity-50 ring-2 ring-blue-500',
-        (isResizing || isSnapping) && 'ring-2 ring-blue-400 z-10',
-        compact ? 'max-w-[80px]' : 'max-w-[100px]'
+        styles.cardBase,
+        isUser ? styles.cardUser : styles.cardResource,
+        hasConflict && styles.cardConflict,
+        isDragging && styles.cardDragging,
+        (isResizing || isSnapping) && styles.cardResizing,
+        compact && 'max-w-[80px]'
       )}
     >
       {/* Move-Bereich (gesamte Card außer Handle) */}
       <div
         {...moveListeners}
         {...moveAttributes}
-        className="flex items-center gap-1 cursor-grab active:cursor-grabbing flex-1 min-w-0"
+        className={styles.moveHandle}
       >
         {isUser ? (
-          <User className="h-3 w-3 flex-shrink-0" />
+          <User className={styles.iconSize} />
         ) : (
-          <Truck className="h-3 w-3 flex-shrink-0" />
+          <Truck className={styles.iconSize} />
         )}
-        <span className="truncate">{displayName}</span>
+        <span className="font-medium truncate">{displayName}</span>
         {hasConflict && (
-          <AlertCircle className="h-3 w-3 flex-shrink-0 text-red-500" />
+          <AlertCircle className={cn(styles.iconSize, 'text-red-500')} />
         )}
       </div>
 
-      {/* Resize-Handle am rechten Rand - jetzt mit eigenem Handler */}
+      {/* Resize-Handle am rechten Rand */}
       {dayIndex !== undefined && (
         <div
           {...handleProps}
           className={cn(
-            'absolute right-0 top-0 bottom-0 w-2',
-            'cursor-col-resize',
-            'opacity-0 group-hover:opacity-100 transition-opacity',
-            'bg-gradient-to-r from-transparent',
-            isUser ? 'to-blue-300' : 'to-orange-300',
-            'rounded-r',
-            (isResizing || isSnapping) && 'opacity-100 bg-blue-400'
+            styles.resizeHandleBase,
+            isUser ? styles.resizeHandleUser : styles.resizeHandleResource,
+            (isResizing || isSnapping) && styles.resizeHandleActive
           )}
           title="Ziehen um Dauer zu ändern"
         />
@@ -224,11 +229,8 @@ export function AssignmentCard({
       {isResizing && previewSpanDays > 1 && (
         <div
           className={cn(
-            'absolute top-0 bottom-0 left-0',
-            'border-2 border-dashed rounded pointer-events-none',
-            isUser
-              ? 'border-blue-400 bg-blue-50/30'
-              : 'border-orange-400 bg-orange-50/30'
+            styles.ghostPreviewBase,
+            isUser ? styles.ghostPreviewUser : styles.ghostPreviewResource
           )}
           style={{ width: `${previewSpanDays * 100}%` }}
         />
@@ -236,43 +238,11 @@ export function AssignmentCard({
     </div>
   );
 
-  // Mit Tooltip wenn es zusätzliche Infos gibt
-  if (allocation.plannedHours || allocation.notes || hasConflict) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>{cardContent}</TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[200px]">
-            <div className="space-y-1">
-              <p className="font-medium">
-                {allocation.user?.fullName ?? allocation.resource?.name}
-              </p>
-              {allocation.plannedHours && (
-                <p className="text-xs text-gray-500">
-                  {formatHoursWithUnit(allocation.plannedHours)} geplant
-                </p>
-              )}
-              {allocation.notes && (
-                <p className="text-xs text-gray-500 italic">
-                  {allocation.notes}
-                </p>
-              )}
-              {hasConflict && (
-                <p className="text-xs text-red-500">
-                  Konflikt:{' '}
-                  {allocation.absenceType === 'vacation'
-                    ? 'Urlaub'
-                    : allocation.absenceType}
-                </p>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  return cardContent;
+  return (
+    <AllocationPopover data={popoverData}>
+      {cardContent}
+    </AllocationPopover>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

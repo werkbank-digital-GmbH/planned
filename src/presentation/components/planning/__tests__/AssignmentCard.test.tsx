@@ -176,11 +176,14 @@ describe('AssignmentCard', () => {
       expect(card).toBeInTheDocument();
     });
 
-    it('should render with normal styling when compact=false', () => {
+    it('should render without max-w constraint when compact=false', () => {
       const allocation = createMockAllocation();
       const { container } = render(<AssignmentCard allocation={allocation} compact={false} />);
-      const card = container.querySelector('[class*="max-w-[100px]"]');
-      expect(card).toBeInTheDocument();
+      // Normal mode should not have max-w-[80px] constraint
+      const card = container.querySelector('[class*="max-w-[80px]"]');
+      expect(card).not.toBeInTheDocument();
+      // But card should still render with blue background for user
+      expect(container.querySelector('[class*="bg-blue"]')).toBeInTheDocument();
     });
   });
 

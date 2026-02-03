@@ -7,19 +7,14 @@ import {
   createAllocationAction,
   deleteAllocationAction,
 } from '@/presentation/actions/allocations';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/presentation/components/ui/tooltip';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
 import { formatDateISO, getWeekDates } from '@/lib/date-utils';
-import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+import { AllocationPopover, type AllocationPopoverData } from './AllocationPopover';
+import * as styles from './assignment-card.styles';
 import type { AllocationSpan } from './utils/allocation-grouping';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -226,31 +221,42 @@ export function SpanningAssignmentCard({
     return undefined;
   })();
 
+  // Popover-Daten zusammenstellen
+  const firstAllocation = span.allocations[0];
+  const popoverData: AllocationPopoverData = {
+    displayName: span.displayName,
+    fullName: firstAllocation.user?.fullName ?? firstAllocation.resource?.name,
+    isUser,
+    spanDays: visualSpanDays,
+    plannedHours: span.totalHours,
+    actualHours: span.allocations.reduce((sum, a) => sum + (a.actualHours ?? 0), 0) || undefined,
+    phaseName: firstAllocation.projectPhase.name,
+    projectName: firstAllocation.project.name,
+    notes: firstAllocation.notes ?? undefined,
+    conflictType: firstAllocation.hasAbsenceConflict ? firstAllocation.absenceType ?? undefined : undefined,
+  };
+
   const cardContent = (
     <div
       ref={setMoveRef}
       style={style}
       className={cn(
-        'group relative flex items-center gap-1.5 px-2 py-1 rounded text-xs',
-        'select-none',
-        'border shadow-sm',
-        isUser
-          ? 'bg-blue-50 text-blue-800 border-blue-200'
-          : 'bg-orange-50 text-orange-800 border-orange-200',
-        isDragging && 'opacity-50 ring-2 ring-blue-500 shadow-lg',
-        (isResizing || isSnapping) && 'ring-2 ring-blue-400 z-10'
+        styles.cardBase,
+        isUser ? styles.cardUser : styles.cardResource,
+        isDragging && styles.cardDragging,
+        (isResizing || isSnapping) && styles.cardResizing
       )}
     >
       {/* Move-Bereich (gesamte Card außer Handle) */}
       <div
         {...moveListeners}
         {...moveAttributes}
-        className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing flex-1 min-w-0"
+        className={styles.moveHandle}
       >
         {isUser ? (
-          <User className="h-3.5 w-3.5 flex-shrink-0" />
+          <User className={styles.iconSize} />
         ) : (
-          <Truck className="h-3.5 w-3.5 flex-shrink-0" />
+          <Truck className={styles.iconSize} />
         )}
         <span className="font-medium truncate">{span.displayName}</span>
         {spanLabel && (
@@ -261,17 +267,13 @@ export function SpanningAssignmentCard({
         )}
       </div>
 
-      {/* Resize-Handle am rechten Rand - jetzt mit eigenem Handler */}
+      {/* Resize-Handle am rechten Rand */}
       <div
         {...handleProps}
         className={cn(
-          'absolute right-0 top-0 bottom-0 w-3',
-          'cursor-col-resize',
-          'opacity-0 group-hover:opacity-100 transition-opacity',
-          'bg-gradient-to-r from-transparent',
-          isUser ? 'to-blue-300' : 'to-orange-300',
-          'rounded-r',
-          (isResizing || isSnapping) && 'opacity-100 bg-blue-400'
+          styles.resizeHandleBase,
+          isUser ? styles.resizeHandleUser : styles.resizeHandleResource,
+          (isResizing || isSnapping) && styles.resizeHandleActive
         )}
         title="Ziehen um Dauer zu ändern"
       />
@@ -280,11 +282,8 @@ export function SpanningAssignmentCard({
       {isResizing && previewSpanDays !== span.spanDays && (
         <div
           className={cn(
-            'absolute top-0 bottom-0 left-0',
-            'border-2 border-dashed rounded pointer-events-none',
-            isUser
-              ? 'border-blue-400 bg-blue-50/30'
-              : 'border-orange-400 bg-orange-50/30'
+            styles.ghostPreviewBase,
+            isUser ? styles.ghostPreviewUser : styles.ghostPreviewResource
           )}
           style={{
             // Preview zeigt finale Größe basierend auf previewSpanDays
@@ -295,26 +294,9 @@ export function SpanningAssignmentCard({
     </div>
   );
 
-  // Tooltip mit Details
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>{cardContent}</TooltipTrigger>
-        <TooltipContent side="top" className="max-w-[250px]">
-          <div className="space-y-1">
-            <p className="font-medium">
-              {span.allocations[0].user?.fullName ??
-                span.allocations[0].resource?.name}
-            </p>
-            <p className="text-xs text-gray-500">
-              {visualSpanDays} Tage ({formatHoursWithUnit(span.totalHours)} gesamt)
-            </p>
-            <p className="text-xs text-gray-500">
-              Phase: {span.allocations[0].projectPhase.name}
-            </p>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <AllocationPopover data={popoverData}>
+      {cardContent}
+    </AllocationPopover>
   );
 }

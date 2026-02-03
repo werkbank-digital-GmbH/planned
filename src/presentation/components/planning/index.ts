@@ -1,6 +1,7 @@
 export { AbsenceOverlay } from './AbsenceOverlay';
 export { AllocationCard } from './AllocationCard';
 export { AllocationCardOverlay } from './AllocationCardOverlay';
+export { AllocationPopover, type AllocationPopoverData } from './AllocationPopover';
 export { CapacityBar } from './CapacityBar';
 export { DateMultiSelect } from './DateMultiSelect';
 export { DeleteConfirmDialog } from './DeleteConfirmDialog';
