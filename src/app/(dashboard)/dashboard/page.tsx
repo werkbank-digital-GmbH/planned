@@ -2,14 +2,17 @@ import { Suspense } from 'react';
 
 import { getDashboardData } from '@/presentation/actions/dashboard';
 import { getTenantInsightsAction } from '@/presentation/actions/insights';
-import { AnalyticsKPIs } from '@/presentation/components/dashboard/AnalyticsKPIs';
-import { DashboardSkeleton } from '@/presentation/components/dashboard/DashboardSkeleton';
-import { InsightsLastUpdated } from '@/presentation/components/dashboard/InsightsLastUpdated';
-import { RiskProjectsList } from '@/presentation/components/dashboard/RiskProjectsList';
-import { TeamCapacityCard } from '@/presentation/components/dashboard/TeamCapacityCard';
-import { TopProjectsCard } from '@/presentation/components/dashboard/TopProjectsCard';
-import { UpcomingAbsencesCard } from '@/presentation/components/dashboard/UpcomingAbsencesCard';
-import { UtilizationChart } from '@/presentation/components/dashboard/UtilizationChart';
+import {
+  AnalyticsKPIs,
+  DashboardSkeleton,
+  InsightsLastUpdated,
+  RefreshInsightsButton,
+  RiskProjectsList,
+  TeamCapacityCard,
+  TopProjectsCard,
+  UpcomingAbsencesCard,
+  UtilizationChart,
+} from '@/presentation/components/dashboard';
 
 export default function DashboardPage() {
   return (
@@ -49,13 +52,17 @@ async function DashboardContent() {
       {insights ? (
         <div className="space-y-2">
           <AnalyticsKPIs data={insights} />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-4">
             <InsightsLastUpdated lastUpdatedAt={insights.lastUpdatedAt} />
+            <RefreshInsightsButton lastRefreshAt={insights.lastUpdatedAt} />
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-500 text-center">
-          Noch keine Auswertungen verfügbar. Die erste Analyse wird um 05:15 Uhr generiert.
+        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <span className="text-gray-500">
+            Noch keine Auswertungen verfügbar. Die erste Analyse wird um 05:15 Uhr generiert.
+          </span>
+          <RefreshInsightsButton />
         </div>
       )}
 

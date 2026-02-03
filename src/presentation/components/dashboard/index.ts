@@ -1,4 +1,8 @@
+export { AnalyticsKPIs } from './AnalyticsKPIs';
 export { DashboardSkeleton } from './DashboardSkeleton';
+export { InsightsLastUpdated } from './InsightsLastUpdated';
+export { RefreshInsightsButton } from './RefreshInsightsButton';
+export { RiskProjectsList } from './RiskProjectsList';
 export { TeamCapacityCard } from './TeamCapacityCard';
 export { TopProjectsCard } from './TopProjectsCard';
 export { UpcomingAbsencesCard } from './UpcomingAbsencesCard';
