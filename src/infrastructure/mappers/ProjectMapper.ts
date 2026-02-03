@@ -22,6 +22,7 @@ export class ProjectMapper {
       name: row.name,
       clientName: row.client_name ?? undefined,
       address: row.address ?? undefined,
+      addressConflict: (row as DbProject & { address_conflict?: boolean }).address_conflict ?? false,
       status: row.status as ProjectStatus,
       asanaGid: row.asana_gid ?? undefined,
       driveFolderUrl: row.drive_folder_url ?? undefined,
@@ -36,13 +37,14 @@ export class ProjectMapper {
   /**
    * Konvertiert eine Domain-Entity in eine Datenbank-Insert-Row.
    */
-  static toPersistence(project: Project): DbProjectInsert {
+  static toPersistence(project: Project): DbProjectInsert & { address_conflict?: boolean } {
     return {
       id: project.id,
       tenant_id: project.tenantId,
       name: project.name,
       client_name: project.clientName ?? null,
       address: project.address ?? null,
+      address_conflict: project.addressConflict,
       status: project.status,
       asana_gid: project.asanaGid ?? null,
       drive_folder_url: project.driveFolderUrl ?? null,

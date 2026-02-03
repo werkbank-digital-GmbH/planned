@@ -244,6 +244,7 @@ export class SupabaseProjectPhaseRepository implements IProjectPhaseRepository {
         end_date: phase.endDate?.toISOString().split('T')[0] ?? null,
         sort_order: phase.sortOrder,
         budget_hours: phase.budgetHours ?? null,
+        description: phase.description ?? null,
         status: phase.status,
         deleted_at: phase.deletedAt?.toISOString() ?? null,
         updated_at: new Date().toISOString(),

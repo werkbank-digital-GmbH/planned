@@ -55,6 +55,7 @@ export interface FieldMappingDTO {
   projectNumberFieldId?: string;
   sollProduktionFieldId?: string;
   sollMontageFieldId?: string;
+  addressFieldId?: string;
 }
 
 export interface CustomFieldDTO {
@@ -354,6 +355,7 @@ export async function getFieldMapping(): Promise<ActionResult<FieldMappingDTO>> 
       projectNumberFieldId: credentials.asanaProjectStatusFieldId ?? undefined,
       sollProduktionFieldId: credentials.asanaSollProduktionFieldId ?? undefined,
       sollMontageFieldId: credentials.asanaSollMontageFieldId ?? undefined,
+      addressFieldId: credentials.asanaAddressFieldId ?? undefined,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
@@ -385,6 +387,7 @@ export async function saveFieldMapping(
       asanaProjectStatusFieldId: mapping.projectNumberFieldId ?? null,
       asanaSollProduktionFieldId: mapping.sollProduktionFieldId ?? null,
       asanaSollMontageFieldId: mapping.sollMontageFieldId ?? null,
+      asanaAddressFieldId: mapping.addressFieldId ?? null,
     });
 
     return Result.ok(mapping);
@@ -611,6 +614,7 @@ export interface AsanaSourceConfigDTO {
   zuordnungFieldId: string | null;
   sollStundenFieldId: string | null;
   istStundenFieldId: string | null;
+  addressFieldId: string | null;
 }
 
 /**
@@ -637,6 +641,7 @@ export async function getAsanaSourceConfig(): Promise<ActionResult<AsanaSourceCo
         zuordnungFieldId: null,
         sollStundenFieldId: null,
         istStundenFieldId: null,
+        addressFieldId: null,
       });
     }
 
@@ -647,6 +652,7 @@ export async function getAsanaSourceConfig(): Promise<ActionResult<AsanaSourceCo
       zuordnungFieldId: credentials.asanaZuordnungFieldId,
       sollStundenFieldId: credentials.asanaSollStundenFieldId,
       istStundenFieldId: credentials.asanaIstStundenFieldId,
+      addressFieldId: credentials.asanaAddressFieldId,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
@@ -677,6 +683,7 @@ export async function saveAsanaSourceConfig(
       asanaZuordnungFieldId: config.zuordnungFieldId,
       asanaSollStundenFieldId: config.sollStundenFieldId,
       asanaIstStundenFieldId: config.istStundenFieldId,
+      asanaAddressFieldId: config.addressFieldId,
     });
 
     // Paths revalidieren

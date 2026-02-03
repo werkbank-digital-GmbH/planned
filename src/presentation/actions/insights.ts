@@ -120,6 +120,8 @@ export interface PhaseInsightDTO {
   id: string;
   phaseId: string;
   phaseName: string;
+  /** Beschreibung der Phase aus Asana Task Notes */
+  phaseDescription: string | null;
   status: InsightStatus;
   progressPercent: number | null;
   summaryText: string;
@@ -149,6 +151,10 @@ export interface ProjectInsightDTO {
     projectedCompletionDate: string | null;
     projectDeadlineDelta: number | null;
   } | null;
+  /** Projektadresse aus Asana Custom Field */
+  projectAddress: string | null;
+  /** Adress-Konflikt: Unterschiedliche Adressen in den Phasen */
+  addressConflict: boolean;
   phaseInsights: PhaseInsightDTO[];
   generatedAt: string | null;
 }
@@ -179,12 +185,20 @@ export async function getProjectInsightsAction(
     const supabase = await createActionSupabaseClient();
     const analyticsRepo = new SupabaseAnalyticsRepository(supabase);
 
-    // Prüfe, ob Projekt zum Tenant gehört
-    const { data: projectData, error: projectError } = await supabase
+    // Prüfe, ob Projekt zum Tenant gehört und lade Adress-Daten
+    // Type cast notwendig da Supabase-Typen noch nicht regeneriert wurden
+    const { data: projectDataRaw, error: projectError } = await supabase
       .from('projects')
-      .select('id, tenant_id')
+      .select('id, tenant_id, address, address_conflict')
       .eq('id', projectId)
       .single();
+
+    const projectData = projectDataRaw as {
+      id: string;
+      tenant_id: string;
+      address: string | null;
+      address_conflict: boolean | null;
+    } | null;
 
     if (projectError || !projectData) {
       return Result.fail('NOT_FOUND', 'Projekt nicht gefunden');
@@ -198,15 +212,23 @@ export async function getProjectInsightsAction(
     const projectInsight = await analyticsRepo.getLatestProjectInsight(projectId);
 
     // Hole Phase IDs für dieses Projekt
-    const { data: phases } = await supabase
+    // Type cast notwendig da Supabase-Typen noch nicht regeneriert wurden
+    const { data: phasesRaw } = await supabase
       .from('project_phases')
-      .select('id, name')
+      .select('id, name, description')
       .eq('project_id', projectId)
       .eq('status', 'active')
       .order('sort_order');
 
-    const phaseIds = (phases ?? []).map((p) => p.id);
-    const phaseNameMap = new Map((phases ?? []).map((p) => [p.id, p.name]));
+    const phases = (phasesRaw ?? []) as unknown as Array<{
+      id: string;
+      name: string;
+      description: string | null;
+    }>;
+
+    const phaseIds = phases.map((p) => p.id);
+    const phaseNameMap = new Map(phases.map((p) => [p.id, p.name]));
+    const phaseDescriptionMap = new Map(phases.map((p) => [p.id, p.description ?? null]));
 
     // Hole Phase Insights
     const phaseInsights = phaseIds.length > 0
@@ -218,6 +240,7 @@ export async function getProjectInsightsAction(
       id: pi.id,
       phaseId: pi.phase_id,
       phaseName: phaseNameMap.get(pi.phase_id) ?? 'Unbekannte Phase',
+      phaseDescription: phaseDescriptionMap.get(pi.phase_id) ?? null,
       status: pi.status,
       progressPercent: pi.progress_percent,
       summaryText: pi.summary_text,
@@ -249,6 +272,8 @@ export async function getProjectInsightsAction(
             projectDeadlineDelta: projectInsight.project_deadline_delta,
           }
         : null,
+      projectAddress: projectData.address ?? null,
+      addressConflict: projectData.address_conflict ?? false,
       phaseInsights: phaseInsightDTOs,
       generatedAt: projectInsight?.created_at ?? null,
     };

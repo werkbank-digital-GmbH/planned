@@ -90,6 +90,7 @@ const createMockCredentials = (overrides: Partial<IntegrationCredentialsData> = 
   asanaSollStundenFieldId: null,
   asanaIstStundenFieldId: null,
   asanaAbsenceProjectId: 'absence-project-1',
+  asanaAddressFieldId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,

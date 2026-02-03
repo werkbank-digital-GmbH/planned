@@ -32,6 +32,9 @@ export interface IntegrationCredentialsData {
   // Asana - Abwesenheiten
   asanaAbsenceProjectId: string | null;     // GID des Abwesenheiten-Projekts
 
+  // Asana - Projektadresse Custom Field
+  asanaAddressFieldId: string | null;       // GID des Custom Fields für Projektadresse
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,6 +68,9 @@ export interface IntegrationCredentialsUpdate {
 
   // Abwesenheiten
   asanaAbsenceProjectId?: string | null;
+
+  // Projektadresse Custom Field
+  asanaAddressFieldId?: string | null;
 }
 
 /**

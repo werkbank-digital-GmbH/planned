@@ -44,6 +44,7 @@ export function AsanaTaskFieldMappingCard() {
     zuordnungFieldId: null,
     sollStundenFieldId: null,
     istStundenFieldId: null,
+    addressFieldId: null,
   });
 
   // Daten laden
@@ -81,6 +82,7 @@ export function AsanaTaskFieldMappingCard() {
         zuordnungFieldId: config.zuordnungFieldId,
         sollStundenFieldId: config.sollStundenFieldId,
         istStundenFieldId: config.istStundenFieldId,
+        addressFieldId: config.addressFieldId,
       });
 
       if (result.success) {
@@ -108,6 +110,8 @@ export function AsanaTaskFieldMappingCard() {
 
   // Filter fur number fields
   const numberFields = customFields.filter((f) => f.type === 'number');
+  // Filter for text fields (für Adresse)
+  const textFields = customFields.filter((f) => f.type === 'text');
 
   if (isLoading) {
     return (
@@ -236,6 +240,30 @@ export function AsanaTaskFieldMappingCard() {
                 <SelectContent>
                   <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
                   {numberFields.map((field) => (
+                    <SelectItem key={field.gid} value={field.gid}>
+                      {field.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Projektadresse (Text) */}
+            <div className="space-y-2">
+              <Label htmlFor="addressField">Projektadresse</Label>
+              <p className="text-xs text-gray-500">
+                Text-Feld für die Baustellen-Adresse
+              </p>
+              <Select
+                value={config.addressFieldId ?? NONE_VALUE}
+                onValueChange={(v) => handleChange('addressFieldId', v)}
+              >
+                <SelectTrigger id="addressField">
+                  <SelectValue placeholder="Field auswählen..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
+                  {textFields.map((field) => (
                     <SelectItem key={field.gid} value={field.gid}>
                       {field.name}
                     </SelectItem>

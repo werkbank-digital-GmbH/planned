@@ -58,6 +58,7 @@ export function ProjectSyncCard() {
     zuordnungFieldId: null,
     sollStundenFieldId: null,
     istStundenFieldId: null,
+    addressFieldId: null,
   });
   const [syncResult, setSyncResult] = useState<TaskSyncResultDTO | null>(null);
 
@@ -122,6 +123,7 @@ export function ProjectSyncCard() {
         zuordnungFieldId: config.zuordnungFieldId,
         sollStundenFieldId: config.sollStundenFieldId,
         istStundenFieldId: config.istStundenFieldId,
+        addressFieldId: config.addressFieldId,
       });
 
       if (result.success) {
@@ -162,6 +164,7 @@ export function ProjectSyncCard() {
   const isConfigured = !!(config.sourceProjectId && config.teamId);
   const enumFields = customFields.filter((f) => f.type === 'enum' || f.type === 'multi_enum');
   const numberFields = customFields.filter((f) => f.type === 'number');
+  const textFields = customFields.filter((f) => f.type === 'text');
 
   if (isLoading) {
     return (
@@ -346,6 +349,28 @@ export function ProjectSyncCard() {
                   </Select>
                   <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
                   <span className="text-sm text-gray-700">Ist-Stunden</span>
+                </div>
+
+                {/* Adresse → Projektadresse */}
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+                  <Select
+                    value={config.addressFieldId ?? NONE_VALUE}
+                    onValueChange={(v) => handleChange('addressFieldId', v)}
+                  >
+                    <SelectTrigger id="addressField">
+                      <SelectValue placeholder="Field auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>Nicht zugeordnet</SelectItem>
+                      {textFields.map((field) => (
+                        <SelectItem key={field.gid} value={field.gid}>
+                          {field.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">Projektadresse</span>
                 </div>
               </div>
             </div>

@@ -36,6 +36,7 @@ export class ProjectPhaseMapper {
       actualHours: row.actual_hours ?? 0,
       status: row.status as PhaseStatus,
       asanaGid: row.asana_gid ?? undefined,
+      description: (row as DbProjectPhase & { description?: string }).description ?? undefined,
       deletedAt: row.deleted_at ? new Date(row.deleted_at) : undefined,
       createdAt: row.created_at ? new Date(row.created_at) : new Date(),
       updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
@@ -47,7 +48,7 @@ export class ProjectPhaseMapper {
   /**
    * Konvertiert eine Domain-Entity in eine Datenbank-Insert-Row.
    */
-  static toPersistence(phase: ProjectPhase): DbProjectPhaseInsert {
+  static toPersistence(phase: ProjectPhase): DbProjectPhaseInsert & { description?: string | null } {
     return {
       id: phase.id,
       project_id: phase.projectId,
@@ -61,6 +62,7 @@ export class ProjectPhaseMapper {
       actual_hours: phase.actualHours,
       status: phase.status,
       asana_gid: phase.asanaGid ?? null,
+      description: phase.description ?? null,
       deleted_at: phase.deletedAt?.toISOString() ?? null,
       created_at: phase.createdAt.toISOString(),
       updated_at: phase.updatedAt.toISOString(),

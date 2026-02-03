@@ -101,6 +101,8 @@ export class SyncAsanaTaskPhasesUseCase {
           endDate: Date | undefined;
           budgetHours: number | undefined;
           actualHours: number | undefined;
+          description: string | undefined;
+          projectAddress: string | undefined;
         }>;
       }>();
 
@@ -135,6 +137,8 @@ export class SyncAsanaTaskPhasesUseCase {
           endDate: mappedPhase.endDate ?? undefined,
           budgetHours: mappedPhase.budgetHours ?? undefined,
           actualHours: mappedPhase.actualHours ?? undefined,
+          description: mappedPhase.description,
+          projectAddress: mappedPhase.projectAddress,
         });
       }
 
@@ -149,12 +153,30 @@ export class SyncAsanaTaskPhasesUseCase {
 
           const now = new Date();
 
+          // Adress-Validierung: Sammle alle Adressen der Phasen
+          const addresses = phases
+            .map((p) => p.projectAddress)
+            .filter((a): a is string => !!a && a.trim().length > 0);
+          const uniqueAddresses = [...new Set(addresses)];
+
+          // Wenn alle Phasen dieselbe Adresse haben → nutze diese
+          // Wenn unterschiedlich → addressConflict = true
+          const projectAddress = uniqueAddresses.length === 1 ? uniqueAddresses[0] : undefined;
+          const addressConflict = uniqueAddresses.length > 1;
+
           if (project) {
-            // Update Projekt-Name falls geändert
-            if (project.name !== projectName) {
+            // Update Projekt-Name, Adresse und Konflikt-Flag falls geändert
+            const needsUpdate =
+              project.name !== projectName ||
+              project.address !== projectAddress ||
+              project.addressConflict !== addressConflict;
+
+            if (needsUpdate) {
               const updated = Project.create({
                 ...project,
                 name: projectName,
+                address: projectAddress,
+                addressConflict,
                 syncedAt: now,
                 updatedAt: now,
               });
@@ -167,6 +189,8 @@ export class SyncAsanaTaskPhasesUseCase {
               id: crypto.randomUUID(),
               tenantId,
               name: projectName,
+              address: projectAddress,
+              addressConflict,
               status: 'active',
               asanaGid: projectAsanaGid,
               syncedAt: now,
@@ -197,6 +221,7 @@ export class SyncAsanaTaskPhasesUseCase {
                   endDate: phaseData.endDate,
                   budgetHours: phaseData.budgetHours,
                   actualHours: phaseData.actualHours,
+                  description: phaseData.description,
                   sortOrder: i,
                   updatedAt: now,
                 });
@@ -214,6 +239,7 @@ export class SyncAsanaTaskPhasesUseCase {
                   endDate: phaseData.endDate,
                   budgetHours: phaseData.budgetHours,
                   actualHours: phaseData.actualHours,
+                  description: phaseData.description,
                   sortOrder: i,
                   asanaGid: phaseData.asanaGid,
                   createdAt: now,
@@ -334,6 +360,7 @@ export class SyncAsanaTaskPhasesUseCase {
       zuordnungFieldId: credentials.asanaZuordnungFieldId ?? undefined,
       sollStundenFieldId: credentials.asanaSollStundenFieldId ?? undefined,
       istStundenFieldId: credentials.asanaIstStundenFieldId ?? undefined,
+      addressFieldId: credentials.asanaAddressFieldId ?? undefined,
     };
   }
 }

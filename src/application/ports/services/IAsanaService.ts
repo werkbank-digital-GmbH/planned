@@ -53,6 +53,8 @@ export interface AsanaTask {
   completed: boolean;
   start_on: string | null;      // ISO Date "YYYY-MM-DD"
   due_on: string | null;        // ISO Date "YYYY-MM-DD"
+  notes?: string;               // Plain-Text Beschreibung
+  html_notes?: string;          // Rich-Text Beschreibung (HTML)
   custom_fields?: AsanaCustomField[];
   projects: Array<{ gid: string; name: string }>;  // Multi-Project Membership
 }
@@ -110,6 +112,8 @@ export interface AsanaTaskSyncConfig {
   sollStundenFieldId?: string;
   /** Custom Field GID für Ist-Stunden (Number) */
   istStundenFieldId?: string;
+  /** Custom Field GID für Projektadresse (Text) */
+  addressFieldId?: string;
 }
 
 /**
@@ -145,6 +149,10 @@ export interface MappedTaskPhaseData {
   endDate: Date | null;       // Task.due_on
   budgetHours: number | null; // Soll-Stunden Custom Field
   actualHours: number | null; // Ist-Stunden Custom Field (NEU)
+  /** Task-Beschreibung aus Asana (für Insights-Kontext) */
+  description?: string;
+  /** Projektadresse aus Custom Field */
+  projectAddress?: string;
   /** GID des zugehörigen Projekts (aus task.projects[]) */
   projectAsanaGid: string;
   /** Name des zugehörigen Projekts */

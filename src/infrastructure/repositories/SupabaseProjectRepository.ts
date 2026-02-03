@@ -117,6 +117,7 @@ export class SupabaseProjectRepository implements IProjectRepository {
         name: project.name,
         client_name: project.clientName ?? null,
         address: project.address ?? null,
+        address_conflict: project.addressConflict,
         status: project.status,
         synced_at: project.syncedAt?.toISOString() ?? null,
         updated_at: new Date().toISOString(),

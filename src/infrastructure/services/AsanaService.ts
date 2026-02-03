@@ -258,6 +258,8 @@ export class AsanaService implements IAsanaService {
         'completed',
         'start_on',
         'due_on',
+        'notes',           // Plain-Text Beschreibung
+        'html_notes',      // Rich-Text Beschreibung (HTML)
         'custom_fields',
         'custom_fields.gid',
         'custom_fields.name',
@@ -363,6 +365,24 @@ export class AsanaService implements IAsanaService {
     const istStundenValue = getCustomFieldValue(config.istStundenFieldId);
     const actualHours = istStundenValue.number ?? null;
 
+    // Projektadresse aus Custom Field (NEU für D5)
+    const addressValue = getCustomFieldValue(config.addressFieldId);
+    const projectAddress = addressValue.text ?? undefined;
+
+    // Beschreibung: html_notes bevorzugen, fallback auf notes (NEU für D5)
+    // HTML-Tags für Speicherung entfernen (optional - hält nur Plain-Text)
+    let description: string | undefined;
+    if (task.html_notes) {
+      // Einfache HTML-Tag-Entfernung für Plain-Text
+      description = task.html_notes
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n\n')
+        .replace(/<[^>]*>/g, '')
+        .trim();
+    } else if (task.notes) {
+      description = task.notes.trim();
+    }
+
     // Dates parsen
     const startDate = task.start_on ? new Date(task.start_on) : null;
     const endDate = task.due_on ? new Date(task.due_on) : null;
@@ -375,6 +395,8 @@ export class AsanaService implements IAsanaService {
       endDate,
       budgetHours,
       actualHours,
+      description: description || undefined,
+      projectAddress,
       projectAsanaGid: otherProject.gid,
       projectName: otherProject.name,
     };

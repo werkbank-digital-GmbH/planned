@@ -42,6 +42,11 @@ const MAPPING_FIELDS: { key: keyof FieldMappingDTO; label: string; description: 
     label: 'SOLL Montage',
     description: 'Asana-Feld mit Montagestunden',
   },
+  {
+    key: 'addressFieldId',
+    label: 'Projektadresse',
+    description: 'Asana-Feld mit der Baustellen-Adresse',
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════

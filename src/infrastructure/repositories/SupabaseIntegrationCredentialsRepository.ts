@@ -48,6 +48,9 @@ function mapToDomain(row: CredentialsRow): IntegrationCredentialsData {
     // Abwesenheiten
     asanaAbsenceProjectId: row.asana_absence_project_id,
 
+    // Projektadresse Custom Field
+    asanaAddressFieldId: (row as CredentialsRow & { asana_address_field_id?: string }).asana_address_field_id ?? null,
+
     createdAt: row.created_at ? new Date(row.created_at) : new Date(),
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
   };
@@ -119,6 +122,11 @@ function mapToDb(
   // Abwesenheiten
   if (data.asanaAbsenceProjectId !== undefined) {
     result.asana_absence_project_id = data.asanaAbsenceProjectId;
+  }
+
+  // Projektadresse Custom Field
+  if (data.asanaAddressFieldId !== undefined) {
+    (result as typeof result & { asana_address_field_id?: string | null }).asana_address_field_id = data.asanaAddressFieldId;
   }
 
   return result;

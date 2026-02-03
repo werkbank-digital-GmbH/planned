@@ -10,6 +10,7 @@ export interface CreateProjectProps {
   name: string;
   clientName?: string;
   address?: string;
+  addressConflict?: boolean;
   status: ProjectStatus;
   asanaGid?: string;
   driveFolderUrl?: string;
@@ -51,6 +52,7 @@ export class Project {
     public readonly name: string,
     public readonly clientName: string | undefined,
     public readonly address: string | undefined,
+    public readonly addressConflict: boolean,
     public readonly status: ProjectStatus,
     public readonly asanaGid: string | undefined,
     public readonly driveFolderUrl: string | undefined,
@@ -79,6 +81,7 @@ export class Project {
       props.name.trim(),
       props.clientName?.trim(),
       props.address?.trim(),
+      props.addressConflict ?? false,
       props.status,
       props.asanaGid,
       props.driveFolderUrl?.trim(),
@@ -103,6 +106,7 @@ export class Project {
       this.name,
       this.clientName,
       this.address,
+      this.addressConflict,
       status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -123,6 +127,7 @@ export class Project {
       this.name,
       props.clientName !== undefined ? props.clientName.trim() : this.clientName,
       props.address !== undefined ? props.address.trim() : this.address,
+      this.addressConflict,
       this.status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -143,6 +148,7 @@ export class Project {
       this.name,
       this.clientName,
       this.address,
+      this.addressConflict,
       this.status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -164,6 +170,7 @@ export class Project {
       this.name,
       this.clientName,
       this.address,
+      this.addressConflict,
       this.status,
       undefined, // asanaGid entfernt
       this.driveFolderUrl,
@@ -184,9 +191,31 @@ export class Project {
       this.name,
       this.clientName,
       this.address,
+      this.addressConflict,
       this.status,
       this.asanaGid,
       driveFolderUrl?.trim(),
+      this.syncedAt,
+      this.createdAt,
+      new Date()
+    );
+  }
+
+  /**
+   * Aktualisiert das Adress-Konflikt Flag.
+   * Gibt eine neue Project-Instanz zurück (Immutability).
+   */
+  withAddressConflict(addressConflict: boolean): Project {
+    return new Project(
+      this.id,
+      this.tenantId,
+      this.name,
+      this.clientName,
+      this.address,
+      addressConflict,
+      this.status,
+      this.asanaGid,
+      this.driveFolderUrl,
       this.syncedAt,
       this.createdAt,
       new Date()

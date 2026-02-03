@@ -24,6 +24,7 @@ export interface CreateProjectPhaseProps {
   actualHours?: number;
   status?: PhaseStatus;
   asanaGid?: string;
+  description?: string;
   deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -70,6 +71,7 @@ export class ProjectPhase {
     public readonly actualHours: number,
     public readonly status: PhaseStatus,
     public readonly asanaGid: string | undefined,
+    public readonly description: string | undefined,
     public readonly deletedAt: Date | undefined,
     public readonly createdAt: Date,
     public readonly updatedAt: Date
@@ -108,6 +110,7 @@ export class ProjectPhase {
       props.actualHours ?? 0,
       props.status ?? 'active',
       props.asanaGid,
+      props.description?.trim(),
       props.deletedAt,
       props.createdAt,
       props.updatedAt
@@ -137,6 +140,7 @@ export class ProjectPhase {
       this.actualHours,
       status,
       this.asanaGid,
+      this.description,
       status === 'deleted' ? new Date() : undefined,
       this.createdAt,
       new Date()
@@ -168,6 +172,7 @@ export class ProjectPhase {
       this.actualHours,
       this.status,
       this.asanaGid,
+      this.description,
       this.deletedAt,
       this.createdAt,
       new Date()
@@ -202,6 +207,7 @@ export class ProjectPhase {
       this.actualHours,
       this.status,
       this.asanaGid,
+      this.description,
       this.deletedAt,
       this.createdAt,
       new Date()
