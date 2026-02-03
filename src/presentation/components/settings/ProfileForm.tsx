@@ -10,6 +10,8 @@ import { Button } from '@/presentation/components/ui/button';
 import { Input } from '@/presentation/components/ui/input';
 import { Label } from '@/presentation/components/ui/label';
 
+import { formatHoursWithUnit } from '@/lib/format';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -115,7 +117,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
         <div className="space-y-2">
           <Label>Wochenstunden</Label>
-          <Input value={user.weeklyHours ? `${user.weeklyHours}h` : '-'} disabled className="bg-gray-50" />
+          <Input value={user.weeklyHours ? formatHoursWithUnit(user.weeklyHours) : '-'} disabled className="bg-gray-50" />
         </div>
       </div>
 

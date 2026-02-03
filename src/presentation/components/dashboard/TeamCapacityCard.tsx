@@ -2,6 +2,7 @@ import { TrendingUp, Users } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/components/ui/card';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -52,11 +53,11 @@ export function TeamCapacityCard({ data }: TeamCapacityCardProps) {
             <div className="text-sm text-gray-500">Aktive Mitarbeiter</div>
           </div>
           <div>
-            <div className="text-2xl font-bold">{weeklyCapacity}h</div>
+            <div className="text-2xl font-bold">{formatHoursWithUnit(weeklyCapacity)}</div>
             <div className="text-sm text-gray-500">Wochen-Kapazität</div>
           </div>
           <div>
-            <div className="text-2xl font-bold">{plannedHours}h</div>
+            <div className="text-2xl font-bold">{formatHoursWithUnit(plannedHours)}</div>
             <div className="text-sm text-gray-500">Geplant</div>
           </div>
           <div>
@@ -66,7 +67,7 @@ export function TeamCapacityCard({ data }: TeamCapacityCardProps) {
                 freeCapacity < 0 ? 'text-red-600' : 'text-green-600'
               )}
             >
-              {freeCapacity}h
+              {formatHoursWithUnit(freeCapacity)}
             </div>
             <div className="text-sm text-gray-500">
               {freeCapacity < 0 ? 'Überbucht' : 'Frei'}

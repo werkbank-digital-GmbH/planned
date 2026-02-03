@@ -7,6 +7,7 @@ import type { ProjectOverviewDTO } from '@/presentation/actions/projects';
 import { Avatar, AvatarFallback, AvatarImage } from '@/presentation/components/ui/avatar';
 import { Card, CardContent } from '@/presentation/components/ui/card';
 
+import { formatHours, formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -128,10 +129,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {isOverBudget ? 'Stunden (Über)' : 'Stunden (Ist / Soll)'}
             </div>
             <div className={cn('text-lg font-semibold', isOverBudget && 'text-red-600')}>
-              {project.actualHours}
+              {formatHours(project.actualHours)}
               <span className={cn('font-normal', isOverBudget ? 'text-red-400' : 'text-gray-400')}>
                 {' '}
-                / {project.budgetHours}h
+                / {formatHoursWithUnit(project.budgetHours)}
               </span>
             </div>
           </div>

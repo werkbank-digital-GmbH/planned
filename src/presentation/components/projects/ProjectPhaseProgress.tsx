@@ -1,5 +1,6 @@
 'use client';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -98,7 +99,7 @@ export function ProjectPhaseProgress({ phase, compact = false }: ProjectPhasePro
       {/* Header */}
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{phase.name}</span>
-        <span className="text-gray-500">{sollHours}h SOLL</span>
+        <span className="text-gray-500">{formatHoursWithUnit(sollHours)} SOLL</span>
       </div>
 
       {/* Progress Bars */}
@@ -116,7 +117,7 @@ export function ProjectPhaseProgress({ phase, compact = false }: ProjectPhasePro
             />
           </div>
           <span className="w-16 text-right text-xs">
-            {planHours}h ({planPercentage}%)
+            {formatHoursWithUnit(planHours)} ({planPercentage}%)
           </span>
         </div>
 
@@ -133,7 +134,7 @@ export function ProjectPhaseProgress({ phase, compact = false }: ProjectPhasePro
             />
           </div>
           <span className="w-16 text-right text-xs">
-            {istHours}h ({istPercentage}%)
+            {formatHoursWithUnit(istHours)} ({istPercentage}%)
           </span>
         </div>
       </div>

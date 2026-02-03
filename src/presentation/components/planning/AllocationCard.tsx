@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from '@/presentation/components/ui/tooltip';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // Farben für verschiedene Bereiche
@@ -62,10 +63,10 @@ export function AllocationCard({ allocation, onClick }: AllocationCardProps) {
           {/* Stunden */}
           <div className="mt-1 flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            <span>{plannedHours}h</span>
+            <span>{formatHoursWithUnit(plannedHours)}</span>
             {hasVariance && (
               <span className="text-[10px] opacity-70">
-                ({actualHours}h geb.)
+                ({formatHoursWithUnit(actualHours)} geb.)
               </span>
             )}
           </div>
@@ -99,11 +100,11 @@ export function AllocationCard({ allocation, onClick }: AllocationCardProps) {
             Bereich: <span className="font-medium">{bereich}</span>
           </div>
           <div className="text-xs">
-            Geplant: <span className="font-medium">{plannedHours}h</span>
+            Geplant: <span className="font-medium">{formatHoursWithUnit(plannedHours)}</span>
             {actualHours > 0 && (
               <>
                 {' '}
-                | Gebucht: <span className="font-medium">{actualHours}h</span>
+                | Gebucht: <span className="font-medium">{formatHoursWithUnit(actualHours)}</span>
               </>
             )}
           </div>

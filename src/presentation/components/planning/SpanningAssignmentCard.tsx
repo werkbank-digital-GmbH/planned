@@ -17,6 +17,7 @@ import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
 import { formatDateISO, getWeekDates } from '@/lib/date-utils';
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import type { AllocationSpan } from './utils/allocation-grouping';
@@ -101,8 +102,8 @@ export function SpanningAssignmentCard({
     },
   });
 
-  // Resize Hook für Echtzeit-Preview
-  const { handleProps, isResizing, previewSpanDays } = useAllocationResize({
+  // Resize Hook für Echtzeit-Preview mit pixelgenauer Animation
+  const { handleProps, isResizing, previewSpanDays, pixelOffset, isSnapping } = useAllocationResize({
     allocationIds: span.allocations.map((a) => a.id),
     startDayIndex: span.startDayIndex,
     currentSpanDays: span.spanDays,
@@ -199,38 +200,45 @@ export function SpanningAssignmentCard({
     },
   });
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
-
   const isUser = !!span.userId;
   const isDragging = isMoveDragging;
 
   // Verwende Preview während Resize, sonst Original
-  const visualSpanDays = isResizing ? previewSpanDays : span.spanDays;
+  const visualSpanDays = (isResizing || isSnapping) ? previewSpanDays : span.spanDays;
   const spanLabel = getSpanLabel(visualSpanDays);
+
+  // Kombinierte Styles für Drag und Resize
+  const style = (() => {
+    // Bei Move-Drag: transform für Position
+    if (transform) {
+      return {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      };
+    }
+    // Bei Resize: pixelgenaue Breitenanpassung
+    if ((isResizing || isSnapping) && pixelOffset !== 0) {
+      return {
+        // Basis-Breite + Pixel-Offset für smooth Animation
+        width: `calc(100% + ${pixelOffset}px)`,
+        transition: isSnapping ? 'width 150ms ease-out' : 'none',
+      };
+    }
+    return undefined;
+  })();
 
   const cardContent = (
     <div
       ref={setMoveRef}
-      style={{
-        ...style,
-        // Dynamische Breite basierend auf visualSpanDays
-        gridColumn: isResizing
-          ? `${span.startDayIndex + 1} / span ${visualSpanDays}`
-          : undefined,
-      }}
+      style={style}
       className={cn(
         'group relative flex items-center gap-1.5 px-2 py-1 rounded text-xs',
-        'transition-colors select-none',
+        'select-none',
         'border shadow-sm',
         isUser
           ? 'bg-blue-50 text-blue-800 border-blue-200'
           : 'bg-orange-50 text-orange-800 border-orange-200',
         isDragging && 'opacity-50 ring-2 ring-blue-500 shadow-lg',
-        isResizing && 'ring-2 ring-blue-400'
+        (isResizing || isSnapping) && 'ring-2 ring-blue-400 z-10'
       )}
     >
       {/* Move-Bereich (gesamte Card außer Handle) */}
@@ -263,10 +271,27 @@ export function SpanningAssignmentCard({
           'bg-gradient-to-r from-transparent',
           isUser ? 'to-blue-300' : 'to-orange-300',
           'rounded-r',
-          isResizing && 'opacity-100 bg-blue-400'
+          (isResizing || isSnapping) && 'opacity-100 bg-blue-400'
         )}
         title="Ziehen um Dauer zu ändern"
       />
+
+      {/* Ghost-Preview zeigt finale Snap-Position während des Drags */}
+      {isResizing && previewSpanDays !== span.spanDays && (
+        <div
+          className={cn(
+            'absolute top-0 bottom-0 left-0',
+            'border-2 border-dashed rounded pointer-events-none',
+            isUser
+              ? 'border-blue-400 bg-blue-50/30'
+              : 'border-orange-400 bg-orange-50/30'
+          )}
+          style={{
+            // Preview zeigt finale Größe basierend auf previewSpanDays
+            width: `${(previewSpanDays / span.spanDays) * 100}%`,
+          }}
+        />
+      )}
     </div>
   );
 
@@ -282,7 +307,7 @@ export function SpanningAssignmentCard({
                 span.allocations[0].resource?.name}
             </p>
             <p className="text-xs text-gray-500">
-              {visualSpanDays} Tage ({span.totalHours}h gesamt)
+              {visualSpanDays} Tage ({formatHoursWithUnit(span.totalHours)} gesamt)
             </p>
             <p className="text-xs text-gray-500">
               Phase: {span.allocations[0].projectPhase.name}

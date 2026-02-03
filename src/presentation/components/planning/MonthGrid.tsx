@@ -16,6 +16,7 @@ import {
   isToday,
   isWeekend,
 } from '@/lib/date-utils';
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { HoursDisplay } from './HoursDisplay';
@@ -353,7 +354,7 @@ function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
         const dateKey = formatDateISO(date);
         const allocations = phase.dayAllocations[dateKey] ?? [];
         const totalHours = allocations.reduce((sum, a) => sum + (a.plannedHours ?? 0), 0);
-        const allocationsInfo = `${totalHours}h - ${allocations.map(a => a.user?.fullName ?? 'Unbekannt').join(', ')}`;
+        const allocationsInfo = `${formatHoursWithUnit(totalHours)} - ${allocations.map(a => a.user?.fullName ?? 'Unbekannt').join(', ')}`;
 
         return (
           <MonthDayCell

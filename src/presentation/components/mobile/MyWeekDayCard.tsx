@@ -4,6 +4,7 @@ import { format, isToday, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Calendar, Clock } from 'lucide-react';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -143,7 +144,7 @@ export function MyWeekDayCard({ day }: MyWeekDayCardProps) {
               </div>
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <Clock className="h-3.5 w-3.5" />
-                {alloc.plannedHours}h
+                {formatHoursWithUnit(alloc.plannedHours)}
               </div>
             </div>
 

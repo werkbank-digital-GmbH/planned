@@ -6,6 +6,7 @@ import { GripVertical } from 'lucide-react';
 
 import type { PhaseBereich } from '@/domain/types';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import type { ProjectPhaseDragData } from './types/dnd';
@@ -92,7 +93,7 @@ export function DraggablePhaseCard({ phase }: DraggablePhaseCardProps) {
       <span className="truncate">{phase.name}</span>
       {phase.budgetHours !== undefined && (
         <span className="ml-auto flex-shrink-0 text-[10px] text-gray-500">
-          {phase.budgetHours}h
+          {formatHoursWithUnit(phase.budgetHours)}
         </span>
       )}
     </div>

@@ -14,6 +14,8 @@ import {
   DialogTitle,
 } from '@/presentation/components/ui/dialog';
 
+import { formatHoursWithUnit } from '@/lib/format';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -65,7 +67,7 @@ export function DeleteConfirmDialog({
             {allocation.projectPhase.name}
           </div>
           <div className="text-sm">
-            {allocation.plannedHours}h geplant
+            {formatHoursWithUnit(allocation.plannedHours ?? 0)} geplant
             {allocation.user && ` · ${allocation.user.fullName}`}
           </div>
           {allocation.notes && (

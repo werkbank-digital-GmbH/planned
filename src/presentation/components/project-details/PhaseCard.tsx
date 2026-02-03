@@ -6,6 +6,7 @@ import type { PhaseDetailDTO } from '@/presentation/actions/project-details';
 import { Badge } from '@/presentation/components/ui/badge';
 import { Card, CardContent } from '@/presentation/components/ui/card';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -175,14 +176,14 @@ export function PhaseCard({ phase, onEdit }: PhaseCardProps) {
           {/* SOLL */}
           <div>
             <span className="text-gray-500 block">SOLL</span>
-            <span className="font-semibold">{phase.budgetHours}h</span>
+            <span className="font-semibold">{formatHoursWithUnit(phase.budgetHours)}</span>
           </div>
 
           {/* IST */}
           <div>
             <span className="text-gray-500 block">IST</span>
             <span className={cn('font-semibold', isOverBudget && 'text-red-600')}>
-              {phase.actualHours}h
+              {formatHoursWithUnit(phase.actualHours)}
             </span>
           </div>
 
@@ -195,7 +196,7 @@ export function PhaseCard({ phase, onEdit }: PhaseCardProps) {
                 isUnderBudget ? 'text-green-600' : isOverBudget ? 'text-red-600' : ''
               )}
             >
-              {phase.diffHours > 0 ? `-${phase.diffHours}h` : `+${Math.abs(phase.diffHours)}h`}
+              {phase.diffHours > 0 ? `-${formatHoursWithUnit(phase.diffHours)}` : `+${formatHoursWithUnit(Math.abs(phase.diffHours))}`}
             </span>
           </div>
         </div>

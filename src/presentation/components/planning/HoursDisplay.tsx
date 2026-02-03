@@ -3,12 +3,12 @@
 import { CheckCircle2, CalendarClock, Target } from 'lucide-react';
 
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/presentation/components/ui/tooltip';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/presentation/components/ui/popover';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -26,24 +26,6 @@ interface HoursDisplayProps {
   variant?: 'project' | 'phase';
   /** Zusätzliche CSS-Klassen */
   className?: string;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Formatiert Stunden: Dezimalstelle nur wenn nötig
- * - 24.0 → "24"
- * - 12.5 → "12.5"
- * - 0 → "0"
- */
-function formatHours(hours: number | undefined): string {
-  if (hours === undefined || hours === null) return '0';
-  // Auf eine Dezimalstelle runden
-  const rounded = Math.round(hours * 10) / 10;
-  // Dezimalstelle nur anzeigen wenn nötig
-  return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -74,52 +56,68 @@ export function HoursDisplay({
   const iconSize = isProject ? 'h-3 w-3' : 'h-3 w-3';
   const textSize = isProject ? 'text-xs' : 'text-xs';
 
+  // Gemeinsame Button-Styles für Klick-Interaktion
+  const buttonStyles = cn(
+    'inline-flex items-center gap-0.5',
+    'cursor-pointer rounded px-1 py-0.5',
+    'hover:bg-gray-100',
+    'active:scale-95 transition-transform duration-75',
+    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1'
+  );
+
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className={cn('flex items-center gap-2', textSize, 'text-gray-500', className)}>
-        {/* IST - Tatsächlich geleistete Stunden */}
-        {ist !== undefined && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="flex items-center gap-0.5 cursor-default">
-                <CheckCircle2 className={cn(iconSize, 'text-green-600')} />
-                <span>{formatHours(ist)}h</span>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              <p>Ist-Stunden: Tatsächlich geleistete Stunden (aus Asana)</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
+    <div className={cn('flex items-center gap-2', textSize, 'text-gray-500', className)}>
+      {/* IST - Tatsächlich geleistete Stunden */}
+      {ist !== undefined && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" className={buttonStyles}>
+              <CheckCircle2 className={cn(iconSize, 'text-green-600')} />
+              <span>{formatHoursWithUnit(ist)}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="max-w-[200px] text-sm">
+            <p className="font-medium">Ist-Stunden</p>
+            <p className="text-xs text-muted-foreground">
+              Tatsächlich geleistete Stunden (aus Asana)
+            </p>
+          </PopoverContent>
+        </Popover>
+      )}
 
-        {/* PLAN - Geplante Stunden aus Allocations */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="flex items-center gap-0.5 cursor-default">
-              <CalendarClock className={cn(iconSize, 'text-blue-600')} />
-              <span>{formatHours(plan)}h</span>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs">
-            <p>Plan-Stunden: In dieser Woche/diesem Monat geplante Stunden</p>
-          </TooltipContent>
-        </Tooltip>
+      {/* PLAN - Geplante Stunden aus Allocations */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button type="button" className={buttonStyles}>
+            <CalendarClock className={cn(iconSize, 'text-blue-600')} />
+            <span>{formatHoursWithUnit(plan)}</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent side="top" className="max-w-[200px] text-sm">
+          <p className="font-medium">Plan-Stunden</p>
+          <p className="text-xs text-muted-foreground">
+            In dieser Woche/diesem Monat geplante Stunden
+          </p>
+        </PopoverContent>
+      </Popover>
 
-        {/* SOLL - Budget aus Asana */}
-        {soll !== undefined && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="flex items-center gap-0.5 cursor-default">
-                <Target className={cn(iconSize, 'text-orange-600')} />
-                <span>{formatHours(soll)}h</span>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              <p>Soll-Stunden: Budget für diese Phase (aus Asana)</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-      </div>
-    </TooltipProvider>
+      {/* SOLL - Budget aus Asana */}
+      {soll !== undefined && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" className={buttonStyles}>
+              <Target className={cn(iconSize, 'text-orange-600')} />
+              <span>{formatHoursWithUnit(soll)}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="max-w-[200px] text-sm">
+            <p className="font-medium">Soll-Stunden</p>
+            <p className="text-xs text-muted-foreground">
+              Budget für diese Phase (aus Asana)
+            </p>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
   );
 }

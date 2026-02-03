@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useSwipeable } from 'react-swipeable';
 
+import { formatHoursWithUnit } from '@/lib/format';
+
 import { MyWeekDayCard } from './MyWeekDayCard';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -128,7 +130,7 @@ export function MyWeekView({ data }: MyWeekViewProps) {
 
         {/* Gesamt-Stunden */}
         <div className="mt-2 text-center text-sm text-gray-500">
-          {data.totalPlannedHours}h geplant diese Woche
+          {formatHoursWithUnit(data.totalPlannedHours)} geplant diese Woche
         </div>
       </header>
 

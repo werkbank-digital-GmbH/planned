@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/presentation/compone
 import { Separator } from '@/presentation/components/ui/separator';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
+import { formatHoursWithUnit } from '@/lib/format';
+
 import { CapacityBar } from './CapacityBar';
 import { FilterDropdown } from './FilterDropdown';
 import { ProjectList } from './ProjectList';
@@ -80,15 +82,15 @@ export function PlanningSidebar({ projects, users }: PlanningSidebarProps) {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Geplant</span>
-                <span className="font-medium">{summary.totalPlannedHours}h</span>
+                <span className="font-medium">{formatHoursWithUnit(summary.totalPlannedHours)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Gebucht</span>
-                <span className="font-medium">{summary.totalActualHours}h</span>
+                <span className="font-medium">{formatHoursWithUnit(summary.totalActualHours)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Kapazität</span>
-                <span className="font-medium">{summary.totalCapacity}h</span>
+                <span className="font-medium">{formatHoursWithUnit(summary.totalCapacity)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Auslastung</span>

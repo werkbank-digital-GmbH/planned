@@ -8,6 +8,7 @@ import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useSelection } from '@/presentation/contexts/SelectionContext';
 
 import { formatDateISO, isToday } from '@/lib/date-utils';
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { DraggableAllocationCard } from './DraggableAllocationCard';
@@ -72,7 +73,7 @@ export function UserRow({ user }: UserRowProps) {
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{user.fullName}</div>
           <div className="text-xs text-muted-foreground">
-            {user.weeklyHours}h / Woche
+            {formatHoursWithUnit(user.weeklyHours)} / Woche
           </div>
         </div>
       </div>

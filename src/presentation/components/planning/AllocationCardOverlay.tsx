@@ -4,6 +4,7 @@ import { Clock } from 'lucide-react';
 
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
+import { formatHoursWithUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -68,7 +69,7 @@ export function AllocationCardOverlay({ allocationId }: AllocationCardOverlayPro
       {/* Stunden */}
       <div className="mt-1 flex items-center gap-1 text-xs">
         <Clock className="h-3 w-3" />
-        <span>{plannedHours}h</span>
+        <span>{formatHoursWithUnit(plannedHours)}</span>
       </div>
     </div>
   );

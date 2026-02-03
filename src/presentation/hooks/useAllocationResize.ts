@@ -37,8 +37,12 @@ export interface UseAllocationResizeReturn {
   };
   /** Ob gerade ein Resize aktiv ist */
   isResizing: boolean;
-  /** Preview der neuen Span-Länge während des Drags */
+  /** Preview der neuen Span-Länge während des Drags (für finale Position) */
   previewSpanDays: number;
+  /** Pixel-Offset für Echtzeit-Animation während des Drags */
+  pixelOffset: number;
+  /** Ob gerade Snap-Animation läuft */
+  isSnapping: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -49,11 +53,12 @@ export interface UseAllocationResizeReturn {
  * Hook für Echtzeit-Resize von Allocations.
  *
  * Ermöglicht das Verlängern/Verkürzen von Allocations durch Ziehen
- * des rechten Randes. Zeigt eine Live-Preview der neuen Größe.
+ * des rechten Randes. Zeigt eine pixelgenaue Live-Preview während des Drags
+ * und snappt beim Loslassen sanft zum nächsten vollen Tag.
  *
  * @example
  * ```tsx
- * const { handleProps, isResizing, previewSpanDays } = useAllocationResize({
+ * const { handleProps, isResizing, previewSpanDays, pixelOffset, isSnapping } = useAllocationResize({
  *   allocationIds: ['alloc-1', 'alloc-2'],
  *   startDayIndex: 0,
  *   currentSpanDays: 2,
@@ -74,7 +79,9 @@ export function useAllocationResize({
   onResizeComplete,
 }: UseAllocationResizeOptions): UseAllocationResizeReturn {
   const [isResizing, setIsResizing] = useState(false);
+  const [isSnapping, setIsSnapping] = useState(false);
   const [previewSpanDays, setPreviewSpanDays] = useState(currentSpanDays);
+  const [pixelOffset, setPixelOffset] = useState(0);
 
   // Refs für stabile Werte während des Drags
   const startXRef = useRef(0);
@@ -85,11 +92,12 @@ export function useAllocationResize({
   // Sync currentSpanDays mit ref
   useEffect(() => {
     currentSpanRef.current = currentSpanDays;
-    if (!isResizing) {
+    if (!isResizing && !isSnapping) {
       setPreviewSpanDays(currentSpanDays);
       previewSpanRef.current = currentSpanDays;
+      setPixelOffset(0);
     }
-  }, [currentSpanDays, isResizing]);
+  }, [currentSpanDays, isResizing, isSnapping]);
 
   /**
    * Berechnet die maximal erlaubte Span-Länge basierend auf Constraints.
@@ -133,6 +141,24 @@ export function useAllocationResize({
   }, [startDayIndex, phaseStartDate, weekDates]);
 
   /**
+   * Berechnet die Tagesänderung aus Pixel-Delta.
+   * Verwendet Threshold-basierte Rundung für besseres Gefühl.
+   */
+  const calculateDaysDelta = useCallback((deltaX: number, colWidth: number): number => {
+    if (colWidth <= 0) return 0;
+
+    const rawDays = deltaX / colWidth;
+
+    // Threshold-basierte Rundung: Snap ab 50% der Zelle
+    // Funktioniert konsistent für positive und negative Werte
+    if (rawDays >= 0) {
+      return Math.floor(rawDays + 0.5);
+    } else {
+      return Math.ceil(rawDays - 0.5);
+    }
+  }, []);
+
+  /**
    * Handler für Mouse-Down auf dem Resize-Handle.
    */
   const handleMouseDown = useCallback(
@@ -141,6 +167,7 @@ export function useAllocationResize({
       e.stopPropagation();
 
       setIsResizing(true);
+      setPixelOffset(0);
       startXRef.current = e.clientX;
       previewSpanRef.current = currentSpanRef.current;
 
@@ -163,10 +190,21 @@ export function useAllocationResize({
 
       const maxSpan = getMaxSpanDays();
       const minSpan = getMinSpanDays();
+      const colWidth = columnWidthRef.current;
 
       const handleMouseMove = (moveEvent: MouseEvent) => {
         const deltaX = moveEvent.clientX - startXRef.current;
-        const daysDelta = Math.round(deltaX / columnWidthRef.current);
+
+        // Pixelgenaues Tracking für smooth Animation
+        // Begrenzt auf erlaubten Bereich
+        const minDeltaX = (minSpan - currentSpanRef.current) * colWidth;
+        const maxDeltaX = (maxSpan - currentSpanRef.current) * colWidth;
+        const clampedDeltaX = Math.max(minDeltaX, Math.min(maxDeltaX, deltaX));
+
+        setPixelOffset(clampedDeltaX);
+
+        // Berechne vorbereitete Snap-Position für Preview
+        const daysDelta = calculateDaysDelta(clampedDeltaX, colWidth);
         const newSpan = Math.max(
           minSpan,
           Math.min(maxSpan, currentSpanRef.current + daysDelta)
@@ -183,24 +221,37 @@ export function useAllocationResize({
         document.removeEventListener('mouseup', handleMouseUp);
 
         const finalSpan = previewSpanRef.current;
-        setIsResizing(false);
 
-        if (finalSpan !== currentSpanRef.current) {
-          try {
-            await onResizeComplete(finalSpan);
-          } catch (error) {
-            // Bei Fehler zurücksetzen
-            setPreviewSpanDays(currentSpanRef.current);
-            previewSpanRef.current = currentSpanRef.current;
-            console.error('Resize failed:', error);
+        // Starte Snap-Animation
+        setIsResizing(false);
+        setIsSnapping(true);
+
+        // Animiere zum finalen Snap-Punkt
+        const snapPixelOffset = (finalSpan - currentSpanRef.current) * colWidth;
+        setPixelOffset(snapPixelOffset);
+
+        // Nach Animation: finalize
+        setTimeout(async () => {
+          setIsSnapping(false);
+          setPixelOffset(0);
+
+          if (finalSpan !== currentSpanRef.current) {
+            try {
+              await onResizeComplete(finalSpan);
+            } catch (error) {
+              // Bei Fehler zurücksetzen
+              setPreviewSpanDays(currentSpanRef.current);
+              previewSpanRef.current = currentSpanRef.current;
+              console.error('Resize failed:', error);
+            }
           }
-        }
+        }, 150); // Match CSS transition duration
       };
 
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     },
-    [getMaxSpanDays, getMinSpanDays, onResizeComplete]
+    [getMaxSpanDays, getMinSpanDays, calculateDaysDelta, onResizeComplete]
   );
 
   /**
@@ -215,6 +266,7 @@ export function useAllocationResize({
       if (!touch) return;
 
       setIsResizing(true);
+      setPixelOffset(0);
       startXRef.current = touch.clientX;
       previewSpanRef.current = currentSpanRef.current;
 
@@ -235,13 +287,23 @@ export function useAllocationResize({
 
       const maxSpan = getMaxSpanDays();
       const minSpan = getMinSpanDays();
+      const colWidth = columnWidthRef.current;
 
       const handleTouchMove = (moveEvent: TouchEvent) => {
         const moveTouch = moveEvent.touches[0];
         if (!moveTouch) return;
 
         const deltaX = moveTouch.clientX - startXRef.current;
-        const daysDelta = Math.round(deltaX / columnWidthRef.current);
+
+        // Pixelgenaues Tracking für smooth Animation
+        const minDeltaX = (minSpan - currentSpanRef.current) * colWidth;
+        const maxDeltaX = (maxSpan - currentSpanRef.current) * colWidth;
+        const clampedDeltaX = Math.max(minDeltaX, Math.min(maxDeltaX, deltaX));
+
+        setPixelOffset(clampedDeltaX);
+
+        // Berechne vorbereitete Snap-Position
+        const daysDelta = calculateDaysDelta(clampedDeltaX, colWidth);
         const newSpan = Math.max(
           minSpan,
           Math.min(maxSpan, currentSpanRef.current + daysDelta)
@@ -259,17 +321,30 @@ export function useAllocationResize({
         document.removeEventListener('touchcancel', handleTouchEnd);
 
         const finalSpan = previewSpanRef.current;
-        setIsResizing(false);
 
-        if (finalSpan !== currentSpanRef.current) {
-          try {
-            await onResizeComplete(finalSpan);
-          } catch (error) {
-            setPreviewSpanDays(currentSpanRef.current);
-            previewSpanRef.current = currentSpanRef.current;
-            console.error('Resize failed:', error);
+        // Starte Snap-Animation
+        setIsResizing(false);
+        setIsSnapping(true);
+
+        // Animiere zum finalen Snap-Punkt
+        const snapPixelOffset = (finalSpan - currentSpanRef.current) * colWidth;
+        setPixelOffset(snapPixelOffset);
+
+        // Nach Animation: finalize
+        setTimeout(async () => {
+          setIsSnapping(false);
+          setPixelOffset(0);
+
+          if (finalSpan !== currentSpanRef.current) {
+            try {
+              await onResizeComplete(finalSpan);
+            } catch (error) {
+              setPreviewSpanDays(currentSpanRef.current);
+              previewSpanRef.current = currentSpanRef.current;
+              console.error('Resize failed:', error);
+            }
           }
-        }
+        }, 150);
       };
 
       document.addEventListener('touchmove', handleTouchMove, {
@@ -278,7 +353,7 @@ export function useAllocationResize({
       document.addEventListener('touchend', handleTouchEnd);
       document.addEventListener('touchcancel', handleTouchEnd);
     },
-    [getMaxSpanDays, getMinSpanDays, onResizeComplete]
+    [getMaxSpanDays, getMinSpanDays, calculateDaysDelta, onResizeComplete]
   );
 
   return {
@@ -288,5 +363,7 @@ export function useAllocationResize({
     },
     isResizing,
     previewSpanDays,
+    pixelOffset,
+    isSnapping,
   };
 }
