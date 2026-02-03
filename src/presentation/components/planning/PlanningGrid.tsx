@@ -170,7 +170,7 @@ export function PlanningGrid() {
       <div className="rounded-lg border bg-white relative">
         <GridHeader weekDates={weekDates} />
 
-        <div className="divide-y divide-gray-200">
+        <div className="flex flex-col gap-2 p-2">
           {projectRows.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               Keine Projekte mit Phasen in dieser Woche

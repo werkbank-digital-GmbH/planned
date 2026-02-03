@@ -67,7 +67,7 @@ export function ProjectRow({ project, weekDates, onToggleExpand }: ProjectRowPro
   const { isExpanded, hasActivePhasesThisWeek } = project;
 
   return (
-    <div className="border-b border-gray-200 last:border-b-0">
+    <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
       {/* Projekt-Header */}
       <div
         className={cn(
@@ -145,7 +145,7 @@ export function ProjectRow({ project, weekDates, onToggleExpand }: ProjectRowPro
 
       {/* Leere Nachricht wenn keine Phasen */}
       {isExpanded && project.phases.length === 0 && (
-        <div className="px-6 py-3 text-sm text-gray-500 italic bg-gray-50">
+        <div className="px-6 py-3 text-sm text-gray-500 italic bg-white">
           Keine Phasen vorhanden
         </div>
       )}
