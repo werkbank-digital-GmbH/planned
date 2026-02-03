@@ -23,3 +23,5 @@ export type {
   PhaseTextInput,
   ProjectTextInput,
 } from './IInsightTextGenerator';
+export type { IGeocodingService, GeocodingResult } from './IGeocodingService';
+export type { IWeatherService } from './IWeatherService';

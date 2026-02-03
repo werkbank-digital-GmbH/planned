@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
-import { CompanyForm } from '@/presentation/components/settings';
+import { CompanyAddressForm, CompanyForm } from '@/presentation/components/settings';
 
 /**
  * Unternehmens-Einstellungen Seite (Admin only)
@@ -31,7 +31,7 @@ export default async function CompanySettingsPage() {
     redirect('/einstellungen/profil');
   }
 
-  // Tenant-Daten laden
+  // Tenant-Daten laden (neue Felder noch nicht in Supabase-Typen)
   const { data: tenantData } = await supabase
     .from('tenants')
     .select('id, name, slug, settings')
@@ -49,6 +49,28 @@ export default async function CompanySettingsPage() {
       }
     : null;
 
+  // Adress-Daten für CompanyAddressForm (separate Query für neue Felder)
+  // TODO: Nach Regenerierung der Supabase-Typen in obige Query integrieren
+  const { data: addressRow } = await supabase
+    .from('tenants')
+    .select('*')
+    .eq('id', userData.tenant_id)
+    .single();
+
+  const typedAddressRow = addressRow as unknown as {
+    company_address: string | null;
+    company_lat: number | null;
+    company_lng: number | null;
+  } | null;
+
+  const addressData = typedAddressRow
+    ? {
+        companyAddress: typedAddressRow.company_address ?? null,
+        companyLat: typedAddressRow.company_lat ?? null,
+        companyLng: typedAddressRow.company_lng ?? null,
+      }
+    : { companyAddress: null, companyLat: null, companyLng: null };
+
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <div>
@@ -59,6 +81,13 @@ export default async function CompanySettingsPage() {
       </div>
 
       <CompanyForm tenant={tenant} />
+
+      {/* Firmenstandort für Wetter-Fallback */}
+      <CompanyAddressForm
+        currentAddress={addressData.companyAddress}
+        currentLat={addressData.companyLat}
+        currentLng={addressData.companyLng}
+      />
     </div>
   );
 }

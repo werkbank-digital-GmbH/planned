@@ -11,6 +11,7 @@ import { z } from 'zod';
 
 import { Result, type ActionResult } from '@/application/common';
 
+import { createGeocodingService } from '@/infrastructure/services/GeocodingService';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -23,6 +24,16 @@ export interface TenantDTO {
   slug: string;
   defaultDailyHours: number;
   workDays: number[];
+  companyAddress: string | null;
+  companyLat: number | null;
+  companyLng: number | null;
+}
+
+export interface CompanyAddressDTO {
+  address: string;
+  lat: number;
+  lng: number;
+  displayName: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -68,10 +79,10 @@ export async function getTenantAction(): Promise<ActionResult<TenantDTO>> {
       return Result.fail('NOT_FOUND', 'User nicht gefunden');
     }
 
-    // Tenant laden
+    // Tenant laden (select * da neue Felder noch nicht in Supabase-Types)
     const { data: tenantData, error } = await supabase
       .from('tenants')
-      .select('id, name, slug, settings')
+      .select('*')
       .eq('id', userData.tenant_id)
       .single();
 
@@ -79,17 +90,24 @@ export async function getTenantAction(): Promise<ActionResult<TenantDTO>> {
       return Result.fail('NOT_FOUND', 'Unternehmen nicht gefunden');
     }
 
-    const settings = tenantData.settings as {
-      defaultDailyHours?: number;
-      workDays?: number[];
-    } | null;
+    // Type cast für Felder, die noch nicht in den generierten Types sind
+    const extendedTenant = tenantData as typeof tenantData & {
+      company_address?: string | null;
+      company_lat?: number | null;
+      company_lng?: number | null;
+    };
+
+    const settings = (tenantData as { settings?: { defaultDailyHours?: number; workDays?: number[] } | null }).settings;
 
     return Result.ok({
-      id: tenantData.id,
-      name: tenantData.name,
-      slug: tenantData.slug,
+      id: extendedTenant.id as string,
+      name: extendedTenant.name as string,
+      slug: extendedTenant.slug as string,
       defaultDailyHours: settings?.defaultDailyHours ?? 8,
       workDays: settings?.workDays ?? [1, 2, 3, 4, 5],
+      companyAddress: extendedTenant.company_address ?? null,
+      companyLat: extendedTenant.company_lat != null ? Number(extendedTenant.company_lat) : null,
+      companyLng: extendedTenant.company_lng != null ? Number(extendedTenant.company_lng) : null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
@@ -173,6 +191,76 @@ export async function updateTenantAction(
     revalidatePath('/einstellungen/unternehmen');
 
     return Result.ok(undefined);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UPDATE COMPANY ADDRESS ACTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Aktualisiert die Firmenadresse inkl. Geocoding.
+ * Nur für Admins erlaubt.
+ */
+export async function updateCompanyAddressAction(
+  address: string
+): Promise<ActionResult<CompanyAddressDTO>> {
+  try {
+    const supabase = await createActionSupabaseClient();
+
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+
+    if (!authUser) {
+      return Result.fail('AUTH_REQUIRED', 'Nicht eingeloggt');
+    }
+
+    // User mit Rolle und Tenant-ID laden
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role, tenant_id')
+      .eq('auth_id', authUser.id)
+      .single();
+
+    if (!userData || userData.role !== 'admin') {
+      return Result.fail('UNAUTHORIZED', 'Nur Administratoren können die Firmenadresse ändern');
+    }
+
+    // Geocoding durchführen
+    const geocodingService = createGeocodingService();
+    const geoResult = await geocodingService.geocode(address);
+
+    if (!geoResult) {
+      return Result.fail('VALIDATION_ERROR', 'Adresse konnte nicht gefunden werden');
+    }
+
+    // Tenant aktualisieren mit Type-Cast für neue Felder
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from('tenants') as any)
+      .update({
+        company_address: address,
+        company_lat: geoResult.lat,
+        company_lng: geoResult.lng,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userData.tenant_id);
+
+    if (error) {
+      return Result.fail('INTERNAL_ERROR', 'Adresse konnte nicht gespeichert werden');
+    }
+
+    revalidatePath('/einstellungen/unternehmen');
+
+    return Result.ok({
+      address,
+      lat: geoResult.lat,
+      lng: geoResult.lng,
+      displayName: geoResult.displayName,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
     return Result.fail('INTERNAL_ERROR', message);

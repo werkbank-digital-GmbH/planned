@@ -10,3 +10,4 @@ export * from './IResourceTypeRepository';
 export * from './ISyncLogRepository';
 export * from './ITenantRepository';
 export * from './IUserRepository';
+export * from './IWeatherCacheRepository';

@@ -7,11 +7,14 @@ import type { ProjectInsightDTO } from '@/presentation/actions/insights';
 import { getProjectInsightsAction } from '@/presentation/actions/insights';
 import type { ProjectDetailsDTO } from '@/presentation/actions/project-details';
 import { getProjectDetailsAction } from '@/presentation/actions/project-details';
+import type { ProjectWeatherDTO } from '@/presentation/actions/weather';
+import { getProjectWeatherAction } from '@/presentation/actions/weather';
 import {
   ProjectDetailsHeader,
   ProjectInsightsSection,
   ProjectPhasesSection,
   ProjectStatsGrid,
+  WeatherForecastCard,
 } from '@/presentation/components/project-details';
 import {
   Dialog,
@@ -33,6 +36,7 @@ interface ProjectDetailModalProps {
 interface ModalData {
   project: ProjectDetailsDTO | null;
   insights: ProjectInsightDTO | null;
+  weather: ProjectWeatherDTO | null;
   error: string | null;
 }
 
@@ -59,25 +63,28 @@ export function ProjectDetailModal({
   const [data, setData] = useState<ModalData>({
     project: null,
     insights: null,
+    weather: null,
     error: null,
   });
 
   // Lade Daten wenn Modal öffnet
   const loadData = useCallback(async (id: string) => {
     setIsLoading(true);
-    setData({ project: null, insights: null, error: null });
+    setData({ project: null, insights: null, weather: null, error: null });
 
     try {
-      // Lade beide parallel
-      const [projectResult, insightsResult] = await Promise.all([
+      // Lade alle parallel
+      const [projectResult, insightsResult, weatherResult] = await Promise.all([
         getProjectDetailsAction(id),
         getProjectInsightsAction(id),
+        getProjectWeatherAction(id),
       ]);
 
       if (!projectResult.success) {
         setData({
           project: null,
           insights: null,
+          weather: null,
           error: projectResult.error.message,
         });
         return;
@@ -86,12 +93,14 @@ export function ProjectDetailModal({
       setData({
         project: projectResult.data!,
         insights: insightsResult.success ? insightsResult.data! : null,
+        weather: weatherResult.success ? weatherResult.data! : null,
         error: null,
       });
     } catch (err) {
       setData({
         project: null,
         insights: null,
+        weather: null,
         error: err instanceof Error ? err.message : 'Unbekannter Fehler',
       });
     } finally {
@@ -108,7 +117,7 @@ export function ProjectDetailModal({
   // Reset wenn Modal schließt
   useEffect(() => {
     if (!isOpen) {
-      setData({ project: null, insights: null, error: null });
+      setData({ project: null, insights: null, weather: null, error: null });
     }
   }, [isOpen]);
 
@@ -149,6 +158,14 @@ export function ProjectDetailModal({
 
               {/* Stats Grid */}
               <ProjectStatsGrid project={data.project} />
+
+              {/* Weather Forecast */}
+              {data.weather && data.weather.forecasts.length > 0 && (
+                <WeatherForecastCard
+                  forecasts={data.weather.forecasts}
+                  projectAddress={data.weather.projectAddress}
+                />
+              )}
 
               {/* KI-Insights Section */}
               {data.insights && (

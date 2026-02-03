@@ -8,7 +8,7 @@ import type {
   IProjectRepository,
   ISyncLogRepository,
 } from '@/application/ports/repositories';
-import type { AsanaTaskSyncConfig, IAsanaService } from '@/application/ports/services';
+import type { AsanaTaskSyncConfig, IAsanaService, IGeocodingService } from '@/application/ports/services';
 import type { IEncryptionService } from '@/application/ports/services/IEncryptionService';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -46,7 +46,8 @@ export class SyncAsanaTaskPhasesUseCase {
     private readonly projectPhaseRepository: IProjectPhaseRepository,
     private readonly credentialsRepository: IIntegrationCredentialsRepository,
     private readonly syncLogRepository: ISyncLogRepository,
-    private readonly encryptionService: IEncryptionService
+    private readonly encryptionService: IEncryptionService,
+    private readonly geocodingService?: IGeocodingService
   ) {}
 
   async execute(tenantId: string): Promise<TaskSyncResult> {
@@ -199,6 +200,21 @@ export class SyncAsanaTaskPhasesUseCase {
             });
             await this.projectRepository.save(project);
             result.projectsCreated++;
+          }
+
+          // Geocoding für neue/geänderte Adressen (wenn Service verfügbar)
+          if (this.geocodingService && project.address && !project.addressLat) {
+            try {
+              const geoResult = await this.geocodingService.geocode(project.address);
+              if (geoResult) {
+                const geocodedProject = project.withGeoLocation(geoResult.lat, geoResult.lng);
+                await this.projectRepository.update(geocodedProject);
+                // Update local reference for subsequent operations
+                project = geocodedProject;
+              }
+            } catch {
+              // Geocoding-Fehler ignorieren, nicht kritisch
+            }
           }
 
           // Phasen synchronisieren

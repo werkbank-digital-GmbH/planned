@@ -10,3 +10,4 @@ export * from './SupabaseResourceRepository';
 export * from './SupabaseResourceTypeRepository';
 export * from './SupabaseSyncLogRepository';
 export * from './SupabaseUserRepository';
+export * from './SupabaseWeatherCacheRepository';

@@ -11,6 +11,9 @@ export interface CreateProjectProps {
   clientName?: string;
   address?: string;
   addressConflict?: boolean;
+  addressLat?: number;
+  addressLng?: number;
+  addressGeocodedAt?: Date;
   status: ProjectStatus;
   asanaGid?: string;
   driveFolderUrl?: string;
@@ -53,6 +56,9 @@ export class Project {
     public readonly clientName: string | undefined,
     public readonly address: string | undefined,
     public readonly addressConflict: boolean,
+    public readonly addressLat: number | undefined,
+    public readonly addressLng: number | undefined,
+    public readonly addressGeocodedAt: Date | undefined,
     public readonly status: ProjectStatus,
     public readonly asanaGid: string | undefined,
     public readonly driveFolderUrl: string | undefined,
@@ -82,6 +88,9 @@ export class Project {
       props.clientName?.trim(),
       props.address?.trim(),
       props.addressConflict ?? false,
+      props.addressLat,
+      props.addressLng,
+      props.addressGeocodedAt,
       props.status,
       props.asanaGid,
       props.driveFolderUrl?.trim(),
@@ -107,6 +116,9 @@ export class Project {
       this.clientName,
       this.address,
       this.addressConflict,
+      this.addressLat,
+      this.addressLng,
+      this.addressGeocodedAt,
       status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -128,6 +140,9 @@ export class Project {
       props.clientName !== undefined ? props.clientName.trim() : this.clientName,
       props.address !== undefined ? props.address.trim() : this.address,
       this.addressConflict,
+      this.addressLat,
+      this.addressLng,
+      this.addressGeocodedAt,
       this.status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -149,6 +164,9 @@ export class Project {
       this.clientName,
       this.address,
       this.addressConflict,
+      this.addressLat,
+      this.addressLng,
+      this.addressGeocodedAt,
       this.status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -171,6 +189,9 @@ export class Project {
       this.clientName,
       this.address,
       this.addressConflict,
+      this.addressLat,
+      this.addressLng,
+      this.addressGeocodedAt,
       this.status,
       undefined, // asanaGid entfernt
       this.driveFolderUrl,
@@ -192,6 +213,9 @@ export class Project {
       this.clientName,
       this.address,
       this.addressConflict,
+      this.addressLat,
+      this.addressLng,
+      this.addressGeocodedAt,
       this.status,
       this.asanaGid,
       driveFolderUrl?.trim(),
@@ -213,6 +237,9 @@ export class Project {
       this.clientName,
       this.address,
       addressConflict,
+      this.addressLat,
+      this.addressLng,
+      this.addressGeocodedAt,
       this.status,
       this.asanaGid,
       this.driveFolderUrl,
@@ -220,6 +247,37 @@ export class Project {
       this.createdAt,
       new Date()
     );
+  }
+
+  /**
+   * Aktualisiert die Geo-Koordinaten der Projektadresse.
+   * Gibt eine neue Project-Instanz zurück (Immutability).
+   */
+  withGeoLocation(lat: number, lng: number): Project {
+    return new Project(
+      this.id,
+      this.tenantId,
+      this.name,
+      this.clientName,
+      this.address,
+      this.addressConflict,
+      lat,
+      lng,
+      new Date(),
+      this.status,
+      this.asanaGid,
+      this.driveFolderUrl,
+      this.syncedAt,
+      this.createdAt,
+      new Date()
+    );
+  }
+
+  /**
+   * Prüft, ob das Projekt geocodierte Koordinaten hat.
+   */
+  get hasGeoLocation(): boolean {
+    return this.addressLat !== undefined && this.addressLng !== undefined;
   }
 
   /**

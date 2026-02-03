@@ -16,13 +16,26 @@ export class ProjectMapper {
    * Konvertiert eine Datenbank-Row in eine Domain-Entity.
    */
   static toDomain(row: DbProject): Project {
+    // Extended row type for fields not yet in generated types
+    const extendedRow = row as DbProject & {
+      address_conflict?: boolean;
+      address_lat?: number | null;
+      address_lng?: number | null;
+      address_geocoded_at?: string | null;
+    };
+
     const props: CreateProjectProps = {
       id: row.id,
       tenantId: row.tenant_id,
       name: row.name,
       clientName: row.client_name ?? undefined,
       address: row.address ?? undefined,
-      addressConflict: (row as DbProject & { address_conflict?: boolean }).address_conflict ?? false,
+      addressConflict: extendedRow.address_conflict ?? false,
+      addressLat: extendedRow.address_lat != null ? Number(extendedRow.address_lat) : undefined,
+      addressLng: extendedRow.address_lng != null ? Number(extendedRow.address_lng) : undefined,
+      addressGeocodedAt: extendedRow.address_geocoded_at
+        ? new Date(extendedRow.address_geocoded_at)
+        : undefined,
       status: row.status as ProjectStatus,
       asanaGid: row.asana_gid ?? undefined,
       driveFolderUrl: row.drive_folder_url ?? undefined,
@@ -37,7 +50,12 @@ export class ProjectMapper {
   /**
    * Konvertiert eine Domain-Entity in eine Datenbank-Insert-Row.
    */
-  static toPersistence(project: Project): DbProjectInsert & { address_conflict?: boolean } {
+  static toPersistence(project: Project): DbProjectInsert & {
+    address_conflict?: boolean;
+    address_lat?: number | null;
+    address_lng?: number | null;
+    address_geocoded_at?: string | null;
+  } {
     return {
       id: project.id,
       tenant_id: project.tenantId,
@@ -45,6 +63,9 @@ export class ProjectMapper {
       client_name: project.clientName ?? null,
       address: project.address ?? null,
       address_conflict: project.addressConflict,
+      address_lat: project.addressLat ?? null,
+      address_lng: project.addressLng ?? null,
+      address_geocoded_at: project.addressGeocodedAt?.toISOString() ?? null,
       status: project.status,
       asana_gid: project.asanaGid ?? null,
       drive_folder_url: project.driveFolderUrl ?? null,
