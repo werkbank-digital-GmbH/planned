@@ -13,6 +13,7 @@ import type {
   InsightStatus,
   PhaseInsight,
   PhaseSnapshot,
+  SuggestedAction,
 } from '@/domain/analytics/types';
 import type { UserRole } from '@/domain/types';
 
@@ -132,6 +133,8 @@ export interface PhaseInsightDTO {
   remainingHours: number | null;
   deadlineDeltaIst: number | null;
   dataQuality: DataQuality | null;
+  /** Vorgeschlagene Aktion aus der KI-Analyse (D7) */
+  suggestedAction: SuggestedAction | null;
 }
 
 export interface ProjectInsightDTO {
@@ -251,6 +254,7 @@ export async function getProjectInsightsAction(
       remainingHours: pi.remaining_hours,
       deadlineDeltaIst: pi.deadline_delta_ist,
       dataQuality: pi.data_quality,
+      suggestedAction: pi.suggested_action,
     }));
 
     const projectInsightDTO: ProjectInsightDTO = {

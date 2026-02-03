@@ -3,12 +3,15 @@
 import { Brain, ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
+import type { SuggestedAction } from '@/domain/analytics/types';
+
 import type { PhaseInsightDTO, ProjectInsightDTO } from '@/presentation/actions/insights';
 import { Button } from '@/presentation/components/ui/button';
 
 import { cn } from '@/lib/utils';
 
 import { InsightCard } from './InsightCard';
+import { QuickAssignDialog } from './QuickAssignDialog';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -18,6 +21,16 @@ interface ProjectInsightsSectionProps {
   projectInsight: ProjectInsightDTO['projectInsight'];
   phaseInsights: PhaseInsightDTO[];
   generatedAt: string | null;
+}
+
+/** State für den QuickAssignDialog */
+interface QuickAssignDialogState {
+  open: boolean;
+  phaseId: string | null;
+  phaseName: string;
+  userId: string | null;
+  userName: string | null;
+  availableDays: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -37,6 +50,39 @@ export function ProjectInsightsSection({
   generatedAt,
 }: ProjectInsightsSectionProps) {
   const [showPhaseInsights, setShowPhaseInsights] = useState(false);
+  const [quickAssignDialog, setQuickAssignDialog] = useState<QuickAssignDialogState>({
+    open: false,
+    phaseId: null,
+    phaseName: '',
+    userId: null,
+    userName: null,
+    availableDays: [],
+  });
+
+  /**
+   * Handler für Action-Button-Klicks auf Phase-Insights
+   */
+  const handlePhaseActionClick = (phaseId: string, phaseName: string, action: SuggestedAction) => {
+    if (action.type === 'assign_user') {
+      setQuickAssignDialog({
+        open: true,
+        phaseId,
+        phaseName,
+        userId: action.userId ?? null,
+        userName: action.userName ?? null,
+        availableDays: action.availableDays ?? [],
+      });
+    } else if (action.type === 'reschedule') {
+      // TODO: D7-Future: Reschedule-Dialog implementieren
+      // Für jetzt navigiere zur Planungsview
+      // eslint-disable-next-line no-console
+      console.log('[ProjectInsightsSection] Reschedule action for phase:', phaseId);
+    }
+  };
+
+  const handleQuickAssignClose = () => {
+    setQuickAssignDialog((prev) => ({ ...prev, open: false }));
+  };
 
   const hasProjectInsight = projectInsight !== null;
   const hasPhaseInsights = phaseInsights.length > 0;
@@ -131,6 +177,10 @@ export function ProjectInsightsSection({
                   deadlineDelta={insight.deadlineDeltaIst}
                   dataQuality={insight.dataQuality}
                   variant="phase"
+                  suggestedAction={insight.suggestedAction}
+                  onActionClick={(action) =>
+                    handlePhaseActionClick(insight.phaseId, insight.phaseName, action)
+                  }
                 />
               ))}
             </div>
@@ -165,6 +215,19 @@ export function ProjectInsightsSection({
             </div>
           )}
         </div>
+      )}
+
+      {/* QuickAssign Dialog */}
+      {quickAssignDialog.phaseId && (
+        <QuickAssignDialog
+          open={quickAssignDialog.open}
+          onClose={handleQuickAssignClose}
+          phaseId={quickAssignDialog.phaseId}
+          phaseName={quickAssignDialog.phaseName}
+          suggestedUserId={quickAssignDialog.userId}
+          suggestedUserName={quickAssignDialog.userName}
+          suggestedDays={quickAssignDialog.availableDays}
+        />
       )}
     </section>
   );

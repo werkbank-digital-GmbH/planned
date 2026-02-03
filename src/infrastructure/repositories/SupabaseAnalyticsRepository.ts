@@ -439,6 +439,7 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
       recommendation_text: row.recommendation_text,
       data_quality: row.data_quality as PhaseInsight['data_quality'],
       data_points_count: row.data_points_count,
+      suggested_action: row.suggested_action ?? null,
       created_at: row.created_at,
     };
   }

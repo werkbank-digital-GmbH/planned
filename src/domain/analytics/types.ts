@@ -79,6 +79,9 @@ export interface PhaseInsight {
   data_quality: DataQuality | null;
   data_points_count: number | null;
 
+  // Suggested Action (D7)
+  suggested_action: SuggestedAction | null;
+
   created_at: string;
 }
 
@@ -175,4 +178,46 @@ export interface TenantInsightsSummary {
   burnRateTrend: BurnRateTrend;
   topRiskProjects: RiskProject[];
   lastUpdatedAt: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SUGGESTED ACTIONS (D7)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type SuggestedActionType =
+  | 'assign_user' // User auf Phase zuweisen
+  | 'reschedule' // Phase verschieben
+  | 'alert' // Warnung ohne konkrete Aktion
+  | 'none'; // Keine Aktion nötig
+
+export interface SuggestedAction {
+  type: SuggestedActionType;
+  userId?: string;
+  userName?: string;
+  availableDays?: string[]; // ISO date strings
+  reason: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AVAILABILITY ANALYSIS (D7)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AvailableUser {
+  id: string;
+  name: string;
+  email: string;
+  availableDays: string[]; // ISO date strings
+  availableHours: number; // Summe freier Stunden
+  currentUtilization: number; // 0-100%
+}
+
+export interface OverloadedUser {
+  id: string;
+  name: string;
+  utilizationPercent: number;
+}
+
+export interface AvailabilityContext {
+  availableUsers: AvailableUser[];
+  overloadedUsers: OverloadedUser[];
 }

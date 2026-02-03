@@ -4,9 +4,18 @@ import { BurnRateCalculator } from '@/domain/analytics/BurnRateCalculator';
 import type { IAnalyticsRepository } from '@/domain/analytics/IAnalyticsRepository';
 import { ProgressionCalculator } from '@/domain/analytics/ProgressionCalculator';
 import { ProjectInsightAggregator } from '@/domain/analytics/ProjectInsightAggregator';
-import type { PhaseInsight, ProjectInsight } from '@/domain/analytics/types';
+import type { PhaseInsight, ProjectInsight, SuggestedAction } from '@/domain/analytics/types';
 
-import type { IInsightTextGenerator, PhaseTextInput, ProjectTextInput } from '@/application/ports/services/IInsightTextGenerator';
+import type { IWeatherCacheRepository } from '@/application/ports/repositories/IWeatherCacheRepository';
+import type {
+  EnhancedPhaseTextInput,
+  IInsightTextGenerator,
+  PhaseTextInput,
+  ProjectTextInput,
+  WeatherForecastContext,
+} from '@/application/ports/services/IInsightTextGenerator';
+import type { IWeatherService } from '@/application/ports/services/IWeatherService';
+import type { AvailabilityAnalyzer } from '@/application/services/AvailabilityAnalyzer';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -16,6 +25,9 @@ interface ProjectWithPhases {
   id: string;
   tenant_id: string;
   name: string;
+  address?: string | null;
+  address_lat?: number | null;
+  address_lng?: number | null;
   phases: PhaseData[];
 }
 
@@ -23,9 +35,17 @@ interface PhaseData {
   id: string;
   name: string;
   end_date: string | null;
+  start_date: string | null;
   budget_hours: number | null;
   actual_hours: number | null;
   planned_hours: number | null;
+  description: string | null;
+}
+
+interface EnhancedDependencies {
+  availabilityAnalyzer: AvailabilityAnalyzer;
+  weatherService: IWeatherService;
+  weatherCacheRepository: IWeatherCacheRepository;
 }
 
 export interface GenerateInsightsResult {
@@ -63,13 +83,17 @@ export class GenerateInsightsUseCase {
   private readonly burnRateCalculator = new BurnRateCalculator();
   private readonly progressionCalculator = new ProgressionCalculator();
   private readonly projectAggregator = new ProjectInsightAggregator();
+  private readonly enhancedDeps?: EnhancedDependencies;
 
   constructor(
     private readonly analyticsRepository: IAnalyticsRepository,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly supabase: SupabaseClient<any>,
-    private readonly textGenerator: IInsightTextGenerator
-  ) {}
+    private readonly textGenerator: IInsightTextGenerator,
+    enhancedDeps?: EnhancedDependencies
+  ) {
+    this.enhancedDeps = enhancedDeps;
+  }
 
   async execute(insightDate?: string): Promise<GenerateInsightsResult> {
     const today = insightDate || new Date().toISOString().split('T')[0];
@@ -129,7 +153,7 @@ export class GenerateInsightsUseCase {
         try {
           const insight = await this.processPhase(
             tenantId,
-            project.name,
+            project,
             phase,
             today
           );
@@ -176,7 +200,7 @@ export class GenerateInsightsUseCase {
    */
   private async processPhase(
     tenantId: string,
-    projectName: string,
+    project: ProjectWithPhases,
     phase: PhaseData,
     today: string
   ): Promise<PhaseInsight | null> {
@@ -193,7 +217,7 @@ export class GenerateInsightsUseCase {
 
     if (!latestSnapshot) {
       // Keine Snapshots vorhanden, Insight mit not_started Status erstellen
-      return this.createNotStartedInsight(tenantId, phase, projectName, today);
+      return this.createNotStartedInsight(tenantId, phase, project.name, today);
     }
 
     // Burn Rate berechnen
@@ -225,10 +249,10 @@ export class GenerateInsightsUseCase {
       burnRate?.istDataPoints || 0
     );
 
-    // KI-Texte generieren
-    const textInput: PhaseTextInput = {
+    // Basis-Input für Texte
+    const baseTextInput: PhaseTextInput = {
       phaseName: phase.name,
-      projectName,
+      projectName: project.name,
       deadline: phase.end_date,
       daysUntilDeadline: progression.daysUntilDeadline,
       sollHours: latestSnapshot.soll_hours,
@@ -242,7 +266,25 @@ export class GenerateInsightsUseCase {
       deadlineDeltaIst: progression.deadlineDeltaIst,
     };
 
-    const texts = await this.textGenerator.generatePhaseTexts(textInput);
+    // Texte generieren - mit oder ohne Enhanced Context
+    let suggestedAction: SuggestedAction | null = null;
+    let texts;
+
+    if (this.enhancedDeps) {
+      // Enhanced Mode: Mit Verfügbarkeit und Wetter
+      const enhancedInput = await this.buildEnhancedInput(
+        tenantId,
+        project,
+        phase,
+        baseTextInput
+      );
+      const enhancedTexts = await this.textGenerator.generateEnhancedPhaseTexts(enhancedInput);
+      texts = enhancedTexts;
+      suggestedAction = enhancedTexts.suggestedAction ?? null;
+    } else {
+      // Standard Mode: Nur Basis-Texte
+      texts = await this.textGenerator.generatePhaseTexts(baseTextInput);
+    }
 
     // Insight erstellen und speichern
     const insight: Omit<PhaseInsight, 'id' | 'created_at'> = {
@@ -268,9 +310,162 @@ export class GenerateInsightsUseCase {
       recommendation_text: texts.recommendation_text,
       data_quality: dataQuality,
       data_points_count: snapshots.length,
+      suggested_action: suggestedAction,
     };
 
     return this.analyticsRepository.upsertPhaseInsight(insight);
+  }
+
+  /**
+   * Baut den erweiterten Input für die KI-Textgenerierung.
+   */
+  private async buildEnhancedInput(
+    tenantId: string,
+    project: ProjectWithPhases,
+    phase: PhaseData,
+    baseInput: PhaseTextInput
+  ): Promise<EnhancedPhaseTextInput> {
+    const enhancedInput: EnhancedPhaseTextInput = {
+      ...baseInput,
+      projectAddress: project.address ?? undefined,
+      projectDescription: phase.description?.slice(0, 300) ?? undefined,
+    };
+
+    // Verfügbarkeit laden (wenn Phase-Zeitraum bekannt)
+    if (this.enhancedDeps && phase.start_date && phase.end_date) {
+      try {
+        const availableUsers = await this.enhancedDeps.availabilityAnalyzer.findAvailableUsers(
+          tenantId,
+          new Date(phase.start_date),
+          new Date(phase.end_date),
+          8 // min 8h verfügbar
+        );
+
+        const overloadedUsers = await this.enhancedDeps.availabilityAnalyzer.findOverloadedUsers(
+          tenantId,
+          new Date(phase.start_date),
+          new Date(phase.end_date)
+        );
+
+        if (availableUsers.length > 0 || overloadedUsers.length > 0) {
+          enhancedInput.availability = {
+            availableUsers: availableUsers.slice(0, 5).map((u) => ({
+              id: u.id,
+              name: u.name,
+              availableDays: u.availableDays.slice(0, 10),
+              currentUtilization: u.currentUtilization,
+            })),
+            overloadedUsers: overloadedUsers.slice(0, 3).map((u) => ({
+              id: u.id,
+              name: u.name,
+              utilizationPercent: u.utilizationPercent,
+            })),
+          };
+        }
+      } catch {
+        // Fehler bei Verfügbarkeit ignorieren, nicht kritisch
+      }
+    }
+
+    // Wetter laden (wenn Koordinaten vorhanden)
+    if (this.enhancedDeps && project.address_lat && project.address_lng) {
+      try {
+        const weatherForecast = await this.getWeatherContext(
+          project.address_lat,
+          project.address_lng
+        );
+        if (weatherForecast) {
+          enhancedInput.weatherForecast = weatherForecast;
+        }
+      } catch {
+        // Fehler bei Wetter ignorieren, nicht kritisch
+      }
+    }
+
+    return enhancedInput;
+  }
+
+  /**
+   * Holt den Wetter-Kontext für die nächsten 3 Tage.
+   */
+  private async getWeatherContext(
+    lat: number,
+    lng: number
+  ): Promise<WeatherForecastContext | null> {
+    if (!this.enhancedDeps) return null;
+
+    // Prüfe Cache für die nächsten 3 Tage
+    const today = new Date();
+    const dates = [0, 1, 2].map((d) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + d);
+      return date;
+    });
+
+    let forecasts = await this.enhancedDeps.weatherCacheRepository.getForecasts(lat, lng, dates);
+
+    // Wenn Cache unvollständig, neu laden
+    if (forecasts.length < 3) {
+      forecasts = await this.enhancedDeps.weatherService.getForecast(lat, lng, 7);
+
+      if (forecasts.length > 0) {
+        // Cache speichern
+        await this.enhancedDeps.weatherCacheRepository.saveForecasts(lat, lng, forecasts);
+      }
+    }
+
+    if (forecasts.length === 0) return null;
+
+    return this.mapForecastToContext(forecasts.slice(0, 3));
+  }
+
+  /**
+   * Mappt WeatherForecast[] auf WeatherForecastContext für die Textgenerierung.
+   */
+  private mapForecastToContext(
+    forecasts: Array<{
+      date: Date;
+      weatherDescription: string;
+      tempMin: number;
+      tempMax: number;
+      precipitationProbability: number;
+      windSpeedMax: number;
+    }>
+  ): WeatherForecastContext {
+    let hasRainRisk = false;
+    let hasFrostRisk = false;
+    let hasWindRisk = false;
+
+    const next3Days = forecasts.map((d) => {
+      if (d.precipitationProbability > 50) hasRainRisk = true;
+      if (d.tempMin < 0) hasFrostRisk = true;
+      if (d.windSpeedMax > 50) hasWindRisk = true;
+
+      // Evaluate construction rating
+      let constructionRating: 'good' | 'moderate' | 'poor' = 'good';
+      if (d.precipitationProbability > 70 || d.tempMin < 0 || d.windSpeedMax > 50) {
+        constructionRating = 'poor';
+      } else if (d.precipitationProbability > 40 || d.tempMin < 5 || d.windSpeedMax > 30) {
+        constructionRating = 'moderate';
+      }
+
+      return {
+        date: d.date instanceof Date ? d.date.toISOString().split('T')[0] : String(d.date),
+        description: d.weatherDescription || 'Keine Daten',
+        tempMin: d.tempMin ?? 0,
+        tempMax: d.tempMax ?? 0,
+        precipitationProbability: d.precipitationProbability ?? 0,
+        windSpeedMax: d.windSpeedMax ?? 0,
+        constructionRating,
+      };
+    });
+
+    return {
+      next3Days,
+      hasRainRisk,
+      hasFrostRisk,
+      hasWindRisk,
+    };
   }
 
   /**
@@ -323,6 +518,7 @@ export class GenerateInsightsUseCase {
       recommendation_text: texts.recommendation_text,
       data_quality: 'insufficient',
       data_points_count: 0,
+      suggested_action: null, // Will be populated by D7-2
     };
 
     return this.analyticsRepository.upsertPhaseInsight(insight);
@@ -398,13 +594,18 @@ export class GenerateInsightsUseCase {
         id,
         tenant_id,
         name,
+        address,
+        address_lat,
+        address_lng,
         project_phases!inner (
           id,
           name,
+          start_date,
           end_date,
           budget_hours,
           actual_hours,
-          planned_hours
+          planned_hours,
+          description
         )
       `
       )
@@ -418,13 +619,18 @@ export class GenerateInsightsUseCase {
       id: p.id,
       tenant_id: p.tenant_id,
       name: p.name,
+      address: p.address,
+      address_lat: p.address_lat,
+      address_lng: p.address_lng,
       phases: p.project_phases.map((ph: PhaseData) => ({
         id: ph.id,
         name: ph.name,
+        start_date: ph.start_date,
         end_date: ph.end_date,
         budget_hours: ph.budget_hours,
         actual_hours: ph.actual_hours,
         planned_hours: ph.planned_hours,
+        description: ph.description,
       })),
     }));
   }

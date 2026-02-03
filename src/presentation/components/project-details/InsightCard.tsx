@@ -1,9 +1,10 @@
 'use client';
 
-import { Lightbulb, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { Lightbulb, TrendingDown, TrendingUp, Minus, UserPlus, Calendar, AlertTriangle } from 'lucide-react';
 
-import type { BurnRateTrend, DataQuality, InsightStatus } from '@/domain/analytics/types';
+import type { BurnRateTrend, DataQuality, InsightStatus, SuggestedAction } from '@/domain/analytics/types';
 
+import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/presentation/components/ui/card';
 
 import { cn } from '@/lib/utils';
@@ -24,6 +25,10 @@ interface InsightCardProps {
   deadlineDelta?: number | null;
   dataQuality?: DataQuality | null;
   variant?: 'project' | 'phase';
+  /** Vorgeschlagene Aktion (D7) */
+  suggestedAction?: SuggestedAction | null;
+  /** Callback wenn Action-Button geklickt wird */
+  onActionClick?: (action: SuggestedAction) => void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -78,6 +83,57 @@ function TrendIndicator({ trend }: { trend: BurnRateTrend }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// ACTION BUTTON
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface ActionButtonProps {
+  action: SuggestedAction;
+  onClick: () => void;
+}
+
+function ActionButton({ action, onClick }: ActionButtonProps) {
+  // Config basierend auf Action-Type
+  const config = {
+    assign_user: {
+      icon: UserPlus,
+      label: action.userName ? `${action.userName} zuweisen` : 'Mitarbeiter zuweisen',
+      className: 'bg-blue-600 hover:bg-blue-700 text-white',
+    },
+    reschedule: {
+      icon: Calendar,
+      label: 'Phase verschieben',
+      className: 'bg-amber-600 hover:bg-amber-700 text-white',
+    },
+    alert: {
+      icon: AlertTriangle,
+      label: 'Warnung',
+      className: 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200',
+    },
+    none: null,
+  };
+
+  const actionConfig = config[action.type];
+
+  // Keine Aktion oder 'none' type
+  if (!actionConfig) {
+    return null;
+  }
+
+  const { icon: Icon, label, className } = actionConfig;
+
+  return (
+    <Button
+      size="sm"
+      onClick={onClick}
+      className={cn('gap-1.5', className)}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </Button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -102,8 +158,16 @@ export function InsightCard({
   deadlineDelta,
   dataQuality,
   variant = 'phase',
+  suggestedAction,
+  onActionClick,
 }: InsightCardProps) {
   const isProject = variant === 'project';
+
+  // Hat eine actionable Aktion (nicht 'none' oder 'alert')
+  const hasActionableAction = suggestedAction &&
+    suggestedAction.type !== 'none' &&
+    suggestedAction.type !== 'alert' &&
+    onActionClick;
 
   // Border-Farbe basierend auf Status
   const borderColor = {
@@ -162,6 +226,19 @@ export function InsightCard({
           <div className="flex items-start gap-2 rounded-md bg-amber-50 p-2.5 text-sm">
             <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             <p className="text-amber-800">{recommendationText}</p>
+          </div>
+        )}
+
+        {/* Suggested Action Button */}
+        {hasActionableAction && suggestedAction && (
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-gray-500">
+              {suggestedAction.reason}
+            </span>
+            <ActionButton
+              action={suggestedAction}
+              onClick={() => onActionClick(suggestedAction)}
+            />
           </div>
         )}
 

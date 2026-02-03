@@ -1,10 +1,16 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+import { AvailabilityAnalyzer } from '@/application/services/AvailabilityAnalyzer';
 import { GenerateInsightsUseCase } from '@/application/use-cases/analytics/GenerateInsightsUseCase';
 
 import { InsightTextGenerator } from '@/infrastructure/ai/InsightTextGenerator';
+import { SupabaseAbsenceRepository } from '@/infrastructure/repositories/SupabaseAbsenceRepository';
+import { SupabaseAllocationRepository } from '@/infrastructure/repositories/SupabaseAllocationRepository';
 import { SupabaseAnalyticsRepository } from '@/infrastructure/repositories/SupabaseAnalyticsRepository';
+import { SupabaseUserRepository } from '@/infrastructure/repositories/SupabaseUserRepository';
+import { SupabaseWeatherCacheRepository } from '@/infrastructure/repositories/SupabaseWeatherCacheRepository';
+import { OpenMeteoWeatherService } from '@/infrastructure/services/WeatherService';
 import { createAdminSupabaseClient } from '@/infrastructure/supabase/admin';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -65,11 +71,29 @@ export async function POST(_request: Request) {
     const analyticsRepository = new SupabaseAnalyticsRepository(supabase);
     const textGenerator = new InsightTextGenerator(process.env.ANTHROPIC_API_KEY);
 
-    // 4. Use Case ausführen
+    // 4. Enhanced Dependencies für D7 Features (Verfügbarkeit + Wetter)
+    const userRepository = new SupabaseUserRepository(supabase);
+    const allocationRepository = new SupabaseAllocationRepository(supabase);
+    const absenceRepository = new SupabaseAbsenceRepository(supabase);
+    const weatherService = new OpenMeteoWeatherService();
+    const weatherCacheRepository = new SupabaseWeatherCacheRepository(supabase);
+
+    const availabilityAnalyzer = new AvailabilityAnalyzer(
+      userRepository,
+      allocationRepository,
+      absenceRepository
+    );
+
+    // 5. Use Case ausführen mit Enhanced Dependencies
     const useCase = new GenerateInsightsUseCase(
       analyticsRepository,
       supabase,
-      textGenerator
+      textGenerator,
+      {
+        availabilityAnalyzer,
+        weatherService,
+        weatherCacheRepository,
+      }
     );
 
     const result = await useCase.execute();
@@ -118,5 +142,10 @@ export async function GET() {
     authentication: 'Bearer CRON_SECRET',
     ai_enabled: hasAnthropicKey,
     ai_model: hasAnthropicKey ? 'claude-3-haiku-20240307' : 'fallback (regelbasiert)',
+    features: {
+      enhanced_recommendations: true,
+      availability_analysis: true,
+      weather_context: true,
+    },
   });
 }
