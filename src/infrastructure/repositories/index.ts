@@ -1,6 +1,7 @@
 export * from './SupabaseAbsenceConflictRepository';
 export * from './SupabaseAbsenceRepository';
 export * from './SupabaseAllocationRepository';
+export * from './SupabaseAnalyticsRepository';
 export * from './SupabaseIntegrationCredentialsRepository';
 export * from './SupabaseIntegrationMappingRepository';
 export * from './SupabaseProjectPhaseRepository';
