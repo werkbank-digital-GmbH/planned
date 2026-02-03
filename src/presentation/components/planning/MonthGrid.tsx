@@ -1,7 +1,7 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
-import { ChevronDown, ChevronRight, Clock, Target } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 import type { PhaseRowData, ProjectRowData } from '@/application/queries';
 
@@ -18,6 +18,7 @@ import {
 } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
+import { HoursDisplay } from './HoursDisplay';
 import { createPhaseDropZoneId } from './types/dnd';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -167,19 +168,14 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
               </Badge>
             </div>
 
-            {/* KPIs */}
-            <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {project.weeklyPlannedHours}h / {project.totalBudgetHours}h
-              </span>
-              {project.remainingHours > 0 && (
-                <span className="flex items-center gap-1">
-                  <Target className="h-3 w-3" />
-                  {project.remainingHours}h
-                </span>
-              )}
-            </div>
+            {/* KPIs: IST / PLAN / SOLL */}
+            <HoursDisplay
+              ist={project.totalActualHours}
+              plan={project.weeklyPlannedHours}
+              soll={project.totalBudgetHours}
+              variant="project"
+              className="mt-0.5"
+            />
           </div>
         </div>
 
@@ -341,12 +337,14 @@ function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
         />
         <div className="flex-1 min-w-0">
           <span className="text-sm truncate block">{phase.phase.name}</span>
-          {/* Stunden-Info: Geplant diesen Monat / Budget */}
-          {phase.phase.budgetHours !== undefined && (
-            <div className="text-[10px] text-gray-500">
-              {monthlyPlannedHours}h / {phase.phase.budgetHours}h
-            </div>
-          )}
+          {/* Stunden-Info: IST / PLAN / SOLL */}
+          <HoursDisplay
+            ist={phase.phase.actualHours}
+            plan={monthlyPlannedHours}
+            soll={phase.phase.budgetHours}
+            variant="phase"
+            className="text-[10px]"
+          />
         </div>
       </div>
 

@@ -10,6 +10,7 @@ export { DroppableCell } from './DroppableCell';
 export { EmptyCell } from './EmptyCell';
 export { FilterDropdown } from './FilterDropdown';
 export { GridHeader } from './GridHeader';
+export { HoursDisplay } from './HoursDisplay';
 export { PhaseSelector } from './PhaseSelector';
 export { PlanningDndProvider } from './DndProvider';
 export { PlanningGrid } from './PlanningGrid';

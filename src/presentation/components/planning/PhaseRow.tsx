@@ -11,6 +11,7 @@ import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
 import { AssignmentCard } from './AssignmentCard';
+import { HoursDisplay } from './HoursDisplay';
 import { SpanningAssignmentCard } from './SpanningAssignmentCard';
 import { createPhaseDropZoneId } from './types/dnd';
 import {
@@ -106,6 +107,8 @@ function DayCell({
   return (
     <div
       ref={setNodeRef}
+      data-day-cell
+      data-day-index={dayIndex}
       className={cn(
         'min-h-[60px] p-1 border-r border-gray-200 last:border-r-0',
         'flex flex-wrap gap-1 content-start',
@@ -184,12 +187,14 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
             </Badge>
           </div>
 
-          {/* Stunden-Info: Geplant diese Woche / Budget */}
-          {phase.phase.budgetHours !== undefined && (
-            <div className="text-xs text-gray-500 mt-0.5">
-              {weeklyPlannedHours}h geplant / {phase.phase.budgetHours}h Budget
-            </div>
-          )}
+          {/* Stunden-Info: IST / PLAN / SOLL */}
+          <HoursDisplay
+            ist={phase.phase.actualHours}
+            plan={weeklyPlannedHours}
+            soll={phase.phase.budgetHours}
+            variant="phase"
+            className="mt-0.5"
+          />
         </div>
       </div>
 

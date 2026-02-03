@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight, Clock, Target } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 import type { ProjectRowData } from '@/application/queries';
 
@@ -9,6 +9,7 @@ import { Button } from '@/presentation/components/ui/button';
 
 import { cn } from '@/lib/utils';
 
+import { HoursDisplay } from './HoursDisplay';
 import { PhaseRow } from './PhaseRow';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -104,19 +105,14 @@ export function ProjectRow({ project, weekDates, onToggleExpand }: ProjectRowPro
               </Badge>
             </div>
 
-            {/* KPIs */}
-            <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {project.weeklyPlannedHours}h / {project.totalBudgetHours}h
-              </span>
-              {project.remainingHours > 0 && (
-                <span className="flex items-center gap-1">
-                  <Target className="h-3 w-3" />
-                  {project.remainingHours}h
-                </span>
-              )}
-            </div>
+            {/* KPIs: IST / PLAN / SOLL */}
+            <HoursDisplay
+              ist={project.totalActualHours}
+              plan={project.weeklyPlannedHours}
+              soll={project.totalBudgetHours}
+              variant="project"
+              className="mt-0.5"
+            />
           </div>
         </div>
 

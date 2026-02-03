@@ -5,16 +5,18 @@ import { AlertCircle, Truck, User } from 'lucide-react';
 
 import type { AllocationWithDetails } from '@/application/queries';
 
+import { createAllocationAction } from '@/presentation/actions/allocations';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/presentation/components/ui/tooltip';
+import { usePlanning } from '@/presentation/contexts/PlanningContext';
+import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
+import { formatDateISO, getWeekDates } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
-
-import type { ResizeAllocationDragData } from './types/dnd';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -43,7 +45,7 @@ interface AssignmentCardProps {
  * - Stunden (optional)
  * - Warnung bei Abwesenheits-Konflikt
  * - Draggable für Verschieben
- * - Resize-Handle am rechten Rand
+ * - Resize-Handle am rechten Rand mit Echtzeit-Preview
  */
 export function AssignmentCard({
   allocation,
@@ -52,6 +54,16 @@ export function AssignmentCard({
   phaseStartDate,
   phaseEndDate,
 }: AssignmentCardProps) {
+  const {
+    weekStart,
+    addAllocationOptimistic,
+    removeAllocationOptimistic,
+    replaceAllocationId,
+  } = usePlanning();
+
+  // Wochentage für Resize-Berechnung
+  const weekDates = getWeekDates(weekStart);
+
   // Move-Draggable für die gesamte Card
   const {
     attributes: moveAttributes,
@@ -71,32 +83,65 @@ export function AssignmentCard({
     },
   });
 
-  // Resize-Draggable für den Handle
-  const resizeData: ResizeAllocationDragData = {
-    type: 'resize-allocation',
-    allocationId: allocation.id,
+  // Resize Hook für Echtzeit-Preview
+  const { handleProps, isResizing, previewSpanDays } = useAllocationResize({
     allocationIds: [allocation.id],
-    userId: allocation.user?.id,
-    resourceId: allocation.resource?.id,
-    phaseId: allocation.projectPhase.id,
-    projectId: allocation.project.id,
     startDayIndex: dayIndex ?? 0,
     currentSpanDays: 1,
+    phaseId: allocation.projectPhase.id,
+    userId: allocation.user?.id,
+    resourceId: allocation.resource?.id,
     phaseStartDate,
     phaseEndDate,
-    displayName: allocation.user
-      ? formatUserName(allocation.user.fullName)
-      : allocation.resource?.name ?? 'Unbekannt',
-  };
+    weekDates,
+    onResizeComplete: async (newSpanDays) => {
+      if (newSpanDays === 1) return;
 
-  const {
-    attributes: resizeAttributes,
-    listeners: resizeListeners,
-    setNodeRef: setResizeRef,
-    isDragging: isResizeDragging,
-  } = useDraggable({
-    id: `resize-allocation-${allocation.id}`,
-    data: resizeData,
+      // ERWEITERN: Neue Allocations erstellen für die zusätzlichen Tage
+      const startIdx = dayIndex ?? 0;
+      const newDates = weekDates
+        .slice(startIdx + 1, startIdx + newSpanDays)
+        .map((d) => formatDateISO(d));
+
+      // Temporäre IDs für optimistische Updates
+      const tempIds = newDates.map(() => `temp-${crypto.randomUUID()}`);
+
+      // 1. Optimistisches Update
+      newDates.forEach((date, index) => {
+        addAllocationOptimistic({
+          id: tempIds[index],
+          userId: allocation.user?.id,
+          userName: allocation.user?.fullName,
+          resourceId: allocation.resource?.id,
+          resourceName: allocation.resource?.name,
+          projectPhaseId: allocation.projectPhase.id,
+          date,
+          plannedHours: 8,
+        });
+      });
+
+      // 2. Server-Calls
+      const results = await Promise.all(
+        newDates.map((date) =>
+          createAllocationAction({
+            projectPhaseId: allocation.projectPhase.id,
+            date,
+            userId: allocation.user?.id,
+            resourceId: allocation.resource?.id,
+          })
+        )
+      );
+
+      // 3. Ergebnisse verarbeiten
+      results.forEach((result, index) => {
+        if (result.success) {
+          replaceAllocationId(tempIds[index], result.data.allocation.id);
+        } else {
+          removeAllocationOptimistic(tempIds[index]);
+          console.error('Create allocation failed:', result.error.message);
+        }
+      });
+    },
   });
 
   const style = transform
@@ -112,7 +157,7 @@ export function AssignmentCard({
 
   const isUser = !!allocation.user;
   const hasConflict = allocation.hasAbsenceConflict;
-  const isDragging = isMoveDragging || isResizeDragging;
+  const isDragging = isMoveDragging;
 
   const cardContent = (
     <div
@@ -124,6 +169,7 @@ export function AssignmentCard({
         isUser ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800',
         hasConflict && 'ring-2 ring-red-400',
         isDragging && 'opacity-50 ring-2 ring-blue-500',
+        isResizing && 'ring-2 ring-blue-400',
         compact ? 'max-w-[80px]' : 'max-w-[100px]'
       )}
     >
@@ -144,21 +190,34 @@ export function AssignmentCard({
         )}
       </div>
 
-      {/* Resize-Handle am rechten Rand */}
+      {/* Resize-Handle am rechten Rand - jetzt mit eigenem Handler */}
       {dayIndex !== undefined && (
         <div
-          ref={setResizeRef}
-          {...resizeListeners}
-          {...resizeAttributes}
+          {...handleProps}
           className={cn(
             'absolute right-0 top-0 bottom-0 w-2',
             'cursor-col-resize',
             'opacity-0 group-hover:opacity-100 transition-opacity',
             'bg-gradient-to-r from-transparent',
             isUser ? 'to-blue-300' : 'to-orange-300',
-            'rounded-r'
+            'rounded-r',
+            isResizing && 'opacity-100 bg-blue-400'
           )}
           title="Ziehen um Dauer zu ändern"
+        />
+      )}
+
+      {/* Preview-Extension für Resize (wenn mehr als 1 Tag) */}
+      {isResizing && previewSpanDays > 1 && (
+        <div
+          className={cn(
+            'absolute left-full top-0 bottom-0',
+            'border-2 border-dashed rounded-r',
+            isUser
+              ? 'bg-blue-100/50 border-blue-400'
+              : 'bg-orange-100/50 border-orange-400'
+          )}
+          style={{ width: `${(previewSpanDays - 1) * 100}%` }}
         />
       )}
     </div>
@@ -187,7 +246,10 @@ export function AssignmentCard({
               )}
               {hasConflict && (
                 <p className="text-xs text-red-500">
-                  Konflikt: {allocation.absenceType === 'vacation' ? 'Urlaub' : allocation.absenceType}
+                  Konflikt:{' '}
+                  {allocation.absenceType === 'vacation'
+                    ? 'Urlaub'
+                    : allocation.absenceType}
                 </p>
               )}
             </div>

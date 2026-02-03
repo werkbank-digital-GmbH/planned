@@ -196,8 +196,9 @@ export interface ProjectRowData {
   };
   phases: PhaseRowData[];
   // KPIs für diese Woche
-  weeklyPlannedHours: number; // Geplant diese Woche
+  weeklyPlannedHours: number; // Geplant diese Woche (PLAN)
   totalBudgetHours: number; // Gesamt-SOLL aller Phasen
+  totalActualHours: number; // Gesamt-IST aller Phasen (aus Asana)
   remainingHours: number; // Verbleibend (SOLL - IST)
   // Timeline
   timelineStart?: Date;
@@ -681,6 +682,7 @@ export class GetAllocationsForWeekQuery {
         phases: phaseRows,
         weeklyPlannedHours,
         totalBudgetHours,
+        totalActualHours,
         remainingHours,
         timelineStart,
         timelineEnd,

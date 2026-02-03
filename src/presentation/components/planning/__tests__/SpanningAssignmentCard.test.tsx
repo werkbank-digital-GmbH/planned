@@ -12,6 +12,22 @@ vi.mock('@dnd-kit/core', () => ({
   })),
 }));
 
+// Mock PlanningContext - must be before component import
+vi.mock('@/presentation/contexts/PlanningContext', () => ({
+  usePlanning: vi.fn(() => ({
+    weekStart: new Date('2025-01-27'),
+    weekDates: [
+      new Date('2025-01-27'),
+      new Date('2025-01-28'),
+      new Date('2025-01-29'),
+      new Date('2025-01-30'),
+      new Date('2025-01-31'),
+    ],
+    extendAllocation: vi.fn(),
+    shrinkAllocation: vi.fn(),
+  })),
+}));
+
 // eslint-disable-next-line import/first -- Import must be after vi.mock
 import { SpanningAssignmentCard } from '../SpanningAssignmentCard';
 // eslint-disable-next-line import/first -- Import must be after vi.mock

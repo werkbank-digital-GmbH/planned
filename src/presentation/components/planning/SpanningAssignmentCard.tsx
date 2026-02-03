@@ -4,15 +4,21 @@ import { useDraggable } from '@dnd-kit/core';
 import { Calendar, Truck, User } from 'lucide-react';
 
 import {
+  createAllocationAction,
+  deleteAllocationAction,
+} from '@/presentation/actions/allocations';
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/presentation/components/ui/tooltip';
+import { usePlanning } from '@/presentation/contexts/PlanningContext';
+import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
+import { formatDateISO, getWeekDates } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
-import type { ResizeAllocationDragData } from './types/dnd';
 import type { AllocationSpan } from './utils/allocation-grouping';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -57,13 +63,23 @@ function getSpanLabel(spanDays: number): string {
  * - Tages-Label (z.B. "Mo-Fr" oder "3 Tage")
  * - Gesamtstunden
  * - Draggable für Verschieben des gesamten Blocks
- * - Resize-Handle am rechten Rand
+ * - Resize-Handle am rechten Rand mit Echtzeit-Preview
  */
 export function SpanningAssignmentCard({
   span,
   phaseStartDate,
   phaseEndDate,
 }: SpanningAssignmentCardProps) {
+  const {
+    weekStart,
+    addAllocationOptimistic,
+    removeAllocationOptimistic,
+    replaceAllocationId,
+  } = usePlanning();
+
+  // Wochentage für Resize-Berechnung
+  const weekDates = getWeekDates(weekStart);
+
   // Move-Draggable für die gesamte Card
   const {
     attributes: moveAttributes,
@@ -85,30 +101,102 @@ export function SpanningAssignmentCard({
     },
   });
 
-  // Resize-Draggable für den Handle
-  const resizeData: ResizeAllocationDragData = {
-    type: 'resize-allocation',
-    allocationId: span.allocations[0].id,
+  // Resize Hook für Echtzeit-Preview
+  const { handleProps, isResizing, previewSpanDays } = useAllocationResize({
     allocationIds: span.allocations.map((a) => a.id),
-    userId: span.userId,
-    resourceId: span.resourceId,
-    phaseId: span.phaseId,
-    projectId: span.allocations[0].project.id,
     startDayIndex: span.startDayIndex,
     currentSpanDays: span.spanDays,
+    phaseId: span.phaseId,
+    userId: span.userId,
+    resourceId: span.resourceId,
     phaseStartDate,
     phaseEndDate,
-    displayName: span.displayName,
-  };
+    weekDates,
+    onResizeComplete: async (newSpanDays) => {
+      if (newSpanDays === span.spanDays) return;
 
-  const {
-    attributes: resizeAttributes,
-    listeners: resizeListeners,
-    setNodeRef: setResizeRef,
-    isDragging: isResizeDragging,
-  } = useDraggable({
-    id: `resize-span-${span.allocations[0].id}`,
-    data: resizeData,
+      if (newSpanDays > span.spanDays) {
+        // ERWEITERN: Neue Allocations erstellen
+        const newDates = weekDates
+          .slice(
+            span.startDayIndex + span.spanDays,
+            span.startDayIndex + newSpanDays
+          )
+          .map((d) => formatDateISO(d));
+
+        // Temporäre IDs für optimistische Updates
+        const tempIds = newDates.map(() => `temp-${crypto.randomUUID()}`);
+
+        // 1. Optimistisches Update
+        newDates.forEach((date, index) => {
+          addAllocationOptimistic({
+            id: tempIds[index],
+            userId: span.userId,
+            userName: span.displayName,
+            resourceId: span.resourceId,
+            resourceName: span.displayName,
+            projectPhaseId: span.phaseId,
+            date,
+            plannedHours: 8,
+          });
+        });
+
+        // 2. Server-Calls
+        const results = await Promise.all(
+          newDates.map((date) =>
+            createAllocationAction({
+              projectPhaseId: span.phaseId,
+              date,
+              userId: span.userId,
+              resourceId: span.resourceId,
+            })
+          )
+        );
+
+        // 3. Ergebnisse verarbeiten
+        results.forEach((result, index) => {
+          if (result.success) {
+            replaceAllocationId(tempIds[index], result.data.allocation.id);
+          } else {
+            removeAllocationOptimistic(tempIds[index]);
+            console.error('Create allocation failed:', result.error.message);
+          }
+        });
+      } else {
+        // VERKLEINERN: Überschüssige Allocations löschen
+        const toDelete = span.allocations.slice(newSpanDays);
+
+        // 1. Optimistisches Update
+        toDelete.forEach((alloc) => {
+          removeAllocationOptimistic(alloc.id);
+        });
+
+        // 2. Server-Calls
+        const results = await Promise.all(
+          toDelete.map((alloc) =>
+            deleteAllocationAction({ allocationId: alloc.id })
+          )
+        );
+
+        // 3. Bei Fehler: Rollback
+        results.forEach((result, index) => {
+          if (!result.success) {
+            const alloc = toDelete[index];
+            addAllocationOptimistic({
+              id: alloc.id,
+              userId: alloc.user?.id,
+              userName: alloc.user?.fullName,
+              resourceId: alloc.resource?.id,
+              resourceName: alloc.resource?.name,
+              projectPhaseId: alloc.projectPhase.id,
+              date: formatDateISO(alloc.date),
+              plannedHours: alloc.plannedHours ?? 8,
+            });
+            console.error('Delete allocation failed:', result.error.message);
+          }
+        });
+      }
+    },
   });
 
   const style = transform
@@ -118,13 +206,22 @@ export function SpanningAssignmentCard({
     : undefined;
 
   const isUser = !!span.userId;
-  const spanLabel = getSpanLabel(span.spanDays);
-  const isDragging = isMoveDragging || isResizeDragging;
+  const isDragging = isMoveDragging;
+
+  // Verwende Preview während Resize, sonst Original
+  const visualSpanDays = isResizing ? previewSpanDays : span.spanDays;
+  const spanLabel = getSpanLabel(visualSpanDays);
 
   const cardContent = (
     <div
       ref={setMoveRef}
-      style={style}
+      style={{
+        ...style,
+        // Dynamische Breite basierend auf visualSpanDays
+        gridColumn: isResizing
+          ? `${span.startDayIndex + 1} / span ${visualSpanDays}`
+          : undefined,
+      }}
       className={cn(
         'group relative flex items-center gap-1.5 px-2 py-1 rounded text-xs',
         'transition-colors select-none',
@@ -132,7 +229,8 @@ export function SpanningAssignmentCard({
         isUser
           ? 'bg-blue-50 text-blue-800 border-blue-200'
           : 'bg-orange-50 text-orange-800 border-orange-200',
-        isDragging && 'opacity-50 ring-2 ring-blue-500 shadow-lg'
+        isDragging && 'opacity-50 ring-2 ring-blue-500 shadow-lg',
+        isResizing && 'ring-2 ring-blue-400'
       )}
     >
       {/* Move-Bereich (gesamte Card außer Handle) */}
@@ -155,18 +253,17 @@ export function SpanningAssignmentCard({
         )}
       </div>
 
-      {/* Resize-Handle am rechten Rand */}
+      {/* Resize-Handle am rechten Rand - jetzt mit eigenem Handler */}
       <div
-        ref={setResizeRef}
-        {...resizeListeners}
-        {...resizeAttributes}
+        {...handleProps}
         className={cn(
-          'absolute right-0 top-0 bottom-0 w-2',
+          'absolute right-0 top-0 bottom-0 w-3',
           'cursor-col-resize',
           'opacity-0 group-hover:opacity-100 transition-opacity',
           'bg-gradient-to-r from-transparent',
           isUser ? 'to-blue-300' : 'to-orange-300',
-          'rounded-r'
+          'rounded-r',
+          isResizing && 'opacity-100 bg-blue-400'
         )}
         title="Ziehen um Dauer zu ändern"
       />
@@ -181,10 +278,11 @@ export function SpanningAssignmentCard({
         <TooltipContent side="top" className="max-w-[250px]">
           <div className="space-y-1">
             <p className="font-medium">
-              {span.allocations[0].user?.fullName ?? span.allocations[0].resource?.name}
+              {span.allocations[0].user?.fullName ??
+                span.allocations[0].resource?.name}
             </p>
             <p className="text-xs text-gray-500">
-              {span.spanDays} Tage ({span.totalHours}h gesamt)
+              {visualSpanDays} Tage ({span.totalHours}h gesamt)
             </p>
             <p className="text-xs text-gray-500">
               Phase: {span.allocations[0].projectPhase.name}

@@ -51,6 +51,20 @@ interface PlanningFilters {
 
 export type ViewMode = 'week' | 'month';
 
+/**
+ * Optimistic Allocation für lokale Updates vor Server-Response.
+ */
+export interface OptimisticAllocation {
+  id: string; // Temporäre ID (z.B. "temp-{uuid}")
+  userId?: string;
+  userName?: string;
+  resourceId?: string;
+  resourceName?: string;
+  projectPhaseId: string;
+  date: string; // ISO-String
+  plannedHours: number;
+}
+
 interface PlanningContextValue {
   // State
   weekStart: Date;
@@ -94,6 +108,16 @@ interface PlanningContextValue {
   // Actions
   refresh: () => Promise<void>;
   toggleProjectExpanded: (projectId: string) => void;
+
+  // Optimistic Update Functions
+  addAllocationOptimistic: (allocation: OptimisticAllocation) => void;
+  removeAllocationOptimistic: (allocationId: string) => void;
+  moveAllocationOptimistic: (
+    allocationId: string,
+    newDate: string,
+    newPhaseId?: string
+  ) => void;
+  replaceAllocationId: (tempId: string, realId: string) => void;
 
   // Helpers
   getAllocationById: (id: string) => AllocationWithDetails | undefined;
@@ -227,6 +251,209 @@ export function PlanningProvider({
         next.add(projectId);
       }
       return next;
+    });
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // OPTIMISTIC UPDATE FUNCTIONS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Fügt eine Allocation optimistisch zum lokalen State hinzu.
+   * Wird aufgerufen BEVOR der Server-Request abgeschickt wird.
+   */
+  const addAllocationOptimistic = useCallback(
+    (allocation: OptimisticAllocation) => {
+      setWeekData((prev) => {
+        if (!prev) return prev;
+
+        const newProjectRows = prev.projectRows.map((project) => ({
+          ...project,
+          phases: project.phases.map((phase) => {
+            if (phase.phase.id !== allocation.projectPhaseId) return phase;
+
+            // Füge Allocation zum richtigen Tag hinzu
+            const newDayAllocations = { ...phase.dayAllocations };
+            const dateKey = allocation.date;
+            const newAllocation: AllocationWithDetails = {
+              id: allocation.id,
+              tenantId: '',
+              date: new Date(allocation.date),
+              plannedHours: allocation.plannedHours,
+              actualHours: 0,
+              user: allocation.userId
+                ? {
+                    id: allocation.userId,
+                    fullName: allocation.userName || 'Lädt...',
+                    weeklyHours: 40,
+                    dailyCapacity: 8,
+                  }
+                : undefined,
+              resource: allocation.resourceId
+                ? {
+                    id: allocation.resourceId,
+                    name: allocation.resourceName || 'Lädt...',
+                  }
+                : undefined,
+              projectPhase: {
+                id: phase.phase.id,
+                name: phase.phase.name,
+                bereich: phase.phase.bereich,
+              },
+              project: {
+                id: project.project.id,
+                name: project.project.name,
+              },
+              hasAbsenceConflict: false,
+            };
+
+            newDayAllocations[dateKey] = [
+              ...(newDayAllocations[dateKey] || []),
+              newAllocation,
+            ];
+
+            return { ...phase, dayAllocations: newDayAllocations };
+          }),
+        }));
+
+        return { ...prev, projectRows: newProjectRows };
+      });
+    },
+    []
+  );
+
+  /**
+   * Entfernt eine Allocation optimistisch aus dem lokalen State.
+   * Wird aufgerufen BEVOR der Delete-Request abgeschickt wird.
+   */
+  const removeAllocationOptimistic = useCallback((allocationId: string) => {
+    setWeekData((prev) => {
+      if (!prev) return prev;
+
+      const newProjectRows = prev.projectRows.map((project) => ({
+        ...project,
+        phases: project.phases.map((phase) => {
+          const newDayAllocations: Record<string, AllocationWithDetails[]> = {};
+
+          for (const [dateKey, allocations] of Object.entries(
+            phase.dayAllocations
+          )) {
+            newDayAllocations[dateKey] = allocations.filter(
+              (a) => a.id !== allocationId
+            );
+          }
+
+          return { ...phase, dayAllocations: newDayAllocations };
+        }),
+      }));
+
+      return { ...prev, projectRows: newProjectRows };
+    });
+  }, []);
+
+  /**
+   * Verschiebt eine Allocation optimistisch im lokalen State.
+   * Wird aufgerufen BEVOR der Move-Request abgeschickt wird.
+   */
+  const moveAllocationOptimistic = useCallback(
+    (allocationId: string, newDate: string, newPhaseId?: string) => {
+      setWeekData((prev) => {
+        if (!prev) return prev;
+
+        // 1. Finde die Allocation
+        let movedAllocation: AllocationWithDetails | null = null;
+
+        for (const project of prev.projectRows) {
+          for (const phase of project.phases) {
+            for (const allocations of Object.values(phase.dayAllocations)) {
+              const found = allocations.find((a) => a.id === allocationId);
+              if (found) {
+                movedAllocation = { ...found, date: new Date(newDate) };
+                break;
+              }
+            }
+            if (movedAllocation) break;
+          }
+          if (movedAllocation) break;
+        }
+
+        if (!movedAllocation) return prev;
+
+        // 2. Entferne von alter Position und füge an neuer Position hinzu
+        const targetPhaseId = newPhaseId || movedAllocation.projectPhase.id;
+
+        const newProjectRows = prev.projectRows.map((project) => ({
+          ...project,
+          phases: project.phases.map((phase) => {
+            const newDayAllocations: Record<string, AllocationWithDetails[]> =
+              {};
+
+            // Entferne die alte Allocation
+            for (const [dateKey, allocations] of Object.entries(
+              phase.dayAllocations
+            )) {
+              newDayAllocations[dateKey] = allocations.filter(
+                (a) => a.id !== allocationId
+              );
+            }
+
+            // Füge an neuer Position hinzu wenn dies die Ziel-Phase ist
+            if (phase.phase.id === targetPhaseId && movedAllocation) {
+              const updatedAllocation: AllocationWithDetails = {
+                ...movedAllocation,
+                projectPhase: {
+                  id: phase.phase.id,
+                  name: phase.phase.name,
+                  bereich: phase.phase.bereich,
+                },
+                project: {
+                  id: project.project.id,
+                  name: project.project.name,
+                },
+              };
+
+              newDayAllocations[newDate] = [
+                ...(newDayAllocations[newDate] || []),
+                updatedAllocation,
+              ];
+            }
+
+            return { ...phase, dayAllocations: newDayAllocations };
+          }),
+        }));
+
+        return { ...prev, projectRows: newProjectRows };
+      });
+    },
+    []
+  );
+
+  /**
+   * Ersetzt eine temporäre Allocation-ID mit der echten ID vom Server.
+   * Wird nach erfolgreicher Server-Response aufgerufen.
+   */
+  const replaceAllocationId = useCallback((tempId: string, realId: string) => {
+    setWeekData((prev) => {
+      if (!prev) return prev;
+
+      const newProjectRows = prev.projectRows.map((project) => ({
+        ...project,
+        phases: project.phases.map((phase) => {
+          const newDayAllocations: Record<string, AllocationWithDetails[]> = {};
+
+          for (const [dateKey, allocations] of Object.entries(
+            phase.dayAllocations
+          )) {
+            newDayAllocations[dateKey] = allocations.map((a) =>
+              a.id === tempId ? { ...a, id: realId } : a
+            );
+          }
+
+          return { ...phase, dayAllocations: newDayAllocations };
+        }),
+      }));
+
+      return { ...prev, projectRows: newProjectRows };
     });
   }, []);
 
@@ -427,6 +654,10 @@ export function PlanningProvider({
     summary: weekData?.summary ?? null,
     refresh: loadWeekData,
     toggleProjectExpanded,
+    addAllocationOptimistic,
+    removeAllocationOptimistic,
+    moveAllocationOptimistic,
+    replaceAllocationId,
     getAllocationById,
     getWeekDates: getWeekDatesHelper,
   };
