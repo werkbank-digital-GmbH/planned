@@ -1,6 +1,7 @@
 'use client';
 
 import { GripHorizontal, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useResizable } from '@/presentation/hooks/useResizable';
@@ -9,6 +10,7 @@ import { getDayNameShort, isToday } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
 import { MonthGrid } from './MonthGrid';
+import { ProjectDetailModal } from './ProjectDetailModal';
 import { ProjectRow } from './ProjectRow';
 import { ResourcePool } from './ResourcePool';
 
@@ -131,6 +133,10 @@ export function PlanningGrid() {
 
   const weekDates = getWeekDates();
 
+  // State für Projekt-Detail-Modal
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const isModalOpen = selectedProjectId !== null;
+
   // Monatsansicht - separate Komponente
   if (viewMode === 'month') {
     return (
@@ -186,6 +192,7 @@ export function PlanningGrid() {
                   project={project}
                   weekDates={weekDates}
                   onToggleExpand={toggleProjectExpanded}
+                  onShowDetails={setSelectedProjectId}
                 />
               ))
             )}
@@ -204,6 +211,13 @@ export function PlanningGrid() {
       <ResizablePoolWrapper>
         <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
       </ResizablePoolWrapper>
+
+      {/* Projekt-Detail-Modal */}
+      <ProjectDetailModal
+        projectId={selectedProjectId}
+        isOpen={isModalOpen}
+        onClose={() => setSelectedProjectId(null)}
+      />
     </div>
   );
 }

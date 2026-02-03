@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, HelpCircle } from 'lucide-react';
 
 import type { ProjectRowData } from '@/application/queries';
 
@@ -20,6 +20,7 @@ interface ProjectRowProps {
   project: ProjectRowData;
   weekDates: Date[];
   onToggleExpand: (projectId: string) => void;
+  onShowDetails?: (projectId: string) => void;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -64,7 +65,7 @@ function getStatusLabel(status: string): string {
  * - KPIs: Wochenstunden, Budget, Verbleibend
  * - Phasen-Zeilen wenn aufgeklappt
  */
-export function ProjectRow({ project, weekDates, onToggleExpand }: ProjectRowProps) {
+export function ProjectRow({ project, weekDates, onToggleExpand, onShowDetails }: ProjectRowProps) {
   const { isExpanded, hasActivePhasesThisWeek } = project;
 
   return (
@@ -94,6 +95,18 @@ export function ProjectRow({ project, weekDates, onToggleExpand }: ProjectRowPro
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
+              {onShowDetails && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowDetails(project.project.id);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Projekt-Details anzeigen"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </button>
+              )}
               <span className="font-medium text-sm truncate">
                 {project.project.name}
               </span>
