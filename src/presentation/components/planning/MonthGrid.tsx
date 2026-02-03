@@ -397,7 +397,7 @@ export function MonthGrid() {
   // Fehler-Anzeige
   if (error) {
     return (
-      <div className="rounded-lg border bg-red-50 p-8 text-center">
+      <div className="flex items-center justify-center rounded-lg border bg-red-50 p-8 text-center">
         <p className="text-red-600">{error}</p>
       </div>
     );

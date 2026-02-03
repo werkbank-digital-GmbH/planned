@@ -29,9 +29,10 @@ export default async function PlanungPage() {
         <UndoProvider>
           <SelectionProvider>
             <PlanningDndProvider>
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
+              {/* Vollständige Höhe: 100vh - Navigation (64px) - Main Padding (48px) */}
+              <div className="flex flex-col h-[calc(100vh-112px)]">
+                {/* Header - feste Höhe */}
+                <div className="flex items-center justify-between shrink-0 pb-4">
                   <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold">Planung</h1>
                     <ViewModeToggle />
@@ -42,16 +43,18 @@ export default async function PlanungPage() {
                   </div>
                 </div>
 
-                {/* Main Content - Volle Breite (keine Sidebar mehr) */}
-                <Suspense
-                  fallback={
-                    <div className="flex h-[400px] items-center justify-center rounded-lg border">
-                      <span className="text-gray-500">Lade Planung...</span>
-                    </div>
-                  }
-                >
-                  <PlanningGrid />
-                </Suspense>
+                {/* Scrollable Planning Area */}
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full items-center justify-center rounded-lg border">
+                        <span className="text-gray-500">Lade Planung...</span>
+                      </div>
+                    }
+                  >
+                    <PlanningGrid />
+                  </Suspense>
+                </div>
               </div>
 
               {/* Keyboard Shortcuts Handler */}

@@ -80,8 +80,8 @@ function ResizablePoolWrapper({ children }: ResizablePoolWrapperProps) {
 
   return (
     <div
-      className="sticky bottom-0 z-10 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] -mx-6 px-6 -mb-6 pb-6 flex flex-col"
-      style={{ height: height + 24 }} // +24 für padding
+      className="shrink-0 bg-gray-50 border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex flex-col"
+      style={{ height }}
     >
       {/* Resize Handle */}
       <div
@@ -96,7 +96,7 @@ function ResizablePoolWrapper({ children }: ResizablePoolWrapperProps) {
         <GripHorizontal className="h-4 w-4 text-gray-400" />
       </div>
 
-      {/* Scrollable Content */}
+      {/* Pool Content */}
       <div className="flex-1 overflow-hidden min-h-0">
         {children}
       </div>
@@ -134,8 +134,11 @@ export function PlanningGrid() {
   // Monatsansicht - separate Komponente
   if (viewMode === 'month') {
     return (
-      <div className="space-y-4">
-        <MonthGrid />
+      <div className="flex flex-col h-full">
+        {/* Scrollable Grid Area */}
+        <div className="flex-1 overflow-auto min-h-0">
+          <MonthGrid />
+        </div>
 
         {/* Resizable Ressourcen-Pool */}
         <ResizablePoolWrapper>
@@ -148,7 +151,7 @@ export function PlanningGrid() {
   // Fehler-Anzeige
   if (error) {
     return (
-      <div className="rounded-lg border bg-red-50 p-8 text-center">
+      <div className="flex items-center justify-center h-full rounded-lg border bg-red-50 p-8 text-center">
         <p className="text-red-600">{error}</p>
       </div>
     );
@@ -157,7 +160,7 @@ export function PlanningGrid() {
   // Lade-Anzeige
   if (isLoading && projectRows.length === 0) {
     return (
-      <div className="flex items-center justify-center rounded-lg border p-8">
+      <div className="flex items-center justify-center h-full rounded-lg border p-8">
         <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         <span className="ml-2 text-gray-500">Lade Daten...</span>
       </div>
@@ -165,34 +168,36 @@ export function PlanningGrid() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Planungs-Grid */}
-      <div className="rounded-lg border bg-white relative">
-        <GridHeader weekDates={weekDates} />
+    <div className="flex flex-col h-full">
+      {/* Scrollable Grid Area */}
+      <div className="flex-1 overflow-auto min-h-0">
+        <div className="rounded-lg border bg-white relative">
+          <GridHeader weekDates={weekDates} />
 
-        <div className="flex flex-col gap-2 p-2">
-          {projectRows.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              Keine Projekte mit Phasen in dieser Woche
+          <div className="flex flex-col gap-2 p-2">
+            {projectRows.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                Keine Projekte mit Phasen in dieser Woche
+              </div>
+            ) : (
+              projectRows.map((project) => (
+                <ProjectRow
+                  key={project.project.id}
+                  project={project}
+                  weekDates={weekDates}
+                  onToggleExpand={toggleProjectExpanded}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Loading Overlay */}
+          {isLoading && projectRows.length > 0 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : (
-            projectRows.map((project) => (
-              <ProjectRow
-                key={project.project.id}
-                project={project}
-                weekDates={weekDates}
-                onToggleExpand={toggleProjectExpanded}
-              />
-            ))
           )}
         </div>
-
-        {/* Loading Overlay */}
-        {isLoading && projectRows.length > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        )}
       </div>
 
       {/* Resizable Ressourcen-Pool */}
