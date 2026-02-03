@@ -17,3 +17,9 @@ export type {
   MappedTaskPhaseData,
 } from './IAsanaService';
 export type { IEncryptionService } from './IEncryptionService';
+export type {
+  IInsightTextGenerator,
+  GeneratedTexts,
+  PhaseTextInput,
+  ProjectTextInput,
+} from './IInsightTextGenerator';

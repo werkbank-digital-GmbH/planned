@@ -5,6 +5,10 @@
       "schedule": "0 5 * * *"
     },
     {
+      "path": "/api/cron/insights",
+      "schedule": "15 5 * * *"
+    },
+    {
       "path": "/api/cron/sync-asana",
       "schedule": "0 6 * * *"
     }
