@@ -3,6 +3,7 @@ import type {
   CreatePhaseSnapshotDTO,
   PhaseInsight,
   ProjectInsight,
+  TenantInsightsSummary,
 } from './types';
 
 export interface IAnalyticsRepository {
@@ -62,4 +63,11 @@ export interface IAnalyticsRepository {
 
   /** Löscht alte Snapshots (10 Jahre nach Projektabschluss) */
   cleanupOldSnapshots(): Promise<number>;
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // TENANT SUMMARY
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /** Holt aggregierte Insights für einen Tenant (für Dashboard-KPIs) */
+  getTenantInsightsSummary(tenantId: string): Promise<TenantInsightsSummary>;
 }

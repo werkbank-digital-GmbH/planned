@@ -154,3 +154,25 @@ export interface ProgressionMetrics {
   capacityGapHours: number; // Was noch geplant werden muss
   capacityGapDays: number; // In Personentagen (bei 8h/Tag)
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TENANT INSIGHTS SUMMARY (Dashboard KPIs)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface RiskProject {
+  id: string;
+  name: string;
+  status: InsightStatus;
+  phasesAtRisk: number;
+}
+
+export interface TenantInsightsSummary {
+  projectsAtRisk: number;
+  projectsOnTrack: number;
+  totalProjects: number;
+  criticalPhasesCount: number;
+  averageProgressPercent: number;
+  burnRateTrend: BurnRateTrend;
+  topRiskProjects: RiskProject[];
+  lastUpdatedAt: string | null;
+}

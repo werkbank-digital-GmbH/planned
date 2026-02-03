@@ -6,6 +6,9 @@ import type {
   CreatePhaseSnapshotDTO,
   PhaseInsight,
   ProjectInsight,
+  TenantInsightsSummary,
+  RiskProject,
+  BurnRateTrend,
 } from '@/domain/analytics/types';
 
 /**
@@ -177,6 +180,217 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
     const { data, error } = await this.supabase.rpc('cleanup_old_snapshots');
     if (error) throw error;
     return (data as number) || 0;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // TENANT SUMMARY
+  // ═══════════════════════════════════════════════════════════════════════
+
+  async getTenantInsightsSummary(tenantId: string): Promise<TenantInsightsSummary> {
+    // Hole alle neuesten Project Insights für diesen Tenant
+    const { data: projectInsights, error } = await this.supabase
+      .from('project_insights')
+      .select(
+        `
+        id,
+        project_id,
+        insight_date,
+        overall_progress_percent,
+        phases_at_risk,
+        phases_behind,
+        status,
+        created_at
+      `
+      )
+      .eq('tenant_id', tenantId)
+      .order('insight_date', { ascending: false });
+
+    if (error) throw error;
+
+    // Keine Insights vorhanden
+    if (!projectInsights || projectInsights.length === 0) {
+      return this.emptyTenantSummary();
+    }
+
+    // Dedupliziere: nur das neueste Insight pro Projekt
+    const latestByProject = new Map<string, (typeof projectInsights)[0]>();
+    for (const insight of projectInsights) {
+      if (!latestByProject.has(insight.project_id)) {
+        latestByProject.set(insight.project_id, insight);
+      }
+    }
+
+    const latestInsights = Array.from(latestByProject.values());
+
+    // Aggregiere Status-Counts
+    let projectsAtRisk = 0;
+    let projectsOnTrack = 0;
+    let criticalPhasesCount = 0;
+    let totalProgress = 0;
+    let progressCount = 0;
+
+    const riskProjects: Array<{
+      projectId: string;
+      status: string;
+      phasesAtRisk: number;
+    }> = [];
+
+    for (const insight of latestInsights) {
+      const status = insight.status as string;
+      const phasesAtRisk = (insight.phases_at_risk || 0) + (insight.phases_behind || 0);
+
+      if (['behind', 'critical', 'at_risk'].includes(status)) {
+        projectsAtRisk++;
+        riskProjects.push({
+          projectId: insight.project_id,
+          status,
+          phasesAtRisk,
+        });
+      } else if (['on_track', 'ahead'].includes(status)) {
+        projectsOnTrack++;
+      }
+
+      criticalPhasesCount += phasesAtRisk;
+
+      if (insight.overall_progress_percent !== null) {
+        totalProgress += insight.overall_progress_percent;
+        progressCount++;
+      }
+    }
+
+    // Sortiere Risiko-Projekte nach Kritikalität und hole Top 3
+    const sortedRiskProjects = riskProjects
+      .sort((a, b) => {
+        // Kritischste zuerst
+        const statusOrder: Record<string, number> = {
+          critical: 0,
+          behind: 1,
+          at_risk: 2,
+        };
+        const aOrder = statusOrder[a.status] ?? 99;
+        const bOrder = statusOrder[b.status] ?? 99;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        // Bei gleichem Status: mehr Risiko-Phasen zuerst
+        return b.phasesAtRisk - a.phasesAtRisk;
+      })
+      .slice(0, 3);
+
+    // Hole Projektnamen für die Top-Risk-Projekte
+    const topRiskProjects = await this.enrichRiskProjectsWithNames(
+      sortedRiskProjects,
+      tenantId
+    );
+
+    // Ermittle globalen Burn Rate Trend
+    const burnRateTrend = await this.getOverallBurnRateTrend(tenantId);
+
+    // Ermittle letztes Update
+    const lastUpdatedAt =
+      latestInsights.length > 0
+        ? latestInsights.reduce((latest, i) =>
+            i.created_at > latest ? i.created_at : latest
+          , latestInsights[0].created_at)
+        : null;
+
+    return {
+      projectsAtRisk,
+      projectsOnTrack,
+      totalProjects: latestInsights.length,
+      criticalPhasesCount,
+      averageProgressPercent:
+        progressCount > 0 ? Math.round(totalProgress / progressCount) : 0,
+      burnRateTrend,
+      topRiskProjects,
+      lastUpdatedAt,
+    };
+  }
+
+  /**
+   * Reichert Risiko-Projekte mit Projektnamen an
+   */
+  private async enrichRiskProjectsWithNames(
+    riskProjects: Array<{ projectId: string; status: string; phasesAtRisk: number }>,
+    tenantId: string
+  ): Promise<RiskProject[]> {
+    if (riskProjects.length === 0) return [];
+
+    const projectIds = riskProjects.map((p) => p.projectId);
+
+    const { data: projects, error } = await this.supabase
+      .from('projects')
+      .select('id, name')
+      .eq('tenant_id', tenantId)
+      .in('id', projectIds);
+
+    if (error) throw error;
+
+    const projectNameMap = new Map(projects?.map((p) => [p.id, p.name]) ?? []);
+
+    return riskProjects.map((rp) => ({
+      id: rp.projectId,
+      name: projectNameMap.get(rp.projectId) || 'Unbekanntes Projekt',
+      status: rp.status as RiskProject['status'],
+      phasesAtRisk: rp.phasesAtRisk,
+    }));
+  }
+
+  /**
+   * Ermittelt den Gesamttrend der Burn Rate über alle Phasen
+   */
+  private async getOverallBurnRateTrend(tenantId: string): Promise<BurnRateTrend> {
+    // Hole die neuesten Phase-Insights und aggregiere den Trend
+    const { data: phaseInsights, error } = await this.supabase
+      .from('phase_insights')
+      .select('burn_rate_ist_trend')
+      .eq('tenant_id', tenantId)
+      .not('burn_rate_ist_trend', 'is', null)
+      .order('insight_date', { ascending: false })
+      .limit(50); // Betrachte die letzten 50 Phase-Insights
+
+    if (error) throw error;
+
+    if (!phaseInsights || phaseInsights.length === 0) {
+      return 'stable';
+    }
+
+    // Zähle die Trends
+    let up = 0;
+    let down = 0;
+    let stable = 0;
+
+    for (const insight of phaseInsights) {
+      switch (insight.burn_rate_ist_trend) {
+        case 'up':
+          up++;
+          break;
+        case 'down':
+          down++;
+          break;
+        default:
+          stable++;
+      }
+    }
+
+    // Mehrheitsentscheidung
+    if (up > down && up > stable) return 'up';
+    if (down > up && down > stable) return 'down';
+    return 'stable';
+  }
+
+  /**
+   * Gibt eine leere Tenant-Summary zurück
+   */
+  private emptyTenantSummary(): TenantInsightsSummary {
+    return {
+      projectsAtRisk: 0,
+      projectsOnTrack: 0,
+      totalProjects: 0,
+      criticalPhasesCount: 0,
+      averageProgressPercent: 0,
+      burnRateTrend: 'stable',
+      topRiskProjects: [],
+      lastUpdatedAt: null,
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
