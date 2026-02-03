@@ -1,3 +1,4 @@
+import type { InsightStatus } from '@/domain/analytics/types';
 import type { Allocation } from '@/domain/entities/Allocation';
 import type { User } from '@/domain/entities/User';
 import type { PhaseBereich, ProjectStatus } from '@/domain/types';
@@ -182,6 +183,8 @@ export interface PhaseRowData {
   dayAllocations: Record<string, AllocationWithDetails[]>;
   // Ob diese Phase in der aktuellen Woche aktiv ist
   isActiveThisWeek: boolean;
+  // Status aus phase_insights (optional, wenn kein Insight vorhanden)
+  insightStatus?: InsightStatus;
 }
 
 /**

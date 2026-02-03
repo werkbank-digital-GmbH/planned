@@ -10,3 +10,4 @@ export { ProjectDetailsHeader } from './ProjectDetailsHeader';
 export { ProjectInsightsSection } from './ProjectInsightsSection';
 export { ProjectPhasesSection } from './ProjectPhasesSection';
 export { ProjectStatsGrid } from './ProjectStatsGrid';
+export { TrendSparkline } from './TrendSparkline';

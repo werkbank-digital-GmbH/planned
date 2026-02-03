@@ -12,6 +12,7 @@ import type {
   DataQuality,
   InsightStatus,
   PhaseInsight,
+  PhaseSnapshot,
 } from '@/domain/analytics/types';
 import type { UserRole } from '@/domain/types';
 
@@ -253,6 +254,89 @@ export async function getProjectInsightsAction(
     };
 
     return Result.ok(projectInsightDTO);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
+    return Result.fail('INTERNAL_ERROR', message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE SNAPSHOTS TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface PhaseSnapshotDTO {
+  id: string;
+  phaseId: string;
+  snapshotDate: string;
+  istHours: number;
+  planHours: number;
+  sollHours: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET PHASE SNAPSHOTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Lädt Snapshots für eine Phase (für Trend-Sparklines).
+ *
+ * Gibt die letzten N Snapshots zurück, sortiert nach Datum aufsteigend
+ * (älteste zuerst, für chronologische Darstellung).
+ *
+ * @param phaseId - Die Phase-ID
+ * @param limit - Maximale Anzahl Snapshots (default: 14)
+ */
+export async function getPhaseSnapshotsAction(
+  phaseId: string,
+  limit: number = 14
+): Promise<ActionResult<PhaseSnapshotDTO[]>> {
+  try {
+    const currentUser = await getCurrentUserWithTenant();
+
+    // Nur Planer und Admin sehen die Snapshots
+    if (!['planer', 'admin'].includes(currentUser.role)) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung');
+    }
+
+    const supabase = await createActionSupabaseClient();
+    const analyticsRepo = new SupabaseAnalyticsRepository(supabase);
+
+    // Prüfe, ob Phase zum Tenant gehört
+    const { data: phaseData, error: phaseError } = await supabase
+      .from('project_phases')
+      .select('id, project_id, projects!inner(tenant_id)')
+      .eq('id', phaseId)
+      .single();
+
+    if (phaseError || !phaseData) {
+      return Result.fail('NOT_FOUND', 'Phase nicht gefunden');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tenantId = (phaseData.projects as any)?.tenant_id;
+    if (tenantId !== currentUser.tenantId) {
+      return Result.fail('FORBIDDEN', 'Keine Berechtigung für diese Phase');
+    }
+
+    // Hole Snapshots (getSnapshotsForPhase gibt absteigend zurück)
+    const snapshots = await analyticsRepo.getSnapshotsForPhase(phaseId, limit);
+
+    // Sortiere chronologisch aufsteigend (älteste zuerst)
+    const sortedSnapshots = snapshots.sort(
+      (a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime()
+    );
+
+    // Mappe zu DTOs
+    const snapshotDTOs: PhaseSnapshotDTO[] = sortedSnapshots.map((s: PhaseSnapshot) => ({
+      id: s.id,
+      phaseId: s.phase_id,
+      snapshotDate: s.snapshot_date,
+      istHours: s.ist_hours,
+      planHours: s.plan_hours,
+      sollHours: s.soll_hours,
+    }));
+
+    return Result.ok(snapshotDTOs);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unbekannter Fehler';
     return Result.fail('INTERNAL_ERROR', message);

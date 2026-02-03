@@ -3,6 +3,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { useMemo } from 'react';
 
+import type { InsightStatus } from '@/domain/analytics/types';
+
 import type { PhaseRowData } from '@/application/queries';
 
 import { Badge } from '@/presentation/components/ui/badge';
@@ -53,6 +55,26 @@ function getBereichLabel(bereich: string): string {
     externes_gewerk: 'EXTERN',
   };
   return labels[bereich] ?? bereich.toUpperCase();
+}
+
+/**
+ * Gibt die Tailwind border-l-Farbe für den InsightStatus zurück.
+ */
+function getInsightStatusBorderColor(status?: InsightStatus): string {
+  if (!status) return 'border-l-gray-200';
+
+  const colors: Record<InsightStatus, string> = {
+    on_track: 'border-l-green-500',
+    ahead: 'border-l-green-500',
+    at_risk: 'border-l-yellow-500',
+    behind: 'border-l-red-500',
+    critical: 'border-l-red-500',
+    not_started: 'border-l-gray-300',
+    completed: 'border-l-blue-500',
+    unknown: 'border-l-gray-300',
+  };
+
+  return colors[status] ?? 'border-l-gray-200';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -144,7 +166,10 @@ function DayCell({
  * - Drop-Zones für Drag & Drop aus dem Pool
  */
 export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
-  const { isActiveThisWeek } = phase;
+  const { isActiveThisWeek, insightStatus } = phase;
+
+  // Border-Farbe basierend auf Insight-Status
+  const borderColor = getInsightStatusBorderColor(insightStatus);
 
   // Gruppiere aufeinanderfolgende Allocations zu Spans
   const spans = useMemo(
@@ -171,8 +196,14 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
         !isActiveThisWeek && 'opacity-60'
       )}
     >
-      {/* Phasen-Info (linke Spalte) */}
-      <div className="flex items-center gap-2 pl-10 pr-3 py-2 border-r border-gray-200 bg-white">
+      {/* Phasen-Info (linke Spalte) mit Status-Border */}
+      <div
+        className={cn(
+          'flex items-center gap-2 pl-10 pr-3 py-2 border-r border-gray-200 bg-white',
+          'border-l-4',
+          borderColor
+        )}
+      >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm truncate">{phase.phase.name}</span>
