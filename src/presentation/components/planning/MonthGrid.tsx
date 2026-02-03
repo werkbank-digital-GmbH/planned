@@ -38,14 +38,13 @@ interface MonthGridHeaderProps {
 function MonthGridHeader({ monthDates }: MonthGridHeaderProps) {
   return (
     <div
-      className="flex border-b bg-gray-50 sticky top-0 z-10"
-      style={{ minWidth: PROJECT_COLUMN_WIDTH + monthDates.length * DAY_COLUMN_WIDTH }}
+      className="grid border-b bg-gray-50 sticky top-0 z-10"
+      style={{
+        gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthDates.length}, minmax(${DAY_COLUMN_WIDTH}px, 1fr))`,
+      }}
     >
       {/* Projekt/Phase-Spalte Header */}
-      <div
-        className="border-r border-gray-200 p-3 font-medium text-sm flex-shrink-0 sticky left-0 bg-gray-50 z-20"
-        style={{ width: PROJECT_COLUMN_WIDTH }}
-      >
+      <div className="border-r border-gray-200 p-3 font-medium text-sm sticky left-0 bg-gray-50 z-20">
         Projekt / Phase
       </div>
 
@@ -59,11 +58,10 @@ function MonthGridHeader({ monthDates }: MonthGridHeaderProps) {
           <div
             key={date.toISOString()}
             className={cn(
-              'border-r border-gray-200 py-1 text-center last:border-r-0 flex-shrink-0',
+              'border-r border-gray-200 py-1 text-center last:border-r-0',
               today && 'bg-amber-50',
               weekend && !today && 'bg-gray-100'
             )}
-            style={{ width: DAY_COLUMN_WIDTH }}
           >
             <div
               className={cn(
@@ -133,17 +131,16 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
       {/* Projekt-Header */}
       <div
         className={cn(
-          'flex items-center',
+          'grid items-center',
           'bg-gray-50 hover:bg-gray-100 transition-colors',
           hasActivePhasesThisWeek && 'bg-white hover:bg-gray-50'
         )}
-        style={{ minWidth: PROJECT_COLUMN_WIDTH + monthDates.length * DAY_COLUMN_WIDTH }}
+        style={{
+          gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthDates.length}, minmax(${DAY_COLUMN_WIDTH}px, 1fr))`,
+        }}
       >
         {/* Projekt-Info (linke Spalte, sticky) */}
-        <div
-          className="flex items-center gap-2 px-3 py-2 border-r border-gray-200 flex-shrink-0 sticky left-0 bg-inherit z-10"
-          style={{ width: PROJECT_COLUMN_WIDTH }}
-        >
+        <div className="flex items-center gap-2 px-3 py-2 border-r border-gray-200 sticky left-0 bg-inherit z-10">
           <Button
             variant="ghost"
             size="sm"
@@ -195,11 +192,10 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
             <div
               key={date.toISOString()}
               className={cn(
-                'h-full min-h-[52px] border-r border-gray-200 last:border-r-0 flex-shrink-0',
+                'h-full min-h-[52px] border-r border-gray-200 last:border-r-0',
                 today && 'bg-amber-50/50',
                 weekend && !today && 'bg-gray-50'
               )}
-              style={{ width: DAY_COLUMN_WIDTH }}
             />
           );
         })}
@@ -282,11 +278,10 @@ function MonthDayCell({ phaseId, projectId, date, totalHours, bereichColor, allo
     return (
       <div
         className={cn(
-          'min-h-[36px] border-r border-gray-200 last:border-r-0 flex-shrink-0 flex items-center justify-center',
+          'min-h-[36px] border-r border-gray-200 last:border-r-0 flex items-center justify-center',
           today && 'bg-amber-50/50',
           'bg-gray-50'
         )}
-        style={{ width: DAY_COLUMN_WIDTH }}
       >
         {totalHours > 0 && (
           <div
@@ -304,11 +299,10 @@ function MonthDayCell({ phaseId, projectId, date, totalHours, bereichColor, allo
     <div
       ref={setNodeRef}
       className={cn(
-        'min-h-[36px] border-r border-gray-200 last:border-r-0 flex-shrink-0 flex items-center justify-center',
+        'min-h-[36px] border-r border-gray-200 last:border-r-0 flex items-center justify-center',
         today && 'bg-amber-50/50',
         isOver && 'bg-blue-100 ring-1 ring-inset ring-blue-400'
       )}
-      style={{ width: DAY_COLUMN_WIDTH }}
     >
       {totalHours > 0 && (
         <div
@@ -332,14 +326,13 @@ function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
 
   return (
     <div
-      className="flex items-center border-t border-gray-100"
-      style={{ minWidth: PROJECT_COLUMN_WIDTH + monthDates.length * DAY_COLUMN_WIDTH }}
+      className="grid items-center border-t border-gray-100"
+      style={{
+        gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthDates.length}, minmax(${DAY_COLUMN_WIDTH}px, 1fr))`,
+      }}
     >
       {/* Phase-Info (linke Spalte, sticky) */}
-      <div
-        className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-200 flex-shrink-0 sticky left-0 bg-white z-10 pl-10"
-        style={{ width: PROJECT_COLUMN_WIDTH }}
-      >
+      <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-200 sticky left-0 bg-white z-10 pl-10">
         <div
           className={cn(
             'w-2 h-2 rounded-full flex-shrink-0',
@@ -419,18 +412,12 @@ export function MonthGrid() {
     );
   }
 
-  // Berechne die Gesamtbreite des Grids
-  const totalGridWidth = PROJECT_COLUMN_WIDTH + periodDates.length * DAY_COLUMN_WIDTH;
+  // Mindestbreite für horizontales Scrollen bei vielen Tagen
+  const minGridWidth = PROJECT_COLUMN_WIDTH + periodDates.length * DAY_COLUMN_WIDTH;
 
   return (
-    <div
-      className="rounded-lg border bg-white overflow-x-auto relative"
-      style={{
-        // Grid nimmt volle verfügbare Breite, scrollt wenn nötig
-        minWidth: '100%',
-      }}
-    >
-      <div style={{ minWidth: totalGridWidth }}>
+    <div className="rounded-lg border bg-white overflow-x-auto relative w-full">
+      <div style={{ minWidth: minGridWidth }}>
         <MonthGridHeader monthDates={periodDates} />
 
         <div className="flex flex-col gap-2 p-2">
