@@ -51,9 +51,9 @@ interface WeatherDayProps {
 function WeatherDay({ forecast, isToday }: WeatherDayProps) {
   const rating = forecast.constructionRating;
   const bgColor = {
-    good: 'bg-green-50 hover:bg-green-100',
-    moderate: 'bg-yellow-50 hover:bg-yellow-100',
-    poor: 'bg-red-50 hover:bg-red-100',
+    good: 'bg-green-50 hover:bg-green-100 border-green-200',
+    moderate: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200',
+    poor: 'bg-red-50 hover:bg-red-100 border-red-200',
   }[rating.rating];
 
   const date = new Date(forecast.date);
@@ -64,29 +64,40 @@ function WeatherDay({ forecast, isToday }: WeatherDayProps) {
         <TooltipTrigger asChild>
           <div
             className={cn(
-              'flex flex-col items-center p-2 rounded-lg transition-colors cursor-default min-w-[52px]',
-              bgColor
+              'flex flex-col items-center p-3 rounded-lg transition-colors cursor-default border',
+              bgColor,
+              isToday && 'ring-2 ring-primary/30'
             )}
           >
             <p className="text-xs text-muted-foreground font-medium">
               {isToday ? 'Heute' : format(date, 'EE', { locale: de })}
             </p>
-            <WeatherIcon code={forecast.weatherCode} className="h-6 w-6 my-1" />
-            <p className="text-xs font-medium">
-              {Math.round(forecast.tempMin)}° / {Math.round(forecast.tempMax)}°
+            <p className="text-[10px] text-muted-foreground">
+              {format(date, 'd. MMM', { locale: de })}
             </p>
+            <WeatherIcon code={forecast.weatherCode} className="h-7 w-7 my-1.5" />
+            <p className="text-sm font-semibold">
+              {Math.round(forecast.tempMax)}°
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {Math.round(forecast.tempMin)}°
+            </p>
+            <div className="mt-1.5 pt-1.5 border-t border-current/10 w-full text-center space-y-0.5">
+              <p className="text-[10px] text-muted-foreground">
+                💧 {forecast.precipitationProbability}%
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                💨 {Math.round(forecast.windSpeedMax)} km/h
+              </p>
+            </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="max-w-[200px]">
+        <TooltipContent side="bottom" className="max-w-[220px]">
           <div className="space-y-1">
             <p className="font-medium">{forecast.weatherDescription}</p>
             <p className="text-xs">
               {format(date, 'EEEE, d. MMMM', { locale: de })}
             </p>
-            <div className="text-xs text-muted-foreground space-y-0.5 pt-1 border-t">
-              <p>Regen: {forecast.precipitationProbability}%</p>
-              <p>Wind: {Math.round(forecast.windSpeedMax)} km/h</p>
-            </div>
             {rating.reasons.length > 0 && (
               <div className="pt-1 border-t space-y-0.5">
                 {rating.reasons.map((reason, i) => (
@@ -134,17 +145,33 @@ export function WeatherForecastCard({ forecasts, projectAddress }: WeatherForeca
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Cloud className="h-4 w-4 text-muted-foreground" />
-          Wetter (7 Tage)
-        </CardTitle>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Cloud className="h-4 w-4 text-muted-foreground" />
+            Wettervorhersage (7 Tage)
+          </CardTitle>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 rounded-sm bg-green-200" />
+              <span>Gut</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 rounded-sm bg-yellow-200" />
+              <span>Eingeschränkt</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 rounded-sm bg-red-200" />
+              <span>Ungünstig</span>
+            </div>
+          </div>
+        </div>
         {projectAddress && (
           <p className="text-xs text-muted-foreground truncate">{projectAddress}</p>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex gap-1 overflow-x-auto pb-1">
+        <div className="grid grid-cols-7 gap-2">
           {forecasts.slice(0, 7).map((forecast, i) => (
             <WeatherDay key={forecast.date} forecast={forecast} isToday={i === 0} />
           ))}
@@ -158,21 +185,6 @@ export function WeatherForecastCard({ forecasts, projectAddress }: WeatherForeca
             </AlertDescription>
           </Alert>
         )}
-
-        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 border-t">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-green-100" />
-            <span>Gut</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-yellow-100" />
-            <span>Eingeschränkt</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-red-100" />
-            <span>Ungünstig</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

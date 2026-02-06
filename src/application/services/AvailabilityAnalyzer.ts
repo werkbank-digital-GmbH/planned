@@ -27,6 +27,117 @@ export class AvailabilityAnalyzer {
   ) {}
 
   /**
+   * Lädt den vollständigen Verfügbarkeitskontext für einen Tenant.
+   * Optimiert: Lädt alle Daten mit einer einzigen Tenant-Query statt pro User.
+   *
+   * @param tenantId - Tenant ID
+   * @param startDate - Frühestes Startdatum aller Phasen
+   * @param endDate - Spätestes Enddatum aller Phasen
+   * @param minAvailableHours - Mindestanzahl freier Stunden (Standard: 8h = 1 Tag)
+   * @returns Vollständiger Verfügbarkeitskontext mit vorberechneten Daten
+   */
+  async getTenantAvailabilityContext(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date,
+    minAvailableHours: number = 8
+  ): Promise<{
+    availableUsers: AvailableUser[];
+    overloadedUsers: OverloadedUser[];
+    allocationsByUser: Map<string, Map<string, number>>;
+    absencesByUser: Map<string, Set<string>>;
+    users: User[];
+  }> {
+    // 1. Alle aktiven User des Tenants laden
+    const users = await this.userRepository.findActiveByTenant(tenantId);
+    if (users.length === 0) {
+      return {
+        availableUsers: [],
+        overloadedUsers: [],
+        allocationsByUser: new Map(),
+        absencesByUser: new Map(),
+        users: [],
+      };
+    }
+
+    const workingDays = this.getWorkingDays(startDate, endDate);
+    if (workingDays.length === 0) {
+      return {
+        availableUsers: [],
+        overloadedUsers: [],
+        allocationsByUser: new Map(),
+        absencesByUser: new Map(),
+        users,
+      };
+    }
+
+    const userIds = users.map((u) => u.id);
+
+    // 2. Alle Allocations und Absences in je einem Query laden (Batch)
+    const [allocationsByUser, absences] = await Promise.all([
+      this.getAllocationsForTenant(tenantId, startDate, endDate, userIds),
+      this.absenceRepository.findByUsersAndDateRange(userIds, startDate, endDate),
+    ]);
+
+    // 3. Absences pro User aufbereiten
+    const absencesByUser = new Map<string, Set<string>>();
+    for (const userId of userIds) {
+      absencesByUser.set(
+        userId,
+        this.getAbsenceDates(absences, userId, startDate, endDate)
+      );
+    }
+
+    // 4. Verfügbarkeit + Überlastung berechnen
+    const availableUsers: AvailableUser[] = [];
+    const overloadedUsers: OverloadedUser[] = [];
+    const expectedHours = workingDays.length * AvailabilityAnalyzer.HOURS_PER_DAY;
+
+    for (const user of users) {
+      const userAllocations = allocationsByUser.get(user.id) || new Map<string, number>();
+      const userAbsences = absencesByUser.get(user.id) || new Set<string>();
+
+      const availability = this.calculateUserAvailability(
+        user,
+        workingDays,
+        userAllocations,
+        userAbsences
+      );
+
+      if (availability.availableHours >= minAvailableHours) {
+        availableUsers.push(availability);
+      }
+
+      // Überlastung prüfen
+      const totalAllocatedHours = Array.from(userAllocations.values()).reduce(
+        (sum, h) => sum + h,
+        0
+      );
+      const utilizationPercent = Math.round((totalAllocatedHours / expectedHours) * 100);
+
+      if (utilizationPercent > 100) {
+        overloadedUsers.push({
+          id: user.id,
+          name: user.fullName,
+          utilizationPercent,
+        });
+      }
+    }
+
+    // 5. Sortieren
+    availableUsers.sort((a, b) => b.availableHours - a.availableHours);
+    overloadedUsers.sort((a, b) => b.utilizationPercent - a.utilizationPercent);
+
+    return {
+      availableUsers,
+      overloadedUsers,
+      allocationsByUser,
+      absencesByUser,
+      users,
+    };
+  }
+
+  /**
    * Findet verfügbare Mitarbeiter für einen Zeitraum.
    *
    * @param tenantId - Tenant ID
@@ -53,7 +164,7 @@ export class AvailabilityAnalyzer {
     const userIds = users.map((u) => u.id);
 
     const [allocations, absences] = await Promise.all([
-      this.getAllocationsForUsers(userIds, startDate, endDate),
+      this.getAllocationsForTenant(tenantId, startDate, endDate, userIds),
       this.absenceRepository.findByUsersAndDateRange(userIds, startDate, endDate),
     ]);
 
@@ -101,7 +212,7 @@ export class AvailabilityAnalyzer {
     if (workingDays.length === 0) return [];
 
     const userIds = users.map((u) => u.id);
-    const allocations = await this.getAllocationsForUsers(userIds, startDate, endDate);
+    const allocations = await this.getAllocationsForTenant(tenantId, startDate, endDate, userIds);
 
     const overloadedUsers: OverloadedUser[] = [];
     const expectedHours = workingDays.length * AvailabilityAnalyzer.HOURS_PER_DAY;
@@ -198,12 +309,14 @@ export class AvailabilityAnalyzer {
   }
 
   /**
-   * Lädt Allocations für mehrere User und gruppiert sie.
+   * Lädt alle Allocations eines Tenants in einem Query und gruppiert nach User.
+   * Ersetzt N+1 Queries (eine pro User) durch eine einzige Tenant-Query.
    */
-  private async getAllocationsForUsers(
-    userIds: string[],
+  private async getAllocationsForTenant(
+    tenantId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    userIds: string[]
   ): Promise<Map<string, Map<string, number>>> {
     const result = new Map<string, Map<string, number>>();
 
@@ -212,20 +325,22 @@ export class AvailabilityAnalyzer {
       result.set(userId, new Map());
     }
 
-    // Lade alle Allocations für alle User im Zeitraum
-    for (const userId of userIds) {
-      const allocations = await this.allocationRepository.findByUserAndDateRange(
-        userId,
-        startDate,
-        endDate
-      );
+    // Eine einzige Query für alle User des Tenants
+    const allocations = await this.allocationRepository.findByTenantAndDateRange(
+      tenantId,
+      startDate,
+      endDate
+    );
 
-      const userMap = result.get(userId)!;
-      for (const allocation of allocations) {
-        const dateKey = formatISO(allocation.date, { representation: 'date' });
-        const current = userMap.get(dateKey) || 0;
-        userMap.set(dateKey, current + (allocation.plannedHours ?? 0));
-      }
+    // Gruppiere nach User und Date
+    for (const allocation of allocations) {
+      if (!allocation.userId) continue; // Allocation ohne User überspringen
+      const userMap = result.get(allocation.userId);
+      if (!userMap) continue; // User nicht in unserer Liste
+
+      const dateKey = formatISO(allocation.date, { representation: 'date' });
+      const current = userMap.get(dateKey) || 0;
+      userMap.set(dateKey, current + (allocation.plannedHours ?? 0));
     }
 
     return result;

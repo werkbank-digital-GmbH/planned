@@ -4,11 +4,20 @@ import { BurnRateCalculator } from '@/domain/analytics/BurnRateCalculator';
 import type { IAnalyticsRepository } from '@/domain/analytics/IAnalyticsRepository';
 import { ProgressionCalculator } from '@/domain/analytics/ProgressionCalculator';
 import { ProjectInsightAggregator } from '@/domain/analytics/ProjectInsightAggregator';
-import type { PhaseInsight, ProjectInsight, SuggestedAction } from '@/domain/analytics/types';
+import type {
+  AvailableUser,
+  OverloadedUser,
+  PhaseInsight,
+  PhaseSnapshot,
+  ProjectInsight,
+  SuggestedAction,
+} from '@/domain/analytics/types';
 
 import type { IWeatherCacheRepository } from '@/application/ports/repositories/IWeatherCacheRepository';
 import type {
   EnhancedPhaseTextInput,
+  GeneratedTexts,
+  GeneratedTextsWithAction,
   IInsightTextGenerator,
   PhaseTextInput,
   ProjectTextInput,
@@ -58,6 +67,25 @@ export interface GenerateInsightsResult {
   errors: string[];
 }
 
+/**
+ * Vorberechnetes Insight für eine Phase (noch ohne KI-Texte).
+ */
+interface PreparedPhaseInsight {
+  phase: PhaseData;
+  project: ProjectWithPhases;
+  snapshots: PhaseSnapshot[];
+  baseTextInput: PhaseTextInput;
+  enhancedInput?: EnhancedPhaseTextInput;
+  insightData: Omit<PhaseInsight, 'id' | 'created_at' | 'summary_text' | 'detail_text' | 'recommendation_text' | 'suggested_action'>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Max parallel Claude API Calls pro Batch */
+const AI_BATCH_SIZE = 10;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // USE CASE
 // ═══════════════════════════════════════════════════════════════════════════
@@ -67,17 +95,11 @@ export interface GenerateInsightsResult {
  *
  * Wird vom Cron-Job täglich um 05:15 UTC aufgerufen (nach den Snapshots).
  *
- * Für jede Phase:
- * 1. Snapshots der letzten 14 Tage laden
- * 2. Burn Rate berechnen
- * 3. Progression berechnen
- * 4. KI-Texte generieren (oder Fallback)
- * 5. Phase-Insight speichern
- *
- * Für jedes Projekt:
- * 1. Phase-Insights aggregieren
- * 2. Project-Insight mit KI-Texten erstellen
- * 3. Project-Insight speichern
+ * Performance-Optimierungen:
+ * - Snapshots werden batch-geladen (1 Query statt N)
+ * - Verfügbarkeit wird einmal pro Tenant geladen (statt pro Phase)
+ * - Wetter wird pro Koordinaten-Paar gecacht (statt pro Phase)
+ * - Claude API Calls laufen parallel in Batches von 10
  */
 export class GenerateInsightsUseCase {
   private readonly burnRateCalculator = new BurnRateCalculator();
@@ -132,52 +154,171 @@ export class GenerateInsightsUseCase {
 
   /**
    * Verarbeitet einen einzelnen Tenant.
+   *
+   * Optimiert: Lädt Snapshots, Availability und Weather einmal für alle Phasen.
+   * Dann werden KI-Texte parallel in Batches generiert.
    */
   private async processTenant(
     tenantId: string,
     today: string,
     result: GenerateInsightsResult
   ): Promise<void> {
-    // Projekte mit Phasen laden
+    // 1. Projekte mit Phasen laden (1 Query dank Supabase Join)
     const projects = await this.getProjectsWithPhases(tenantId);
+    if (projects.length === 0) return;
 
+    // 2. Alle Phase-IDs sammeln
+    const allPhases: { phase: PhaseData; project: ProjectWithPhases }[] = [];
     for (const project of projects) {
-      result.projects_processed++;
-      const phaseInsights: PhaseInsight[] = [];
-      const phaseDeadlines = new Map<string, Date | null>();
-
-      // Für jede Phase ein Insight erstellen
       for (const phase of project.phases) {
-        result.phases_processed++;
+        allPhases.push({ phase, project });
+      }
+    }
 
+    const allPhaseIds = allPhases.map((p) => p.phase.id);
+
+    // 3. Batch: Alle Snapshots in einem Query laden
+    const twoWeeksAgo = this.subtractDays(today, 14);
+    const snapshotsByPhase = await this.analyticsRepository.getSnapshotsForPhasesInDateRange(
+      allPhaseIds,
+      twoWeeksAgo,
+      today
+    );
+
+    // 4. Batch: Tenant-weite Verfügbarkeit + Wetter einmal laden
+    let tenantAvailability: {
+      availableUsers: AvailableUser[];
+      overloadedUsers: OverloadedUser[];
+    } | null = null;
+
+    const weatherByCoords = new Map<string, WeatherForecastContext | null>();
+
+    if (this.enhancedDeps) {
+      // Verfügbarkeit: Gesamtzeitraum aller Phasen ermitteln
+      const { earliest, latest } = this.getDateRange(allPhases.map((p) => p.phase));
+
+      if (earliest && latest) {
         try {
-          const insight = await this.processPhase(
+          const context = await this.enhancedDeps.availabilityAnalyzer.getTenantAvailabilityContext(
             tenantId,
-            project,
-            phase,
-            today
+            earliest,
+            latest,
+            8
           );
-
-          if (insight) {
-            phaseInsights.push(insight);
-            result.phase_insights_created++;
-          }
-
-          // Deadline speichern für Project-Aggregation
-          phaseDeadlines.set(
-            phase.id,
-            phase.end_date ? new Date(phase.end_date) : null
-          );
-        } catch (error) {
-          result.errors.push(
-            `Phase ${phase.id}: ${error instanceof Error ? error.message : 'Unknown'}`
-          );
+          tenantAvailability = {
+            availableUsers: context.availableUsers,
+            overloadedUsers: context.overloadedUsers,
+          };
+        } catch {
+          // Verfügbarkeit nicht kritisch
         }
       }
 
-      // Project-Insight erstellen
+      // Wetter: Pro eindeutigen Koordinaten-Paar einmal laden
+      for (const project of projects) {
+        if (project.address_lat && project.address_lng) {
+          const coordKey = `${project.address_lat.toFixed(2)},${project.address_lng.toFixed(2)}`;
+          if (!weatherByCoords.has(coordKey)) {
+            try {
+              const weather = await this.getWeatherContext(
+                project.address_lat,
+                project.address_lng
+              );
+              weatherByCoords.set(coordKey, weather);
+            } catch {
+              weatherByCoords.set(coordKey, null);
+            }
+          }
+        }
+      }
+    }
+
+    // 5. Phase 1: Alle Insights vorberechnen (CPU-bound, schnell)
+    const preparedInsights: PreparedPhaseInsight[] = [];
+    const notStartedPhases: { phase: PhaseData; project: ProjectWithPhases }[] = [];
+
+    for (const { phase, project } of allPhases) {
+      result.phases_processed++;
+      const snapshots = snapshotsByPhase.get(phase.id) || [];
+
+      if (snapshots.length === 0) {
+        notStartedPhases.push({ phase, project });
+        continue;
+      }
+
       try {
-        if (phaseInsights.length > 0) {
+        const prepared = this.preparePhaseInsight(
+          tenantId,
+          project,
+          phase,
+          snapshots,
+          today,
+          tenantAvailability,
+          weatherByCoords
+        );
+        preparedInsights.push(prepared);
+      } catch (error) {
+        result.errors.push(
+          `Phase ${phase.id}: ${error instanceof Error ? error.message : 'Unknown'}`
+        );
+      }
+    }
+
+    // 6. Phase 2: KI-Texte parallel in Batches generieren
+    const phaseInsightsByProject = new Map<string, PhaseInsight[]>();
+
+    // 6a. Not-started Phasen (kein API-Call nötig, regelbasierte Texte)
+    for (const { phase, project } of notStartedPhases) {
+      try {
+        const insight = await this.createNotStartedInsight(tenantId, phase, project.name, today);
+        const projectInsights = phaseInsightsByProject.get(project.id) || [];
+        projectInsights.push(insight);
+        phaseInsightsByProject.set(project.id, projectInsights);
+        result.phase_insights_created++;
+      } catch (error) {
+        result.errors.push(
+          `Phase ${phase.id}: ${error instanceof Error ? error.message : 'Unknown'}`
+        );
+      }
+    }
+
+    // 6b. Aktive Phasen in Batches verarbeiten (parallel Claude API Calls)
+    for (let i = 0; i < preparedInsights.length; i += AI_BATCH_SIZE) {
+      const batch = preparedInsights.slice(i, i + AI_BATCH_SIZE);
+
+      const batchResults = await Promise.allSettled(
+        batch.map((prepared) => this.generateTextsAndSave(prepared, today))
+      );
+
+      for (let j = 0; j < batchResults.length; j++) {
+        const batchResult = batchResults[j];
+        const prepared = batch[j];
+
+        if (batchResult.status === 'fulfilled' && batchResult.value) {
+          const projectInsights = phaseInsightsByProject.get(prepared.project.id) || [];
+          projectInsights.push(batchResult.value);
+          phaseInsightsByProject.set(prepared.project.id, projectInsights);
+          result.phase_insights_created++;
+        } else if (batchResult.status === 'rejected') {
+          result.errors.push(
+            `Phase ${prepared.phase.id}: ${batchResult.reason instanceof Error ? batchResult.reason.message : 'Unknown'}`
+          );
+        }
+      }
+    }
+
+    // 7. Project-Insights erstellen (nach allen Phase-Insights)
+    for (const project of projects) {
+      result.projects_processed++;
+      const phaseInsights = phaseInsightsByProject.get(project.id) || [];
+
+      if (phaseInsights.length > 0) {
+        try {
+          const phaseDeadlines = new Map<string, Date | null>();
+          for (const phase of project.phases) {
+            phaseDeadlines.set(phase.id, phase.end_date ? new Date(phase.end_date) : null);
+          }
+
           await this.createProjectInsight(
             tenantId,
             project,
@@ -186,39 +327,28 @@ export class GenerateInsightsUseCase {
             today
           );
           result.project_insights_created++;
+        } catch (error) {
+          result.errors.push(
+            `Project ${project.id}: ${error instanceof Error ? error.message : 'Unknown'}`
+          );
         }
-      } catch (error) {
-        result.errors.push(
-          `Project ${project.id}: ${error instanceof Error ? error.message : 'Unknown'}`
-        );
       }
     }
   }
 
   /**
-   * Verarbeitet eine einzelne Phase und erstellt ein Insight.
+   * Berechnet alle numerischen Werte für eine Phase (ohne KI-Texte).
    */
-  private async processPhase(
+  private preparePhaseInsight(
     tenantId: string,
     project: ProjectWithPhases,
     phase: PhaseData,
-    today: string
-  ): Promise<PhaseInsight | null> {
-    // Snapshots der letzten 14 Tage laden
-    const twoWeeksAgo = this.subtractDays(today, 14);
-    const snapshots = await this.analyticsRepository.getSnapshotsForDateRange(
-      phase.id,
-      twoWeeksAgo,
-      today
-    );
-
-    // Neuester Snapshot für aktuelle Werte
-    const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
-
-    if (!latestSnapshot) {
-      // Keine Snapshots vorhanden, Insight mit not_started Status erstellen
-      return this.createNotStartedInsight(tenantId, phase, project.name, today);
-    }
+    snapshots: PhaseSnapshot[],
+    today: string,
+    tenantAvailability: { availableUsers: AvailableUser[]; overloadedUsers: OverloadedUser[] } | null,
+    weatherByCoords: Map<string, WeatherForecastContext | null>
+  ): PreparedPhaseInsight {
+    const latestSnapshot = snapshots[snapshots.length - 1];
 
     // Burn Rate berechnen
     const burnRate = this.burnRateCalculator.calculate(snapshots);
@@ -266,28 +396,47 @@ export class GenerateInsightsUseCase {
       deadlineDeltaIst: progression.deadlineDeltaIst,
     };
 
-    // Texte generieren - mit oder ohne Enhanced Context
-    let suggestedAction: SuggestedAction | null = null;
-    let texts;
+    // Enhanced Input aufbauen (synchron, alle Daten sind bereits geladen)
+    let enhancedInput: EnhancedPhaseTextInput | undefined;
 
     if (this.enhancedDeps) {
-      // Enhanced Mode: Mit Verfügbarkeit und Wetter
-      const enhancedInput = await this.buildEnhancedInput(
-        tenantId,
-        project,
-        phase,
-        baseTextInput
-      );
-      const enhancedTexts = await this.textGenerator.generateEnhancedPhaseTexts(enhancedInput);
-      texts = enhancedTexts;
-      suggestedAction = enhancedTexts.suggestedAction ?? null;
-    } else {
-      // Standard Mode: Nur Basis-Texte
-      texts = await this.textGenerator.generatePhaseTexts(baseTextInput);
+      enhancedInput = {
+        ...baseTextInput,
+        projectAddress: project.address ?? undefined,
+        projectDescription: phase.description?.slice(0, 300) ?? undefined,
+      };
+
+      // Verfügbarkeit aus Tenant-Cache
+      if (tenantAvailability) {
+        const { availableUsers, overloadedUsers } = tenantAvailability;
+        if (availableUsers.length > 0 || overloadedUsers.length > 0) {
+          enhancedInput.availability = {
+            availableUsers: availableUsers.slice(0, 5).map((u) => ({
+              id: u.id,
+              name: u.name,
+              availableDays: u.availableDays.slice(0, 10),
+              currentUtilization: u.currentUtilization,
+            })),
+            overloadedUsers: overloadedUsers.slice(0, 3).map((u) => ({
+              id: u.id,
+              name: u.name,
+              utilizationPercent: u.utilizationPercent,
+            })),
+          };
+        }
+      }
+
+      // Wetter aus Koordinaten-Cache
+      if (project.address_lat && project.address_lng) {
+        const coordKey = `${project.address_lat.toFixed(2)},${project.address_lng.toFixed(2)}`;
+        const weather = weatherByCoords.get(coordKey);
+        if (weather) {
+          enhancedInput.weatherForecast = weather;
+        }
+      }
     }
 
-    // Insight erstellen und speichern
-    const insight: Omit<PhaseInsight, 'id' | 'created_at'> = {
+    const insightData: PreparedPhaseInsight['insightData'] = {
       tenant_id: tenantId,
       phase_id: phase.id,
       insight_date: today,
@@ -305,84 +454,42 @@ export class GenerateInsightsUseCase {
       capacity_gap_hours: progression.capacityGapHours,
       capacity_gap_days: progression.capacityGapDays,
       status,
+      data_quality: dataQuality,
+      data_points_count: snapshots.length,
+    };
+
+    return { phase, project, snapshots, baseTextInput, enhancedInput, insightData };
+  }
+
+  /**
+   * Generiert KI-Texte für ein vorberechnetes Insight und speichert es.
+   */
+  private async generateTextsAndSave(
+    prepared: PreparedPhaseInsight,
+    _today: string
+  ): Promise<PhaseInsight> {
+    let suggestedAction: SuggestedAction | null = null;
+    let texts: GeneratedTexts | GeneratedTextsWithAction;
+
+    if (prepared.enhancedInput) {
+      const enhancedTexts = await this.textGenerator.generateEnhancedPhaseTexts(
+        prepared.enhancedInput
+      );
+      texts = enhancedTexts;
+      suggestedAction = enhancedTexts.suggestedAction ?? null;
+    } else {
+      texts = await this.textGenerator.generatePhaseTexts(prepared.baseTextInput);
+    }
+
+    const insight: Omit<PhaseInsight, 'id' | 'created_at'> = {
+      ...prepared.insightData,
       summary_text: texts.summary_text,
       detail_text: texts.detail_text,
       recommendation_text: texts.recommendation_text,
-      data_quality: dataQuality,
-      data_points_count: snapshots.length,
       suggested_action: suggestedAction,
     };
 
     return this.analyticsRepository.upsertPhaseInsight(insight);
-  }
-
-  /**
-   * Baut den erweiterten Input für die KI-Textgenerierung.
-   */
-  private async buildEnhancedInput(
-    tenantId: string,
-    project: ProjectWithPhases,
-    phase: PhaseData,
-    baseInput: PhaseTextInput
-  ): Promise<EnhancedPhaseTextInput> {
-    const enhancedInput: EnhancedPhaseTextInput = {
-      ...baseInput,
-      projectAddress: project.address ?? undefined,
-      projectDescription: phase.description?.slice(0, 300) ?? undefined,
-    };
-
-    // Verfügbarkeit laden (wenn Phase-Zeitraum bekannt)
-    if (this.enhancedDeps && phase.start_date && phase.end_date) {
-      try {
-        const availableUsers = await this.enhancedDeps.availabilityAnalyzer.findAvailableUsers(
-          tenantId,
-          new Date(phase.start_date),
-          new Date(phase.end_date),
-          8 // min 8h verfügbar
-        );
-
-        const overloadedUsers = await this.enhancedDeps.availabilityAnalyzer.findOverloadedUsers(
-          tenantId,
-          new Date(phase.start_date),
-          new Date(phase.end_date)
-        );
-
-        if (availableUsers.length > 0 || overloadedUsers.length > 0) {
-          enhancedInput.availability = {
-            availableUsers: availableUsers.slice(0, 5).map((u) => ({
-              id: u.id,
-              name: u.name,
-              availableDays: u.availableDays.slice(0, 10),
-              currentUtilization: u.currentUtilization,
-            })),
-            overloadedUsers: overloadedUsers.slice(0, 3).map((u) => ({
-              id: u.id,
-              name: u.name,
-              utilizationPercent: u.utilizationPercent,
-            })),
-          };
-        }
-      } catch {
-        // Fehler bei Verfügbarkeit ignorieren, nicht kritisch
-      }
-    }
-
-    // Wetter laden (wenn Koordinaten vorhanden)
-    if (this.enhancedDeps && project.address_lat && project.address_lng) {
-      try {
-        const weatherForecast = await this.getWeatherContext(
-          project.address_lat,
-          project.address_lng
-        );
-        if (weatherForecast) {
-          enhancedInput.weatherForecast = weatherForecast;
-        }
-      } catch {
-        // Fehler bei Wetter ignorieren, nicht kritisch
-      }
-    }
-
-    return enhancedInput;
   }
 
   /**
@@ -518,7 +625,7 @@ export class GenerateInsightsUseCase {
       recommendation_text: texts.recommendation_text,
       data_quality: 'insufficient',
       data_points_count: 0,
-      suggested_action: null, // Will be populated by D7-2
+      suggested_action: null,
     };
 
     return this.analyticsRepository.upsertPhaseInsight(insight);
@@ -643,5 +750,26 @@ export class GenerateInsightsUseCase {
     const date = new Date(dateStr);
     date.setDate(date.getDate() - days);
     return date.toISOString().split('T')[0];
+  }
+
+  /**
+   * Ermittelt den frühesten Start und spätesten Ende aller Phasen.
+   */
+  private getDateRange(phases: PhaseData[]): { earliest: Date | null; latest: Date | null } {
+    let earliest: Date | null = null;
+    let latest: Date | null = null;
+
+    for (const phase of phases) {
+      if (phase.start_date) {
+        const start = new Date(phase.start_date);
+        if (!earliest || start < earliest) earliest = start;
+      }
+      if (phase.end_date) {
+        const end = new Date(phase.end_date);
+        if (!latest || end > latest) latest = end;
+      }
+    }
+
+    return { earliest, latest };
   }
 }

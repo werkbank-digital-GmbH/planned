@@ -235,7 +235,10 @@ export async function updateCompanyAddressAction(
     const geoResult = await geocodingService.geocode(address);
 
     if (!geoResult) {
-      return Result.fail('VALIDATION_ERROR', 'Adresse konnte nicht gefunden werden');
+      return Result.fail(
+        'VALIDATION_ERROR',
+        'Adresse nicht gefunden. Bitte prüfe das Format: "Straße Nr, PLZ Stadt" (z.B. "Musterstraße 1, 70173 Stuttgart")'
+      );
     }
 
     // Tenant aktualisieren mit Type-Cast für neue Felder

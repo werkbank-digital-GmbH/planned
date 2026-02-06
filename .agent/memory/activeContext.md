@@ -1,69 +1,76 @@
 # Active Context
 
-## Aktueller Stand (2024-02-02)
+## Aktueller Stand (2026-02-06, Session 16)
 
-### Abgeschlossene Pläne
+### Zuletzt Abgeschlossen
 
-1. **Plan 1: TimeTac-Integration entfernen** ✅
-   - Alle TimeTac-bezogenen Dateien gelöscht
-   - Datenbank-Migrationen erstellt
-   - Commit: `5877ff8`
+**Bugfix-Session: BF-1 Performance + BF-2 Geocoding** ✅
 
-2. **Plan 2: Asana-Integration erweitern** ✅
-   - User-Mapping (Email-Prefix-Matching)
-   - Ist-Stunden Custom Field
-   - Abwesenheiten-Sync
-   - Domain-Services und Use Cases
-   - Commit: `6fe44bc`
+| Prompt | Inhalt | Status |
+|--------|--------|--------|
+| BF-1 | Insights Performance-Optimierung (Batch + Parallel + Tenant-Level) | ✅ |
+| BF-2 | Robustes Geocoding mit Fallback + bessere Fehlermeldungen | ✅ |
 
-3. **Plan 3: Integrationen-UI umstrukturieren** ✅
-   - Funktionsbasierte Struktur statt Tool-basiert
-   - 3 Karten: Projekte & Phasen, Mitarbeiter, Abwesenheiten
-   - Commits: `39002b8`, `377bb70`
+**BF-1: Performance-Optimierung (4 Dateien geändert)**
 
-4. **Prompt 1: Cron-Job erweitern** ✅
-   - Task-Phasen Sync (ersetzt Legacy SyncAsanaProjectsUseCase)
-   - User-Mapping Sync
-   - Abwesenheiten Sync (wenn konfiguriert)
-   - Commit: `280e9cd`
+1. `GenerateInsightsUseCase.ts` - Komplett refactored:
+   - Snapshots batch-geladen (1 Query statt N pro Phase)
+   - Availability einmal pro Tenant geladen (statt pro Phase)
+   - Wetter pro Koordinaten-Paar gecacht (statt pro Phase)
+   - Claude API Calls parallel in 10er-Batches (statt sequentiell)
+   - Zwei-Phasen-Architektur: Vorberechnung → KI-Texte parallel
+2. `AvailabilityAnalyzer.ts` - Neue `getTenantAvailabilityContext()` Methode + N+1 Fix:
+   - `getAllocationsForTenant()` statt N einzelne `findByUserAndDateRange()` Queries
+   - Nutzt `findByTenantAndDateRange()` für einen einzigen DB-Query
+3. `IAnalyticsRepository.ts` - Neue `getSnapshotsForPhasesInDateRange()` Methode
+4. `SupabaseAnalyticsRepository.ts` - Implementation mit `.in('phase_id', phaseIds)`
 
-5. **Prompt 2: Webhook-Signatur + Tests** ✅
-   - Signatur-Validierung war bereits implementiert
-   - TODO-Kommentare bereinigt
-   - 22 neue Use Case Tests (7 + 15)
-   - Commit: `8ac0064`
+**BF-2: Robustes Geocoding (2 Dateien geändert)**
 
-6. **Prompt A + B: Planning UI Verbesserungen** ✅
-   - ResourcePool-Spalten aligned mit PlanningGrid (280px + repeat(5,1fr))
-   - Redundante Header im Pool entfernt
-   - Resizable ResourcePool mit Drag-Handle
-   - Höhe im localStorage persistiert
-   - Neuer Hook: `useResizable`
-   - Commit: `a30208f`
+1. `GeocodingService.ts` - 3-Stufen Geocoding:
+   - Stufe 1: Volle Adresse suchen
+   - Stufe 2: PLZ + Stadt extrahieren (Fallback)
+   - Stufe 3: Strukturierte Suche (Straße, PLZ, Stadt separat)
+   - Logging auf jeder Stufe für Debugging
+2. `tenant.ts` - Bessere Fehlermeldung mit Formathinweis
 
-7. **Plan C: Asana Sync-Benachrichtigungen** ✅
-   - notificationStore mit Auto-Dismiss-Logik (5s)
-   - SyncToast Komponente (aufklappbar, unten links)
-   - SyncNotificationListener für Supabase Realtime
-   - Broadcast vom Webhook-Handler an alle Tenant-Clients
-   - Commit: `c8afc7f`
-   - **Hotfix:** Hydration-Guard hinzugefügt
-   - Commit: `ced74d6`
+### Nächste Features / Offene Prompts
 
-8. **Agentic Operating System (AOS)** ✅
-   - Memory Bank mit 7 Dateien (projectBrief, activeContext, progress, etc.)
-   - Skills: TDD-Architect, Code-Review
-   - Commands: /boot, /memo, /gardener
-   - CLAUDE.md System-Prompt
-   - AOS_SETUP_GUIDE.md für andere Projekte
-   - aos-template.zip als portable Vorlage
-   - Commit: `8c6e842`
+- **BF-3: Asana Sync Robustheit** - Noch nicht implementiert:
+  - Explizite Pagination für getTasksFromProject
+  - Graceful Degradation bei fehlenden Custom Fields
+  - Rate-Limit-aware Sync (min 100ms zwischen API-Calls)
 
-### Geplante Features (Nächste Sprint-Phase)
+### Tech Debt
 
-- [ ] Monatsansicht bis zum rechten Rand erweitern
-- [ ] Mehr Spacing zwischen Projekten im PlanningGrid
-- [ ] Vertikales Scrolling im Planungsbereich
+- **Pre-Selection in Planungsview** - URL-Params werden gesetzt aber nicht gelesen
+- **DB-Migrationen auf Produktion** - Müssen manuell im Supabase Dashboard ausgeführt werden (3 Migrationen: D5, D6, D7)
+- **ENV-Vars auf Vercel** - CRON_SECRET, SUPABASE_SERVICE_ROLE_KEY, ENCRYPTION_KEY prüfen
+
+### Abgeschlossene Pläne (frühere Sessions)
+
+<details>
+<summary>Alle abgeschlossenen Pläne anzeigen</summary>
+
+1. **Plan 1: TimeTac-Integration entfernen** ✅ - Commit: `5877ff8`
+2. **Plan 2: Asana-Integration erweitern** ✅ - Commit: `6fe44bc`
+3. **Plan 3: Integrationen-UI umstrukturieren** ✅ - Commits: `39002b8`, `377bb70`
+4. **Prompt 1: Cron-Job erweitern** ✅ - Commit: `280e9cd`
+5. **Prompt 2: Webhook-Signatur + Tests** ✅ - Commit: `8ac0064`
+6. **Prompt A + B: Planning UI Verbesserungen** ✅ - Commit: `a30208f`
+7. **Plan C: Asana Sync-Benachrichtigungen** ✅ - Commits: `c8afc7f`, `ced74d6`
+8. **Agentic Operating System (AOS)** ✅ - Commit: `8c6e842`
+9. **Plan 3-5: Planning UI Optimierungen** ✅ - Commits: `1a9bf9c`, `3032952`, `3ec58f8`
+10. **Session 7: Planning UX Improvements** ✅ - Commit: `a2c3824`
+11. **Session 9: Card-Konsistenz & Popover** ✅ - Commits: `3a5db66`, `f1dce79`
+12. **Plan D1-D3: Analytics & Insights** ✅ - Commits: `e354dd0`, `5e64788`, `bca2870`
+13. **Plan D4: Analytics UI** ✅ - Commits: `145b2a0`, `749f3cc`, `acb535a`, `e4f9f16`
+14. **Plan D5: Asana-Sync Erweiterung** ✅ - Commit: `47bdf75`
+15. **Plan D6: Wetter-Integration** ✅ - Commit: `9b1203c`
+16. **Plan D7: Enhanced Recommendations** ✅ - (pending commit)
+17. **BF-1+BF-2: Performance + Geocoding Fixes** ✅ - (pending commit)
+
+</details>
 
 ## Wichtige Entscheidungen
 
@@ -72,5 +79,12 @@
 - Ist-Stunden kommen aus Asana Custom Field (nicht TimeTac)
 - Abwesenheiten werden aus separatem Asana-Projekt synchronisiert
 - Cron-Job führt alle 3 Sync-Arten aus (Tasks, Users, Absences)
-- ResourcePool-Höhe wird im localStorage unter `planning-resource-pool-height` gespeichert
-- Sync-Notifications via Supabase Realtime Broadcast
+- **Analytics:** Claude Haiku für KI-Textgenerierung mit regelbasiertem Fallback
+- **Analytics:** Snapshots um 05:00 UTC, Insights um 05:15 UTC, Wetter um 05:30 UTC
+- **Wetter:** Open-Meteo API (kostenlos, DSGVO), Nominatim Geocoding (1 req/s)
+- **Wetter:** Firmenstandort als Fallback wenn Projekt keine Adresse hat
+- **Wetter:** Cache auf 2 Dezimalstellen gerundet (~1km Genauigkeit)
+- **D7:** SuggestedAction Types: assign_user, reschedule, alert, none
+- **D7:** QuickAssignDialog für schnelle Mitarbeiter-Zuweisung aus Insights
+- **BF-1:** Insights-Performance: Batch-Snapshots, Tenant-Level Availability, Parallel Claude Calls (10er Batches)
+- **BF-2:** Geocoding: 3-Stufen-Fallback (Freitext → PLZ+Stadt → Strukturiert)

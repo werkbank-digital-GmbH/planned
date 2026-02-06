@@ -83,6 +83,45 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
     return (data || []).map((s: any) => this.mapSnapshot(s));
   }
 
+  async getSnapshotsForPhasesInDateRange(
+    phaseIds: string[],
+    startDate: string,
+    endDate: string
+  ): Promise<Map<string, PhaseSnapshot[]>> {
+    const result = new Map<string, PhaseSnapshot[]>();
+
+    if (phaseIds.length === 0) return result;
+
+    // Initialisiere leere Arrays für alle Phasen
+    for (const phaseId of phaseIds) {
+      result.set(phaseId, []);
+    }
+
+    // Eine einzige Query für alle Phasen
+    const { data, error } = await this.supabase
+      .from('phase_snapshots')
+      .select('*')
+      .in('phase_id', phaseIds)
+      .gte('snapshot_date', startDate)
+      .lte('snapshot_date', endDate)
+      .order('snapshot_date', { ascending: true });
+
+    if (error) throw error;
+
+    // Gruppiere nach Phase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const row of data || []) {
+      const phaseId = row.phase_id as string;
+      const snapshots = result.get(phaseId);
+      if (snapshots) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        snapshots.push(this.mapSnapshot(row as any));
+      }
+    }
+
+    return result;
+  }
+
   async hasSnapshotForToday(phaseId: string): Promise<boolean> {
     const today = new Date().toISOString().split('T')[0];
 

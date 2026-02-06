@@ -27,6 +27,13 @@ export interface IAnalyticsRepository {
     endDate: string
   ): Promise<PhaseSnapshot[]>;
 
+  /** Holt Snapshots für mehrere Phasen in einem Zeitraum (Batch) */
+  getSnapshotsForPhasesInDateRange(
+    phaseIds: string[],
+    startDate: string,
+    endDate: string
+  ): Promise<Map<string, PhaseSnapshot[]>>;
+
   /** Prüft ob heute bereits ein Snapshot existiert */
   hasSnapshotForToday(phaseId: string): Promise<boolean>;
 
