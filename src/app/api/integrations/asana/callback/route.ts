@@ -129,8 +129,8 @@ export async function GET(request: NextRequest) {
     }
 
     // User-Mapping nach erfolgreichem Connect (fire-and-forget)
-    syncUsersAfterAsanaConnect(tenantId).catch(() => {
-      // Silent fail - User-Mapping ist nicht kritisch für OAuth-Erfolg
+    syncUsersAfterAsanaConnect(tenantId).catch((error) => {
+      console.warn('[Asana OAuth] User sync after connect failed:', error instanceof Error ? error.message : 'Unknown error');
     });
 
     // Erfolg

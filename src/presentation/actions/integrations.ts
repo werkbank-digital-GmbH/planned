@@ -987,8 +987,8 @@ export async function matchSingleUserToAsana(
       internalId: userId,
       externalName: matchedAsanaUser.name,
     });
-  } catch {
-    // Silent fail - Mapping ist nicht kritisch
+  } catch (error) {
+    console.warn('[Integrations] User-to-Asana mapping failed:', error instanceof Error ? error.message : 'Unknown error');
   }
 }
 
@@ -1028,7 +1028,7 @@ export async function syncUsersAfterAsanaConnect(tenantId: string): Promise<void
       accessToken,
       workspaceId: credentials.asanaWorkspaceId,
     });
-  } catch {
-    // Silent fail - User-Mapping nach Connect ist nice-to-have
+  } catch (error) {
+    console.warn('[Integrations] User sync after connect failed:', error instanceof Error ? error.message : 'Unknown error');
   }
 }

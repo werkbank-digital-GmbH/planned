@@ -136,7 +136,8 @@ export class NominatimGeocodingService implements IGeocodingService {
         lng: parseFloat(results[0].lon),
         displayName: results[0].display_name,
       };
-    } catch {
+    } catch (error) {
+      console.warn('[Geocoding] Structured search failed:', error instanceof Error ? error.message : 'Unknown error');
       return null;
     }
   }

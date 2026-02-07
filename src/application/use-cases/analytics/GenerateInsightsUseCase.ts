@@ -209,8 +209,8 @@ export class GenerateInsightsUseCase {
             availableUsers: context.availableUsers,
             overloadedUsers: context.overloadedUsers,
           };
-        } catch {
-          // Verfügbarkeit nicht kritisch
+        } catch (error) {
+          console.warn('[Insights] Availability check failed:', error instanceof Error ? error.message : 'Unknown error');
         }
       }
 
@@ -225,7 +225,8 @@ export class GenerateInsightsUseCase {
                 project.address_lng
               );
               weatherByCoords.set(coordKey, weather);
-            } catch {
+            } catch (error) {
+              console.warn('[Insights] Weather fetch failed:', error instanceof Error ? error.message : 'Unknown error');
               weatherByCoords.set(coordKey, null);
             }
           }

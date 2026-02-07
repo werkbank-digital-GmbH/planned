@@ -139,8 +139,8 @@ export class UpdateAsanaPhaseUseCase {
             asanaRefreshToken: newTokens.refresh_token,
             asanaTokenExpiresAt: expiresAt,
           });
-        } catch {
-          // Token-Erneuerung fehlgeschlagen
+        } catch (error) {
+          console.warn('[UpdateAsanaPhase] Token refresh failed:', error instanceof Error ? error.message : 'Unknown error');
           return Result.ok({ synced: false, asanaGid: phase.asanaGid });
         }
       }

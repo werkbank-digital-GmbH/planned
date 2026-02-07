@@ -124,8 +124,8 @@ export async function getProjectWeatherAction(
             })
             .eq('id', projectId);
         }
-      } catch {
-        // Geocoding-Fehler ignorieren
+      } catch (error) {
+        console.warn('[Weather] Geocoding failed:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
@@ -159,8 +159,8 @@ export async function getProjectWeatherAction(
         forecasts = await weatherService.getForecast(lat, lng, 7);
         await weatherCache.saveForecasts(lat, lng, forecasts);
         cachedAt = new Date().toISOString();
-      } catch {
-        // Bei Fehler mit den Cache-Daten weitermachen (auch wenn unvollständig)
+      } catch (error) {
+        console.warn('[Weather] Forecast fetch failed, using cached data:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 

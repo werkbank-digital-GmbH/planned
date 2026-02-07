@@ -212,8 +212,8 @@ export class SyncAsanaTaskPhasesUseCase {
                 // Update local reference for subsequent operations
                 project = geocodedProject;
               }
-            } catch {
-              // Geocoding-Fehler ignorieren, nicht kritisch
+            } catch (error) {
+              console.warn('[SyncAsanaTaskPhases] Geocoding failed:', error instanceof Error ? error.message : 'Unknown error');
             }
           }
 

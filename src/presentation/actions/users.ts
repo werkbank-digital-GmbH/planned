@@ -167,8 +167,8 @@ export async function createUserAction(
     revalidatePath('/einstellungen/mitarbeiter');
 
     // NEU: Automatisches Asana-Mapping für neuen User (fire-and-forget)
-    matchSingleUserToAsana(user.id, currentUser.tenantId).catch(() => {
-      // Silent fail - Mapping ist nicht kritisch für User-Erstellung
+    matchSingleUserToAsana(user.id, currentUser.tenantId).catch((error) => {
+      console.warn('[Users] Asana mapping for new user failed:', error instanceof Error ? error.message : 'Unknown error');
     });
 
     return Result.ok({
