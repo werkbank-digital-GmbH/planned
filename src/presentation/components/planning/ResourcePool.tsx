@@ -123,8 +123,8 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates }: Re
   const userCount = poolItems.filter((p) => p.type === 'user').length;
   const resourceCount = poolItems.filter((p) => p.type === 'resource').length;
 
-  // Wochenansicht: Nach Tagen gruppieren (aligned mit PlanningGrid)
-  if (viewMode === 'week') {
+  // Wochen- und Teamansicht: Nach Tagen gruppieren (aligned mit PlanningGrid)
+  if (viewMode === 'week' || viewMode === 'team') {
     return (
       <Card
         ref={setNodeRef}

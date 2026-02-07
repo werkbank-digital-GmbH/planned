@@ -13,6 +13,11 @@ import { MonthGrid } from './MonthGrid';
 import { ProjectDetailModal } from './ProjectDetailModal';
 import { ProjectRow } from './ProjectRow';
 import { ResourcePool } from './ResourcePool';
+import { UserRow } from './UserRow';
+
+/** Sichtbare Scrollbar-Styles für macOS (Auto-Hide-Scrollbar Override) */
+const SCROLLBAR_CLASSES =
+  '[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GRID HEADER COMPONENT
@@ -20,14 +25,15 @@ import { ResourcePool } from './ResourcePool';
 
 interface GridHeaderProps {
   weekDates: Date[];
+  headerLabel?: string;
 }
 
-function GridHeader({ weekDates }: GridHeaderProps) {
+function GridHeader({ weekDates, headerLabel = 'Projekt / Phase' }: GridHeaderProps) {
   return (
     <div className="grid grid-cols-[280px_repeat(5,1fr)] border-b bg-gray-50">
-      {/* Projekt/Phase-Spalte Header */}
+      {/* Erste Spalte Header */}
       <div className="border-r border-gray-200 p-3 font-medium text-sm">
-        Projekt / Phase
+        {headerLabel}
       </div>
 
       {/* Tages-Header */}
@@ -129,6 +135,7 @@ export function PlanningGrid() {
     periodDates,
     getWeekDates,
     toggleProjectExpanded,
+    allUserRows,
   } = usePlanning();
 
   const weekDates = getWeekDates();
@@ -142,8 +149,46 @@ export function PlanningGrid() {
     return (
       <div className="flex flex-col h-full">
         {/* Scrollable Grid Area */}
-        <div className="flex-1 overflow-auto min-h-0">
+        <div className={cn('flex-1 overflow-auto min-h-0', SCROLLBAR_CLASSES)}>
           <MonthGrid />
+        </div>
+
+        {/* Resizable Ressourcen-Pool */}
+        <ResizablePoolWrapper>
+          <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
+        </ResizablePoolWrapper>
+      </div>
+    );
+  }
+
+  // Team-Ansicht (Mitarbeiter-zentriert)
+  if (viewMode === 'team') {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Scrollable Grid Area */}
+        <div className={cn('flex-1 overflow-auto min-h-0', SCROLLBAR_CLASSES)}>
+          <div className="rounded-lg border bg-white relative">
+            <GridHeader weekDates={weekDates} headerLabel="Mitarbeiter" />
+
+            {allUserRows.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                Keine Mitarbeiter in dieser Woche
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                {allUserRows.map((user) => (
+                  <UserRow key={user.id} user={user} />
+                ))}
+              </div>
+            )}
+
+            {/* Loading Overlay */}
+            {isLoading && allUserRows.length > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Resizable Ressourcen-Pool */}
@@ -176,7 +221,7 @@ export function PlanningGrid() {
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable Grid Area */}
-      <div className="flex-1 overflow-auto min-h-0">
+      <div className={cn('flex-1 overflow-auto min-h-0', SCROLLBAR_CLASSES)}>
         <div className="rounded-lg border bg-white relative">
           <GridHeader weekDates={weekDates} />
 

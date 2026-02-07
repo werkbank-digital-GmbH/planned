@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, CalendarRange } from 'lucide-react';
+import { CalendarDays, CalendarRange, Users } from 'lucide-react';
 
 import { usePlanning, type ViewMode } from '@/presentation/contexts/PlanningContext';
 
@@ -26,6 +26,11 @@ const VIEW_MODE_OPTIONS: ViewModeOption[] = [
     value: 'month',
     label: 'Monatsansicht',
     icon: <CalendarRange className="h-4 w-4" />,
+  },
+  {
+    value: 'team',
+    label: 'Mitarbeiter',
+    icon: <Users className="h-4 w-4" />,
   },
 ];
 

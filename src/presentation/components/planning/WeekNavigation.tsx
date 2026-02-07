@@ -30,13 +30,13 @@ export function WeekNavigation() {
 
   // Prüfe ob die aktuelle Woche/Periode angezeigt wird
   const isCurrentPeriod =
-    viewMode === 'week'
+    viewMode !== 'month'
       ? getMonday(new Date()).getTime() === periodStart.getTime()
       : periodStart.getMonth() === new Date().getMonth() &&
         periodStart.getFullYear() === new Date().getFullYear();
 
-  const ariaLabelPrevious = viewMode === 'week' ? 'Vorherige Woche' : 'Vorheriger Monat';
-  const ariaLabelNext = viewMode === 'week' ? 'Nächste Woche' : 'Nächster Monat';
+  const ariaLabelPrevious = viewMode === 'month' ? 'Vorheriger Monat' : 'Vorherige Woche';
+  const ariaLabelNext = viewMode === 'month' ? 'Nächster Monat' : 'Nächste Woche';
 
   return (
     <div className="flex items-center gap-4">

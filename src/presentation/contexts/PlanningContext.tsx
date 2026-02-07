@@ -49,7 +49,7 @@ interface PlanningFilters {
   userId?: string;
 }
 
-export type ViewMode = 'week' | 'month';
+export type ViewMode = 'week' | 'month' | 'team';
 
 /**
  * Optimistic Allocation für lokale Updates vor Server-Response.
@@ -101,6 +101,9 @@ interface PlanningContextValue {
   periodEnd: Date;
   periodDates: Date[];
   periodLabel: string;
+
+  // Computed - Team View
+  allUserRows: UserRowData[];
 
   // Computed - Legacy (für Rückwärtskompatibilität)
   userRows: UserRowData[];
@@ -249,7 +252,7 @@ export function PlanningProvider({
 
   // Period-based navigation (depends on viewMode)
   const goToNextPeriod = useCallback(() => {
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'team') {
       setWeekStart((prev) => {
         const next = new Date(prev);
         next.setDate(next.getDate() + 7);
@@ -261,7 +264,7 @@ export function PlanningProvider({
   }, [viewMode]);
 
   const goToPreviousPeriod = useCallback(() => {
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'team') {
       setWeekStart((prev) => {
         const next = new Date(prev);
         next.setDate(next.getDate() - 7);
@@ -504,14 +507,14 @@ export function PlanningProvider({
 
   // Computed: Period-based values (for Month View)
   const periodStart = useMemo((): Date => {
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'team') {
       return weekStart;
     }
     return getFirstOfMonth(weekStart);
   }, [viewMode, weekStart]);
 
   const periodEnd = useMemo((): Date => {
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'team') {
       // Friday
       const friday = new Date(weekStart);
       friday.setDate(friday.getDate() + 4);
@@ -521,14 +524,14 @@ export function PlanningProvider({
   }, [viewMode, weekStart]);
 
   const periodDates = useMemo((): Date[] => {
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'team') {
       return getWeekDatesUtil(weekStart);
     }
     return getMonthDates(weekStart);
   }, [viewMode, weekStart]);
 
   const periodLabel = useMemo((): string => {
-    if (viewMode === 'week') {
+    if (viewMode === 'week' || viewMode === 'team') {
       const cw = weekData?.calendarWeek ?? 1;
       const year = weekStart.getUTCFullYear();
       return `KW ${cw} / ${year}`;
@@ -572,6 +575,34 @@ export function PlanningProvider({
       a.fullName.localeCompare(b.fullName, 'de')
     );
   }, [weekData]);
+
+  // Computed: All users including those without allocations (Team View)
+  const allUserRows = useMemo((): UserRowData[] => {
+    if (!weekData) return [];
+
+    const userMap = new Map<string, UserRowData>();
+
+    // User mit Allocations
+    for (const row of userRows) {
+      userMap.set(row.id, row);
+    }
+
+    // User aus PoolItems ohne Allocations hinzufügen
+    for (const item of poolItems) {
+      if (item.type === 'user' && !userMap.has(item.id)) {
+        userMap.set(item.id, {
+          id: item.id,
+          fullName: item.name,
+          weeklyHours: item.weeklyHours ?? 40,
+          allocations: [],
+        });
+      }
+    }
+
+    return Array.from(userMap.values()).sort((a, b) =>
+      a.fullName.localeCompare(b.fullName, 'de')
+    );
+  }, [weekData, userRows, poolItems]);
 
   // Computed: Days (Legacy-Unterstützung)
   const days = useMemo((): DayData[] => {
@@ -681,6 +712,7 @@ export function PlanningProvider({
     periodEnd,
     periodDates,
     periodLabel,
+    allUserRows,
     userRows,
     days,
     summary: weekData?.summary ?? null,
