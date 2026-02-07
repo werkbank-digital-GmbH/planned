@@ -27,6 +27,12 @@ const ASANA_TOKEN_URL = 'https://app.asana.com/-/oauth_token';
 /** Minimum delay between API calls to respect Asana rate limits */
 const MIN_REQUEST_DELAY_MS = 100;
 
+/** Maximum number of retry attempts for transient errors */
+const MAX_RETRIES = 3;
+
+/** HTTP status codes that are safe to retry */
+const RETRYABLE_STATUS_CODES = [429, 500, 502, 503];
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -593,29 +599,15 @@ export class AsanaService implements IAsanaService {
     path: string,
     accessToken: string
   ): Promise<AsanaResponse<T>> {
-    await this.enforceRateLimit();
-
-    const response = await fetchWithTimeout(`${ASANA_API_BASE}${path}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    }, 30_000);
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('ASANA_TOKEN_EXPIRED');
-      }
-      if (response.status === 429) {
-        // Rate limited - wait and retry once
-        const retryAfter = parseInt(response.headers.get('Retry-After') || '5', 10);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-        return this.request<T>(path, accessToken);
-      }
-      throw new Error(`Asana API Fehler: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+    return this.executeWithRetry<AsanaResponse<T>>(
+      () => fetchWithTimeout(`${ASANA_API_BASE}${path}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      }, 30_000),
+      `GET ${path}`
+    );
   }
 
   /**
@@ -654,31 +646,98 @@ export class AsanaService implements IAsanaService {
     body: unknown,
     accessToken: string
   ): Promise<AsanaResponse<T>> {
-    await this.enforceRateLimit();
+    return this.executeWithRetry<AsanaResponse<T>>(
+      () => fetchWithTimeout(`${ASANA_API_BASE}${path}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }, 30_000),
+      `${method} ${path}`
+    );
+  }
 
-    const response = await fetchWithTimeout(`${ASANA_API_BASE}${path}`, {
-      method,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    }, 30_000);
+  /**
+   * Führt einen API-Call mit Retry-Logik und Exponential Backoff aus.
+   *
+   * Retried werden:
+   * - 429 (Rate Limit) → wartet Retry-After Header ab
+   * - 500, 502, 503 (Server-Fehler) → Exponential Backoff (1s, 2s, 4s)
+   * - Netzwerk-/Timeout-Fehler → Exponential Backoff
+   *
+   * Nicht retried:
+   * - 401 (Token abgelaufen) → sofortiger Throw für Token-Refresh
+   * - 4xx Client-Fehler → sofortiger Throw
+   */
+  private async executeWithRetry<T>(
+    fn: () => Promise<Response>,
+    context: string,
+  ): Promise<T> {
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('ASANA_TOKEN_EXPIRED');
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        await this.enforceRateLimit();
+        const response = await fn();
+
+        if (response.ok) {
+          return response.json() as Promise<T>;
+        }
+
+        // 401 → Token abgelaufen, nicht retrybar
+        if (response.status === 401) {
+          throw new Error('ASANA_TOKEN_EXPIRED');
+        }
+
+        // Retryable HTTP-Fehler
+        if (RETRYABLE_STATUS_CODES.includes(response.status) && attempt < MAX_RETRIES) {
+          const delay = response.status === 429
+            ? parseInt(response.headers.get('Retry-After') || '5', 10) * 1000
+            : Math.pow(2, attempt - 1) * 1000;
+          console.warn(
+            `[Asana] ${context}: HTTP ${response.status}, retry ${attempt}/${MAX_RETRIES} in ${delay}ms`
+          );
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+
+        // Nicht retrybar oder letzter Versuch
+        const errorBody = await response.text().catch(() => '');
+        throw new Error(
+          `Asana API Fehler: ${response.status} ${response.statusText}${errorBody ? ` - ${errorBody}` : ''}`
+        );
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        // 401 sofort weiterwerfen (Token-Refresh Logik)
+        if (lastError.message === 'ASANA_TOKEN_EXPIRED') {
+          throw lastError;
+        }
+
+        // Netzwerk-/Timeout-Fehler retrybar
+        const isNetworkError =
+          lastError.message.includes('timed out') ||
+          lastError.message.includes('fetch failed') ||
+          lastError.message.includes('ECONNRESET') ||
+          lastError.message.includes('ENOTFOUND');
+
+        if (isNetworkError && attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.warn(
+            `[Asana] ${context}: ${lastError.message}, retry ${attempt}/${MAX_RETRIES} in ${delay}ms`
+          );
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+
+        // Nicht retrybar oder letzter Versuch → werfen
+        throw lastError;
       }
-      if (response.status === 429) {
-        const retryAfter = parseInt(response.headers.get('Retry-After') || '5', 10);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-        return this.requestWithBody<T>(path, method, body, accessToken);
-      }
-      const errorBody = await response.text();
-      throw new Error(`Asana API Fehler: ${response.status} ${response.statusText} - ${errorBody}`);
     }
 
-    return response.json();
+    throw lastError ?? new Error(`[Asana] ${context}: Max retries exceeded`);
   }
 
   /**

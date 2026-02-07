@@ -250,10 +250,12 @@ describe('AsanaService', () => {
     });
 
     it('should throw generic error on other failures', async () => {
-      mockFetch.mockResolvedValueOnce({
+      // mockResolvedValue (nicht Once) weil executeWithRetry 3x retried
+      mockFetch.mockResolvedValue({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
+        text: () => Promise.resolve(''),
       });
 
       await expect(service.getWorkspaces('token')).rejects.toThrow('Asana API Fehler');
