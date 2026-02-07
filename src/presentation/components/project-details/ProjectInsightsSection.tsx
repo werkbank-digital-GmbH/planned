@@ -74,9 +74,6 @@ export function ProjectInsightsSection({
       });
     } else if (action.type === 'reschedule') {
       // TODO: D7-Future: Reschedule-Dialog implementieren
-      // Für jetzt navigiere zur Planungsview
-      // eslint-disable-next-line no-console
-      console.log('[ProjectInsightsSection] Reschedule action for phase:', phaseId);
     }
   };
 
