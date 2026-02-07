@@ -28,6 +28,7 @@ const serverEnvSchema = z.object({
   // Asana OAuth
   ASANA_CLIENT_ID: z.string().optional(),
   ASANA_CLIENT_SECRET: z.string().optional(),
+  ASANA_REDIRECT_URI: z.string().url().optional(),
 
   // Upstash Redis (Rate Limiting)
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
@@ -57,6 +58,7 @@ function validateServerEnv(): ServerEnv {
     CRON_SECRET: process.env.CRON_SECRET,
     ASANA_CLIENT_ID: process.env.ASANA_CLIENT_ID,
     ASANA_CLIENT_SECRET: process.env.ASANA_CLIENT_SECRET,
+    ASANA_REDIRECT_URI: process.env.ASANA_REDIRECT_URI,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
@@ -79,6 +81,7 @@ function validateServerEnv(): ServerEnv {
       CRON_SECRET: process.env.CRON_SECRET,
       ASANA_CLIENT_ID: process.env.ASANA_CLIENT_ID,
       ASANA_CLIENT_SECRET: process.env.ASANA_CLIENT_SECRET,
+      ASANA_REDIRECT_URI: process.env.ASANA_REDIRECT_URI,
       UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
       UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,

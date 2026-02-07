@@ -1,12 +1,27 @@
+import { createHmac } from 'crypto';
+
 import { NextResponse } from 'next/server';
 
 import { createServerSupabaseClient } from '@/infrastructure/supabase/server';
+
+import { serverEnv } from '@/lib/env-server';
+
+/**
+ * Erstellt einen signierten OAuth State-Token.
+ * Format: base64url(tenantId:timestamp:hmac)
+ */
+function createSignedState(tenantId: string, secret: string): string {
+  const timestamp = Date.now().toString();
+  const data = `${tenantId}:${timestamp}`;
+  const hmac = createHmac('sha256', secret).update(data).digest('hex');
+  return Buffer.from(`${data}:${hmac}`).toString('base64url');
+}
 
 /**
  * GET /api/integrations/asana/authorize
  *
  * Leitet den User zu Asana OAuth weiter.
- * Der Tenant-ID wird als State-Parameter für Security mitgegeben.
+ * Der State-Parameter wird mit HMAC signiert (tenant_id:timestamp:hmac).
  */
 export async function GET() {
   const supabase = await createServerSupabaseClient();
@@ -49,10 +64,11 @@ export async function GET() {
   }
 
   // Environment Variables prüfen
-  const clientId = process.env.ASANA_CLIENT_ID;
-  const redirectUri = process.env.ASANA_REDIRECT_URI;
+  const clientId = serverEnv.ASANA_CLIENT_ID;
+  const redirectUri = serverEnv.ASANA_REDIRECT_URI;
+  const encryptionKey = serverEnv.ENCRYPTION_KEY;
 
-  if (!clientId || !redirectUri) {
+  if (!clientId || !redirectUri || !encryptionKey) {
     console.error('Asana OAuth environment variables missing');
     return NextResponse.json(
       { error: 'Asana Integration nicht konfiguriert' },
@@ -60,12 +76,15 @@ export async function GET() {
     );
   }
 
+  // Signierten State erstellen
+  const state = createSignedState(userData.tenant_id, encryptionKey);
+
   // Asana OAuth URL generieren
   const authUrl = new URL('https://app.asana.com/-/oauth_authorize');
   authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('state', userData.tenant_id);
+  authUrl.searchParams.set('state', state);
 
   return NextResponse.redirect(authUrl);
 }

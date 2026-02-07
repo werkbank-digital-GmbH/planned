@@ -343,19 +343,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Signatur verifizieren (wenn Secret bekannt)
+    // Signatur verifizieren
     const { data: credentials } = await supabase
       .from('integration_credentials')
       .select('asana_webhook_secret')
       .eq('tenant_id', tenantId)
       .single();
 
-    if (credentials?.asana_webhook_secret && signature) {
+    if (credentials?.asana_webhook_secret) {
+      if (!signature) {
+        console.error('[Asana Webhook] Missing signature header');
+        return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+      }
       const isValid = verifySignature(rawBody, signature, credentials.asana_webhook_secret);
       if (!isValid) {
         console.error('[Asana Webhook] Invalid signature');
         return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
       }
+    } else {
+      console.warn('[Asana Webhook] No webhook secret configured for tenant, skipping signature verification');
     }
 
     // Events verarbeiten und Details sammeln

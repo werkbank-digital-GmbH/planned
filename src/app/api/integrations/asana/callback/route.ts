@@ -1,3 +1,5 @@
+import { createHmac } from 'crypto';
+
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { AsanaService } from '@/infrastructure/services/AsanaService';
@@ -5,6 +7,34 @@ import { EncryptionService } from '@/infrastructure/services/EncryptionService';
 import { createAdminSupabaseClient } from '@/infrastructure/supabase/admin';
 
 import { syncUsersAfterAsanaConnect } from '@/presentation/actions/integrations';
+
+import { serverEnv } from '@/lib/env-server';
+
+/**
+ * Verifiziert einen signierten OAuth State-Token.
+ * Gibt die tenant_id zurück oder null bei ungültigem/abgelaufenem Token.
+ */
+function verifySignedState(state: string, secret: string): { tenantId: string } | null {
+  try {
+    const decoded = Buffer.from(state, 'base64url').toString();
+    const [tenantId, timestamp, signature] = decoded.split(':');
+
+    if (!tenantId || !timestamp || !signature) return null;
+
+    // Prüfe ob nicht älter als 10 Minuten
+    const age = Date.now() - parseInt(timestamp);
+    if (age > 10 * 60 * 1000) return null;
+
+    // Signatur verifizieren
+    const data = `${tenantId}:${timestamp}`;
+    const expected = createHmac('sha256', secret).update(data).digest('hex');
+    if (signature !== expected) return null;
+
+    return { tenantId };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * GET /api/integrations/asana/callback
@@ -15,7 +45,7 @@ import { syncUsersAfterAsanaConnect } from '@/presentation/actions/integrations'
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
-  const state = searchParams.get('state'); // tenant_id
+  const state = searchParams.get('state');
   const error = searchParams.get('error');
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -35,15 +65,23 @@ export async function GET(request: NextRequest) {
   }
 
   // Environment Variables prüfen
-  const clientId = process.env.ASANA_CLIENT_ID;
-  const clientSecret = process.env.ASANA_CLIENT_SECRET;
-  const redirectUri = process.env.ASANA_REDIRECT_URI;
-  const encryptionKey = process.env.ENCRYPTION_KEY;
+  const clientId = serverEnv.ASANA_CLIENT_ID;
+  const clientSecret = serverEnv.ASANA_CLIENT_SECRET;
+  const redirectUri = serverEnv.ASANA_REDIRECT_URI;
+  const encryptionKey = serverEnv.ENCRYPTION_KEY;
 
   if (!clientId || !clientSecret || !redirectUri || !encryptionKey) {
     console.error('Missing environment variables for Asana OAuth');
     return NextResponse.redirect(`${settingsUrl}?error=config_error`);
   }
+
+  // State verifizieren (HMAC-signiert)
+  const stateResult = verifySignedState(state, encryptionKey);
+  if (!stateResult) {
+    return NextResponse.redirect(`${settingsUrl}?error=invalid_state`);
+  }
+
+  const { tenantId } = stateResult;
 
   try {
     // Token Exchange
@@ -76,7 +114,7 @@ export async function GET(request: NextRequest) {
       .from('integration_credentials')
       .upsert(
         {
-          tenant_id: state,
+          tenant_id: tenantId,
           asana_access_token: encryptedAccessToken,
           asana_refresh_token: encryptedRefreshToken,
           asana_token_expires_at: expiresAt,
@@ -90,9 +128,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${settingsUrl}?error=save_failed`);
     }
 
-    // NEU: User-Mapping nach erfolgreichem Connect (fire-and-forget)
-    // state enthält die tenant_id
-    syncUsersAfterAsanaConnect(state).catch(() => {
+    // User-Mapping nach erfolgreichem Connect (fire-and-forget)
+    syncUsersAfterAsanaConnect(tenantId).catch(() => {
       // Silent fail - User-Mapping ist nicht kritisch für OAuth-Erfolg
     });
 
