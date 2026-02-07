@@ -21,11 +21,30 @@ import { UndoProvider } from '@/presentation/contexts/UndoContext';
  * - Grid mit Projekten/Phasen und Mitarbeiter-Zuweisungen
  * - Ressourcen-Pool für Drag & Drop
  * - Keyboard Shortcuts für Power-User
+ *
+ * Unterstützt URL-Params für Pre-Selection aus QuickAssignDialog:
+ * - phaseId: Phase hervorheben und Projekt aufklappen
+ * - userId: User-Filter setzen
+ * - date: Zur entsprechenden Woche navigieren
  */
-export default async function PlanungPage() {
+interface PlanungPageProps {
+  searchParams: Promise<{
+    phaseId?: string;
+    userId?: string;
+    date?: string;
+  }>;
+}
+
+export default async function PlanungPage({ searchParams }: PlanungPageProps) {
+  const params = await searchParams;
+
   return (
     <TooltipProvider>
-      <PlanningProvider>
+      <PlanningProvider
+        initialDate={params.date}
+        highlightPhaseId={params.phaseId}
+        initialUserId={params.userId}
+      >
         <UndoProvider>
           <SelectionProvider>
             <PlanningDndProvider>

@@ -75,6 +75,7 @@ interface PlanningContextValue {
   error: string | null;
   filters: PlanningFilters;
   viewMode: ViewMode;
+  highlightPhaseId: string | null;
 
   // Navigation
   goToNextWeek: () => void;
@@ -137,22 +138,39 @@ const PlanningContext = createContext<PlanningContextValue | null>(null);
 interface PlanningProviderProps {
   children: ReactNode;
   initialWeekStart?: Date;
+  initialDate?: string;
+  highlightPhaseId?: string;
+  initialUserId?: string;
 }
 
 export function PlanningProvider({
   children,
   initialWeekStart,
+  initialDate,
+  highlightPhaseId: highlightPhaseIdProp,
+  initialUserId,
 }: PlanningProviderProps) {
   // State
-  const [weekStart, setWeekStart] = useState<Date>(() =>
-    getMonday(initialWeekStart ?? new Date())
-  );
+  const [weekStart, setWeekStart] = useState<Date>(() => {
+    if (initialDate) {
+      return getMonday(new Date(initialDate));
+    }
+    return getMonday(initialWeekStart ?? new Date());
+  });
   const [weekData, setWeekData] = useState<WeekProjectData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<PlanningFilters>({});
+  const [filters, setFilters] = useState<PlanningFilters>(() => {
+    if (initialUserId) {
+      return { userId: initialUserId };
+    }
+    return {};
+  });
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('week');
+  const [highlightPhaseId] = useState<string | null>(
+    highlightPhaseIdProp ?? null
+  );
 
   // Load week data
   const loadWeekData = useCallback(async () => {
@@ -190,6 +208,19 @@ export function PlanningProvider({
   useEffect(() => {
     loadWeekData();
   }, [loadWeekData]);
+
+  // Auto-expand project containing highlighted phase
+  useEffect(() => {
+    if (highlightPhaseId && weekData) {
+      for (const row of weekData.projectRows) {
+        const hasPhase = row.phases.some((p) => p.phase.id === highlightPhaseId);
+        if (hasPhase) {
+          setExpandedProjects((prev) => new Set([...prev, row.project.id]));
+          break;
+        }
+      }
+    }
+  }, [highlightPhaseId, weekData]);
 
   // Navigation functions
   const goToNextWeek = useCallback(() => {
@@ -635,6 +666,7 @@ export function PlanningProvider({
     error,
     filters,
     viewMode,
+    highlightPhaseId,
     goToNextWeek,
     goToPreviousWeek,
     goToToday,

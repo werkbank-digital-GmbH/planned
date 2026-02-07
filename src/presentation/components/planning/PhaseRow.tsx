@@ -8,6 +8,7 @@ import type { InsightStatus } from '@/domain/analytics/types';
 import type { PhaseRowData } from '@/application/queries';
 
 import { Badge } from '@/presentation/components/ui/badge';
+import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
 import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
@@ -167,6 +168,8 @@ function DayCell({
  */
 export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
   const { isActiveThisWeek, insightStatus } = phase;
+  const { highlightPhaseId } = usePlanning();
+  const isHighlighted = highlightPhaseId === phase.phase.id;
 
   // Border-Farbe basierend auf Insight-Status
   const borderColor = getInsightStatusBorderColor(insightStatus);
@@ -193,7 +196,8 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
       className={cn(
         'grid grid-cols-[280px_repeat(5,1fr)] items-stretch gap-0',
         'border-t border-gray-100',
-        !isActiveThisWeek && 'opacity-60'
+        !isActiveThisWeek && 'opacity-60',
+        isHighlighted && 'ring-2 ring-primary ring-inset'
       )}
     >
       {/* Phasen-Info (linke Spalte) mit Status-Border */}
