@@ -38,7 +38,7 @@ interface TenantSyncResult {
  * GET /api/cron/sync-asana
  *
  * Cron-Job für automatischen Asana-Sync.
- * Wird alle 15 Minuten ausgeführt (via Vercel Cron oder externem Service).
+ * Wird täglich um 06:00 UTC ausgeführt (via Vercel Cron).
  *
  * Führt für jeden Tenant mit aktiver Asana-Integration durch:
  * 1. Task-Phasen Sync (Projekte + Phasen aus Tasks)

@@ -26,10 +26,10 @@ export const maxDuration = 300; // 5 Minuten max
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * POST /api/cron/insights
+ * GET /api/cron/insights
  *
  * Generiert KI-basierte Insights für alle aktiven Phasen und Projekte.
- * Wird von Vercel Cron um 05:15 UTC aufgerufen (nach den Snapshots um 05:00).
+ * Wird täglich um 05:15 UTC ausgeführt (via Vercel Cron, nach Snapshots um 05:00).
  *
  * Für jede Phase:
  * - Burn Rate aus Snapshots berechnen
@@ -45,7 +45,7 @@ export const maxDuration = 300; // 5 Minuten max
  * - CRON_SECRET für Authentifizierung
  * - ANTHROPIC_API_KEY für KI-Textgenerierung (optional, Fallback auf regelbasierte Texte)
  */
-export async function POST(_request: Request) {
+export async function GET() {
   // 1. Authentifizierung prüfen
   const headersList = await headers();
   const authHeader = headersList.get('authorization');
@@ -125,27 +125,3 @@ export async function POST(_request: Request) {
   }
 }
 
-/**
- * GET /api/cron/insights
- *
- * Health Check / Info Endpoint.
- * Gibt Informationen über den Cron-Job zurück.
- */
-export async function GET() {
-  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
-
-  return NextResponse.json({
-    name: 'Insights Generator',
-    schedule: '15 5 * * *', // Täglich um 05:15 UTC (nach Snapshots)
-    description: 'Generiert KI-basierte Insights für Phasen und Projekte',
-    endpoint: 'POST /api/cron/insights',
-    authentication: 'Bearer CRON_SECRET',
-    ai_enabled: hasAnthropicKey,
-    ai_model: hasAnthropicKey ? 'claude-3-haiku-20240307' : 'fallback (regelbasiert)',
-    features: {
-      enhanced_recommendations: true,
-      availability_analysis: true,
-      weather_context: true,
-    },
-  });
-}

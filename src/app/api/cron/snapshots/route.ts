@@ -19,10 +19,10 @@ export const maxDuration = 300; // 5 Minuten max
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * POST /api/cron/snapshots
+ * GET /api/cron/snapshots
  *
  * Generiert tägliche Snapshots für alle aktiven Phasen.
- * Wird von Vercel Cron um 05:00 UTC aufgerufen.
+ * Wird täglich um 05:00 UTC ausgeführt (via Vercel Cron).
  *
  * Für jede aktive Phase wird ein Snapshot mit den aktuellen Metriken erstellt:
  * - IST-Stunden (aus Asana)
@@ -32,7 +32,7 @@ export const maxDuration = 300; // 5 Minuten max
  *
  * Der Job ist idempotent: Bereits existierende Snapshots werden übersprungen.
  */
-export async function POST(_request: Request) {
+export async function GET() {
   // 1. Authentifizierung prüfen
   const headersList = await headers();
   const authHeader = headersList.get('authorization');
@@ -87,18 +87,3 @@ export async function POST(_request: Request) {
   }
 }
 
-/**
- * GET /api/cron/snapshots
- *
- * Health Check / Info Endpoint.
- * Gibt Informationen über den Cron-Job zurück.
- */
-export async function GET() {
-  return NextResponse.json({
-    name: 'Phase Snapshots Generator',
-    schedule: '0 5 * * *', // Täglich um 05:00 UTC
-    description: 'Generiert tägliche Snapshots der Phase-Metriken für Analytics',
-    endpoint: 'POST /api/cron/snapshots',
-    authentication: 'Bearer CRON_SECRET',
-  });
-}

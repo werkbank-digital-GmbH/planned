@@ -24,10 +24,10 @@ interface ProjectWithCoords {
 }
 
 /**
- * POST /api/cron/weather
+ * GET /api/cron/weather
  *
  * Aktualisiert den Wetter-Cache für alle Projekt-Standorte.
- * Wird von Vercel Cron täglich um 06:00 UTC aufgerufen.
+ * Wird täglich um 06:00 UTC ausgeführt (via Vercel Cron).
  *
  * 1. Lädt alle aktiven Projekte mit Koordinaten
  * 2. Sammelt unique Koordinaten (gerundet auf 2 Dezimalstellen)
@@ -35,7 +35,7 @@ interface ProjectWithCoords {
  * 4. Speichert Ergebnisse im Cache
  * 5. Löscht alte Cache-Einträge (> 7 Tage)
  */
-export async function POST(_request: Request) {
+export async function GET() {
   // 1. Authentifizierung prüfen
   const headersList = await headers();
   const authHeader = headersList.get('authorization');
@@ -139,18 +139,3 @@ export async function POST(_request: Request) {
   }
 }
 
-/**
- * GET /api/cron/weather
- *
- * Health Check / Info Endpoint.
- * Gibt Informationen über den Cron-Job zurück.
- */
-export async function GET() {
-  return NextResponse.json({
-    name: 'Weather Cache Updater',
-    schedule: '0 6 * * *', // Täglich um 06:00 UTC
-    description: 'Aktualisiert den Wetter-Cache für alle Projekt-Standorte',
-    endpoint: 'POST /api/cron/weather',
-    authentication: 'Bearer CRON_SECRET',
-  });
-}
