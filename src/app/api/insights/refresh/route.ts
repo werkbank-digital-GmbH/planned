@@ -228,6 +228,24 @@ async function generateSnapshotsForTenant(
 
     if (error) throw error;
 
+    // Alle Phase-IDs sammeln
+    const allPhases = phases || [];
+    const phaseIds = allPhases.map((p: { id: string }) => p.id);
+
+    // Ein einziger Query für alle existierenden Snapshots (statt N Queries)
+    const existingPhaseIds = new Set<string>();
+    if (phaseIds.length > 0) {
+      const { data: existingSnapshots } = await supabase
+        .from('phase_snapshots')
+        .select('phase_id')
+        .in('phase_id', phaseIds)
+        .eq('snapshot_date', today);
+
+      for (const s of existingSnapshots || []) {
+        existingPhaseIds.add(s.phase_id);
+      }
+    }
+
     const snapshotsToCreate: Array<{
       tenant_id: string;
       phase_id: string;
@@ -239,15 +257,8 @@ async function generateSnapshotsForTenant(
       allocated_users_count: number;
     }> = [];
 
-    for (const phase of phases || []) {
-      // Prüfen ob bereits Snapshot existiert
-      const { count } = await supabase
-        .from('phase_snapshots')
-        .select('id', { count: 'exact', head: true })
-        .eq('phase_id', phase.id)
-        .eq('snapshot_date', today);
-
-      if ((count || 0) > 0) {
+    for (const phase of allPhases) {
+      if (existingPhaseIds.has(phase.id)) {
         result.skipped_existing++;
         continue;
       }
