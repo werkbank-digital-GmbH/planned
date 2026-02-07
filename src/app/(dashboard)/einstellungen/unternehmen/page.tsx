@@ -31,10 +31,10 @@ export default async function CompanySettingsPage() {
     redirect('/einstellungen/profil');
   }
 
-  // Tenant-Daten laden (neue Felder noch nicht in Supabase-Typen)
+  // Tenant-Daten laden
   const { data: tenantData } = await supabase
     .from('tenants')
-    .select('id, name, slug, settings')
+    .select('id, name, slug, settings, company_address, company_lat, company_lng')
     .eq('id', userData.tenant_id)
     .single();
 
@@ -49,25 +49,11 @@ export default async function CompanySettingsPage() {
       }
     : null;
 
-  // Adress-Daten für CompanyAddressForm (separate Query für neue Felder)
-  // TODO: Nach Regenerierung der Supabase-Typen in obige Query integrieren
-  const { data: addressRow } = await supabase
-    .from('tenants')
-    .select('*')
-    .eq('id', userData.tenant_id)
-    .single();
-
-  const typedAddressRow = addressRow as unknown as {
-    company_address: string | null;
-    company_lat: number | null;
-    company_lng: number | null;
-  } | null;
-
-  const addressData = typedAddressRow
+  const addressData = tenantData
     ? {
-        companyAddress: typedAddressRow.company_address ?? null,
-        companyLat: typedAddressRow.company_lat ?? null,
-        companyLng: typedAddressRow.company_lng ?? null,
+        companyAddress: tenantData.company_address ?? null,
+        companyLat: tenantData.company_lat ?? null,
+        companyLng: tenantData.company_lng ?? null,
       }
     : { companyAddress: null, companyLat: null, companyLng: null };
 
