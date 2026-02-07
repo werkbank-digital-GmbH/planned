@@ -6,6 +6,7 @@ import type { ProjectStatus } from '@/domain/types';
 import type { IProjectRepository, ProjectWithPhases } from '@/application/ports/repositories';
 
 import { ProjectMapper } from '@/infrastructure/mappers/ProjectMapper';
+import { ProjectPhaseMapper } from '@/infrastructure/mappers/ProjectPhaseMapper';
 
 import type { Database } from '@/lib/database.types';
 
@@ -88,11 +89,11 @@ export class SupabaseProjectRepository implements IProjectRepository {
 
     const project = ProjectMapper.toDomain(data);
 
-    // TODO: ProjectPhaseMapper wird in Prompt 08 implementiert
-    // Für jetzt geben wir die rohen Phasen zurück
     return {
       project,
-      phases: data.project_phases ?? [],
+      phases: (data.project_phases ?? []).map((row) =>
+        ProjectPhaseMapper.toDomain(row, project.tenantId)
+      ),
     };
   }
 

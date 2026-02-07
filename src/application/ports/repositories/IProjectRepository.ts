@@ -1,14 +1,13 @@
 import type { Project } from '@/domain/entities/Project';
+import type { ProjectPhase } from '@/domain/entities/ProjectPhase';
 import type { ProjectStatus } from '@/domain/types';
 
 /**
  * Projekt mit Phasen (für findWithPhases)
- *
- * Note: ProjectPhase Entity wird in Prompt 08 implementiert
  */
 export interface ProjectWithPhases {
   project: Project;
-  phases: unknown[]; // TODO: ProjectPhase[] - wird in Prompt 08 definiert
+  phases: ProjectPhase[];
 }
 
 /**
