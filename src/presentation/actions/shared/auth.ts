@@ -41,3 +41,11 @@ export async function getCurrentUserWithTenant(): Promise<CurrentUser> {
     tenantId: userData.tenant_id,
   };
 }
+
+/**
+ * Gibt die Rolle des aktuellen Users zurück.
+ */
+export async function getCurrentUserRoleAction(): Promise<UserRole> {
+  const user = await getCurrentUserWithTenant();
+  return user.role;
+}

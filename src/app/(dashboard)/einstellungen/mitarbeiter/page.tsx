@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { UserRole } from '@/domain/types';
 
+import { getCurrentUserRoleAction } from '@/presentation/actions/shared/auth';
 import {
   createUserAction,
   deactivateUserAction,
@@ -59,11 +60,11 @@ export default function MitarbeiterPage() {
     }
   }, []);
 
-  // Load current user role
+  // Load current user role and users
   useEffect(() => {
-    // TODO: Get current user role from context/session
-    // For now, assume admin for development
-    setCurrentUserRole('admin');
+    getCurrentUserRoleAction().then(setCurrentUserRole).catch(() => {
+      setCurrentUserRole('gewerblich');
+    });
     loadUsers();
   }, [loadUsers]);
 
