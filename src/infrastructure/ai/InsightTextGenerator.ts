@@ -28,7 +28,7 @@ export class InsightTextGenerator implements IInsightTextGenerator {
   constructor(apiKey?: string) {
     const key = apiKey || process.env.ANTHROPIC_API_KEY;
     if (key) {
-      this.client = new Anthropic({ apiKey: key });
+      this.client = new Anthropic({ apiKey: key, timeout: 60_000 });
     }
   }
 

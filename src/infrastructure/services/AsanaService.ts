@@ -15,12 +15,17 @@ import type {
   MappedTaskPhaseData,
 } from '@/application/ports/services/IAsanaService';
 
+import { fetchWithTimeout } from '@/infrastructure/http';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
 const ASANA_API_BASE = 'https://app.asana.com/api/1.0';
 const ASANA_TOKEN_URL = 'https://app.asana.com/-/oauth_token';
+
+/** Minimum delay between API calls to respect Asana rate limits */
+const MIN_REQUEST_DELAY_MS = 100;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -33,6 +38,11 @@ interface AsanaServiceConfig {
 
 interface AsanaResponse<T> {
   data: T;
+  next_page?: {
+    offset: string;
+    path: string;
+    uri: string;
+  } | null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -50,6 +60,7 @@ interface AsanaResponse<T> {
 export class AsanaService implements IAsanaService {
   private readonly clientId: string;
   private readonly clientSecret: string;
+  private lastRequestTime = 0;
 
   constructor(config: AsanaServiceConfig) {
     this.clientId = config.clientId;
@@ -64,7 +75,7 @@ export class AsanaService implements IAsanaService {
     code: string,
     redirectUri: string
   ): Promise<AsanaTokenResponse> {
-    const response = await fetch(ASANA_TOKEN_URL, {
+    const response = await fetchWithTimeout(ASANA_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -74,7 +85,7 @@ export class AsanaService implements IAsanaService {
         redirect_uri: redirectUri,
         code,
       }),
-    });
+    }, 30_000);
 
     if (!response.ok) {
       throw new Error('Token-Austausch fehlgeschlagen');
@@ -84,7 +95,7 @@ export class AsanaService implements IAsanaService {
   }
 
   async refreshAccessToken(refreshToken: string): Promise<AsanaTokenResponse> {
-    const response = await fetch(ASANA_TOKEN_URL, {
+    const response = await fetchWithTimeout(ASANA_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -93,7 +104,7 @@ export class AsanaService implements IAsanaService {
         client_secret: this.clientSecret,
         refresh_token: refreshToken,
       }),
-    });
+    }, 30_000);
 
     if (!response.ok) {
       throw new Error('Token-Erneuerung fehlgeschlagen');
@@ -251,60 +262,56 @@ export class AsanaService implements IAsanaService {
     projectGid: string,
     accessToken: string
   ): Promise<AsanaTask[]> {
-    // Tasks mit allen relevanten Feldern laden
-    const params = new URLSearchParams({
-      opt_fields: [
-        'name',
-        'completed',
-        'start_on',
-        'due_on',
-        'notes',           // Plain-Text Beschreibung
-        'html_notes',      // Rich-Text Beschreibung (HTML)
-        'custom_fields',
-        'custom_fields.gid',
-        'custom_fields.name',
-        'custom_fields.display_value',
-        'custom_fields.number_value',
-        'custom_fields.text_value',
-        'custom_fields.enum_value',
-        'custom_fields.enum_value.gid',
-        'custom_fields.enum_value.name',
-        'projects',
-        'projects.gid',
-        'projects.name',
-      ].join(','),
-    });
+    // Tasks mit allen relevanten Feldern laden (mit Pagination)
+    const optFields = [
+      'name',
+      'completed',
+      'start_on',
+      'due_on',
+      'notes',           // Plain-Text Beschreibung
+      'html_notes',      // Rich-Text Beschreibung (HTML)
+      'custom_fields',
+      'custom_fields.gid',
+      'custom_fields.name',
+      'custom_fields.display_value',
+      'custom_fields.number_value',
+      'custom_fields.text_value',
+      'custom_fields.enum_value',
+      'custom_fields.enum_value.gid',
+      'custom_fields.enum_value.name',
+      'projects',
+      'projects.gid',
+      'projects.name',
+    ].join(',');
 
-    const response = await this.request<AsanaTask[]>(
-      `/projects/${projectGid}/tasks?${params}`,
-      accessToken
+    return this.requestAllPages<AsanaTask>(
+      `/projects/${projectGid}/tasks`,
+      accessToken,
+      { opt_fields: optFields, limit: '100' }
     );
-    return response.data;
   }
 
   async getAbsenceTasks(
     projectGid: string,
     accessToken: string
   ): Promise<AsanaAbsenceTask[]> {
-    // Tasks mit Assignee für Abwesenheiten laden
-    const params = new URLSearchParams({
-      opt_fields: [
-        'gid',
-        'name',
-        'completed',
-        'start_on',
-        'due_on',
-        'assignee',
-        'assignee.gid',
-        'assignee.email',
-      ].join(','),
-    });
+    // Tasks mit Assignee für Abwesenheiten laden (mit Pagination)
+    const optFields = [
+      'gid',
+      'name',
+      'completed',
+      'start_on',
+      'due_on',
+      'assignee',
+      'assignee.gid',
+      'assignee.email',
+    ].join(',');
 
-    const response = await this.request<AsanaAbsenceTask[]>(
-      `/projects/${projectGid}/tasks?${params}`,
-      accessToken
+    return this.requestAllPages<AsanaAbsenceTask>(
+      `/projects/${projectGid}/tasks`,
+      accessToken,
+      { opt_fields: optFields, limit: '100' }
     );
-    return response.data;
   }
 
   mapTaskToPhase(
@@ -313,6 +320,11 @@ export class AsanaService implements IAsanaService {
     teamProjectGids: Set<string>
   ): MappedTaskPhaseData | null {
     // Finde das "andere" Projekt (nicht das sourceProject) aus task.projects[]
+    // Graceful: task.projects kann undefined/leer sein
+    if (!task.projects || task.projects.length === 0) {
+      return null;
+    }
+
     const otherProject = task.projects.find(
       (p) => p.gid !== config.sourceProjectId && teamProjectGids.has(p.gid)
     );
@@ -322,14 +334,22 @@ export class AsanaService implements IAsanaService {
       return null;
     }
 
-    // Custom Field Values extrahieren
+    // Custom Field Values extrahieren - graceful bei fehlenden Feldern
     const getCustomFieldValue = (
       fieldId?: string
     ): { text?: string; number?: number; enum?: string } => {
-      if (!fieldId || !task.custom_fields) return {};
+      if (!fieldId) return {};
+
+      // Graceful: custom_fields kann undefined oder leer sein
+      if (!task.custom_fields || task.custom_fields.length === 0) {
+        return {};
+      }
 
       const field = task.custom_fields.find((f) => f.gid === fieldId);
-      if (!field) return {};
+      if (!field) {
+        // Custom Field konfiguriert aber nicht am Task vorhanden → OK, Default nutzen
+        return {};
+      }
 
       return {
         text: field.text_value ?? field.display_value ?? undefined,
@@ -338,7 +358,7 @@ export class AsanaService implements IAsanaService {
       };
     };
 
-    // Phasen-Name: Custom Field "Projektphase" oder Task-Name
+    // Phasen-Name: Custom Field "Projektphase" oder Task-Name (Fallback)
     const phaseTypeValue = getCustomFieldValue(config.phaseTypeFieldId);
     const name = phaseTypeValue.enum || phaseTypeValue.text || task.name;
 
@@ -357,23 +377,22 @@ export class AsanaService implements IAsanaService {
       }
     }
 
-    // Soll-Stunden
+    // Soll-Stunden - graceful: null wenn Feld fehlt oder nicht konfiguriert
     const sollStundenValue = getCustomFieldValue(config.sollStundenFieldId);
     const budgetHours = sollStundenValue.number ?? null;
 
-    // Ist-Stunden (NEU)
+    // Ist-Stunden - graceful: null wenn Feld fehlt oder nicht konfiguriert
     const istStundenValue = getCustomFieldValue(config.istStundenFieldId);
     const actualHours = istStundenValue.number ?? null;
 
-    // Projektadresse aus Custom Field (NEU für D5)
+    // Projektadresse aus Custom Field - graceful: undefined wenn Feld fehlt
     const addressValue = getCustomFieldValue(config.addressFieldId);
     const projectAddress = addressValue.text ?? undefined;
 
-    // Beschreibung: html_notes bevorzugen, fallback auf notes (NEU für D5)
-    // HTML-Tags für Speicherung entfernen (optional - hält nur Plain-Text)
+    // Beschreibung: html_notes bevorzugen, fallback auf notes
+    // HTML-Tags für Speicherung entfernen
     let description: string | undefined;
     if (task.html_notes) {
-      // Einfache HTML-Tag-Entfernung für Plain-Text
       description = task.html_notes
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/p>/gi, '\n\n')
@@ -540,12 +559,12 @@ export class AsanaService implements IAsanaService {
   }
 
   async deleteWebhook(webhookGid: string, accessToken: string): Promise<void> {
-    await fetch(`${ASANA_API_BASE}/webhooks/${webhookGid}`, {
+    await fetchWithTimeout(`${ASANA_API_BASE}/webhooks/${webhookGid}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    });
+    }, 30_000);
   }
 
   verifyWebhookSignature(body: string, signature: string, secret: string): boolean {
@@ -574,21 +593,59 @@ export class AsanaService implements IAsanaService {
     path: string,
     accessToken: string
   ): Promise<AsanaResponse<T>> {
-    const response = await fetch(`${ASANA_API_BASE}${path}`, {
+    await this.enforceRateLimit();
+
+    const response = await fetchWithTimeout(`${ASANA_API_BASE}${path}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-    });
+    }, 30_000);
 
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error('ASANA_TOKEN_EXPIRED');
       }
+      if (response.status === 429) {
+        // Rate limited - wait and retry once
+        const retryAfter = parseInt(response.headers.get('Retry-After') || '5', 10);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        return this.request<T>(path, accessToken);
+      }
       throw new Error(`Asana API Fehler: ${response.status} ${response.statusText}`);
     }
 
     return response.json();
+  }
+
+  /**
+   * Lädt alle Seiten einer paginierten Asana-API-Antwort.
+   * Asana gibt max. 100 Items pro Seite + next_page.offset für die nächste Seite.
+   */
+  private async requestAllPages<T>(
+    basePath: string,
+    accessToken: string,
+    params: Record<string, string> = {}
+  ): Promise<T[]> {
+    const allItems: T[] = [];
+    let offset: string | undefined;
+
+    do {
+      const searchParams = new URLSearchParams(params);
+      if (offset) {
+        searchParams.set('offset', offset);
+      }
+
+      const response = await this.request<T[]>(
+        `${basePath}?${searchParams}`,
+        accessToken
+      );
+
+      allItems.push(...response.data);
+      offset = response.next_page?.offset;
+    } while (offset);
+
+    return allItems;
   }
 
   private async requestWithBody<T>(
@@ -597,23 +654,43 @@ export class AsanaService implements IAsanaService {
     body: unknown,
     accessToken: string
   ): Promise<AsanaResponse<T>> {
-    const response = await fetch(`${ASANA_API_BASE}${path}`, {
+    await this.enforceRateLimit();
+
+    const response = await fetchWithTimeout(`${ASANA_API_BASE}${path}`, {
       method,
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
-    });
+    }, 30_000);
 
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error('ASANA_TOKEN_EXPIRED');
+      }
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('Retry-After') || '5', 10);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        return this.requestWithBody<T>(path, method, body, accessToken);
       }
       const errorBody = await response.text();
       throw new Error(`Asana API Fehler: ${response.status} ${response.statusText} - ${errorBody}`);
     }
 
     return response.json();
+  }
+
+  /**
+   * Erzwingt minimalen Abstand zwischen API-Requests.
+   * Verhindert Rate-Limit-Fehler bei schnellen Sync-Durchläufen.
+   */
+  private async enforceRateLimit(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    if (timeSinceLastRequest < MIN_REQUEST_DELAY_MS) {
+      await new Promise(resolve => setTimeout(resolve, MIN_REQUEST_DELAY_MS - timeSinceLastRequest));
+    }
+    this.lastRequestTime = Date.now();
   }
 }

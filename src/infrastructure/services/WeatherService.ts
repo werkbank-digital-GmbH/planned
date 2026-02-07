@@ -9,6 +9,8 @@ import type { WeatherForecast, ConstructionWeatherRating } from '@/domain/weathe
 
 import type { IWeatherService } from '@/application/ports/services/IWeatherService';
 
+import { fetchWithTimeout } from '@/infrastructure/http';
+
 interface OpenMeteoResponse {
   daily: {
     time: string[];
@@ -33,7 +35,7 @@ export class OpenMeteoWeatherService implements IWeatherService {
       forecast_days: days.toString(),
     });
 
-    const response = await fetch(`${this.baseUrl}?${params}`);
+    const response = await fetchWithTimeout(`${this.baseUrl}?${params}`, {}, 10_000);
 
     if (!response.ok) {
       console.error('[WeatherService] API error:', response.status);

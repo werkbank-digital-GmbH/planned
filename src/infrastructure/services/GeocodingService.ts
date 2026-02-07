@@ -13,6 +13,8 @@
 
 import type { IGeocodingService, GeocodingResult } from '@/application/ports/services/IGeocodingService';
 
+import { fetchWithTimeout } from '@/infrastructure/http';
+
 export class NominatimGeocodingService implements IGeocodingService {
   private readonly baseUrl = 'https://nominatim.openstreetmap.org';
   private readonly userAgent = 'planned-app/1.0 (kontakt@planned.app)';
@@ -71,11 +73,11 @@ export class NominatimGeocodingService implements IGeocodingService {
     });
 
     try {
-      const response = await fetch(`${this.baseUrl}/search?${params}`, {
+      const response = await fetchWithTimeout(`${this.baseUrl}/search?${params}`, {
         headers: {
           'User-Agent': this.userAgent,
         },
-      });
+      }, 10_000);
 
       if (!response.ok) {
         console.error('[Geocoding] Request failed:', response.status, response.statusText);
@@ -118,11 +120,11 @@ export class NominatimGeocodingService implements IGeocodingService {
     if (parsed.postalCode) params.set('postalcode', parsed.postalCode);
 
     try {
-      const response = await fetch(`${this.baseUrl}/search?${params}`, {
+      const response = await fetchWithTimeout(`${this.baseUrl}/search?${params}`, {
         headers: {
           'User-Agent': this.userAgent,
         },
-      });
+      }, 10_000);
 
       if (!response.ok) return null;
 
