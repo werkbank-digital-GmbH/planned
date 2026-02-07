@@ -12,8 +12,6 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-import type { UserRole } from '@/domain/types';
-
 import { Result, type ActionResult } from '@/application/common';
 import type {
   AbsenceConflictWithUser,
@@ -23,6 +21,8 @@ import { ResolveConflictUseCase } from '@/application/use-cases/conflicts';
 import { SupabaseAbsenceConflictRepository } from '@/infrastructure/repositories/SupabaseAbsenceConflictRepository';
 import { SupabaseAllocationRepository } from '@/infrastructure/repositories/SupabaseAllocationRepository';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
+
+import { getCurrentUserWithTenant } from '@/presentation/actions/shared/auth';
 
 import type { AbsenceType, ConflictResolution } from '@/lib/database.types';
 
@@ -69,36 +69,6 @@ const resolveConflictSchema = z.object({
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Holt den aktuellen User mit Tenant-Daten.
- */
-async function getCurrentUserWithTenant() {
-  const supabase = await createActionSupabaseClient();
-
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) {
-    throw new Error('Nicht eingeloggt');
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('id, role, tenant_id')
-    .eq('auth_id', authUser.id)
-    .single();
-
-  if (!userData) {
-    throw new Error('User nicht gefunden');
-  }
-
-  return {
-    id: userData.id,
-    role: userData.role as UserRole,
-    tenantId: userData.tenant_id,
-  };
-}
 
 /**
  * Konvertiert Domain-Entity zu DTO.

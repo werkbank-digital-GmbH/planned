@@ -12,6 +12,8 @@ import { Result, type ActionResult } from '@/application/common';
 
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 
+import { getCurrentUserWithTenant } from '@/presentation/actions/shared/auth';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -62,32 +64,6 @@ export interface UpdatePhaseDTO {
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Holt den Tenant des aktuellen Users.
- */
-async function getCurrentUserTenant() {
-  const supabase = await createActionSupabaseClient();
-
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) {
-    throw new Error('Nicht eingeloggt');
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('auth_id', authUser.id)
-    .single();
-
-  if (!userData) {
-    throw new Error('User nicht gefunden');
-  }
-
-  return userData.tenant_id;
-}
 
 /**
  * Extrahiert Initialen aus einem Namen.
@@ -143,7 +119,7 @@ export async function getProjectDetailsAction(
   projectId: string
 ): Promise<ActionResult<ProjectDetailsDTO>> {
   try {
-    const tenantId = await getCurrentUserTenant();
+    const { tenantId } = await getCurrentUserWithTenant();
     const supabase = await createActionSupabaseClient();
 
     // Projekt laden
@@ -377,7 +353,7 @@ export async function updatePhaseAction(
   updates: UpdatePhaseDTO
 ): Promise<ActionResult<{ success: boolean }>> {
   try {
-    const tenantId = await getCurrentUserTenant();
+    const { tenantId } = await getCurrentUserWithTenant();
     const supabase = await createActionSupabaseClient();
 
     // Prüfen, ob Phase zum Tenant gehört
@@ -457,7 +433,7 @@ export async function updateProjectDriveUrlAction(
   driveFolderUrl: string | null
 ): Promise<ActionResult<{ success: boolean }>> {
   try {
-    const tenantId = await getCurrentUserTenant();
+    const { tenantId } = await getCurrentUserWithTenant();
     const supabase = await createActionSupabaseClient();
 
     // Prüfen, ob Projekt zum Tenant gehört

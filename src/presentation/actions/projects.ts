@@ -12,6 +12,8 @@ import { SupabaseProjectPhaseRepository } from '@/infrastructure/repositories/Su
 import { SupabaseProjectRepository } from '@/infrastructure/repositories/SupabaseProjectRepository';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 
+import { getCurrentUserWithTenant } from '@/presentation/actions/shared/auth';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -51,32 +53,6 @@ export interface ProjectOverviewDTO {
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Holt den Tenant des aktuellen Users.
- */
-async function getCurrentUserTenant() {
-  const supabase = await createActionSupabaseClient();
-
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) {
-    throw new Error('Nicht eingeloggt');
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('auth_id', authUser.id)
-    .single();
-
-  if (!userData) {
-    throw new Error('User nicht gefunden');
-  }
-
-  return userData.tenant_id;
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GET PROJECTS LIST ACTION
@@ -89,7 +65,7 @@ async function getCurrentUserTenant() {
  */
 export async function getProjectsListAction(): Promise<ActionResult<ProjectListDTO[]>> {
   try {
-    const tenantId = await getCurrentUserTenant();
+    const { tenantId } = await getCurrentUserWithTenant();
     const supabase = await createActionSupabaseClient();
     const projectRepository = new SupabaseProjectRepository(supabase);
 
@@ -124,7 +100,7 @@ export async function searchProjectsAction(
   }
 
   try {
-    const tenantId = await getCurrentUserTenant();
+    const { tenantId } = await getCurrentUserWithTenant();
     const supabase = await createActionSupabaseClient();
     const projectRepository = new SupabaseProjectRepository(supabase);
 
@@ -161,7 +137,7 @@ export async function getProjectPhasesAction(
   projectId: string
 ): Promise<ActionResult<ProjectPhaseDTO[]>> {
   try {
-    await getCurrentUserTenant(); // Auth-Check
+    await getCurrentUserWithTenant(); // Auth-Check
     const supabase = await createActionSupabaseClient();
     const phaseRepository = new SupabaseProjectPhaseRepository(supabase);
 
@@ -193,7 +169,7 @@ export async function getProjectsOverviewAction(): Promise<
   ActionResult<ProjectOverviewDTO[]>
 > {
   try {
-    const tenantId = await getCurrentUserTenant();
+    const { tenantId } = await getCurrentUserWithTenant();
     const supabase = await createActionSupabaseClient();
 
     // Projekte mit Phasen und Allocations laden

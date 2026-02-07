@@ -8,7 +8,6 @@
  * - Baustellen-Bewertung für Holzbau
  */
 
-import type { UserRole } from '@/domain/types';
 import type { WeatherForecast, ConstructionWeatherRating } from '@/domain/weather';
 
 import { Result, type ActionResult } from '@/application/common';
@@ -17,6 +16,8 @@ import { SupabaseWeatherCacheRepository } from '@/infrastructure/repositories/Su
 import { createGeocodingService } from '@/infrastructure/services/GeocodingService';
 import { createWeatherService } from '@/infrastructure/services/WeatherService';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
+
+import { getCurrentUserWithTenant } from '@/presentation/actions/shared/auth';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -46,36 +47,6 @@ export interface ProjectWeatherDTO {
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Holt den aktuellen User mit Tenant-Daten.
- */
-async function getCurrentUserWithTenant() {
-  const supabase = await createActionSupabaseClient();
-
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) {
-    throw new Error('Nicht eingeloggt');
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('id, role, tenant_id')
-    .eq('auth_id', authUser.id)
-    .single();
-
-  if (!userData) {
-    throw new Error('User nicht gefunden');
-  }
-
-  return {
-    id: userData.id,
-    role: userData.role as UserRole,
-    tenantId: userData.tenant_id,
-  };
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GET PROJECT WEATHER

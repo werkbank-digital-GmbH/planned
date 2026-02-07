@@ -12,8 +12,6 @@
 
 import { revalidatePath } from 'next/cache';
 
-import type { UserRole } from '@/domain/types';
-
 import { Result, type ActionResult } from '@/application/common';
 import type { AsanaCustomFieldDefinition, AsanaProject } from '@/application/ports/services/IAsanaService';
 import {
@@ -37,6 +35,8 @@ import { SupabaseUserRepository } from '@/infrastructure/repositories/SupabaseUs
 import { AsanaService } from '@/infrastructure/services/AsanaService';
 import { createEncryptionService } from '@/infrastructure/services/EncryptionService';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
+
+import { getCurrentUserWithTenant } from '@/presentation/actions/shared/auth';
 
 import { env } from '@/lib/env-server';
 
@@ -78,36 +78,6 @@ export type { UserMappingDTO, AbsenceSyncResult };
 // HELPER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Holt den aktuellen User mit Tenant-Daten.
- */
-async function getCurrentUserWithTenant() {
-  const supabase = await createActionSupabaseClient();
-
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) {
-    throw new Error('Nicht eingeloggt');
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('id, role, tenant_id')
-    .eq('auth_id', authUser.id)
-    .single();
-
-  if (!userData) {
-    throw new Error('User nicht gefunden');
-  }
-
-  return {
-    id: userData.id,
-    role: userData.role as UserRole,
-    tenantId: userData.tenant_id,
-  };
-}
 
 /**
  * Holt gültigen Asana Access Token.
