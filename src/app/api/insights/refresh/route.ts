@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 import { GenerateInsightsUseCase } from '@/application/use-cases/analytics/GenerateInsightsUseCase';
@@ -6,6 +7,8 @@ import { InsightTextGenerator } from '@/infrastructure/ai/InsightTextGenerator';
 import { SupabaseAnalyticsRepository } from '@/infrastructure/repositories/SupabaseAnalyticsRepository';
 import { createActionSupabaseClient } from '@/infrastructure/supabase';
 import { createAdminSupabaseClient } from '@/infrastructure/supabase/admin';
+
+import type { Database } from '@/lib/database.types';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONFIG
@@ -105,10 +108,7 @@ export async function POST(): Promise<NextResponse<RefreshResponse>> {
     const tenantId = userData.tenant_id;
 
     // 4. Rate Limit prüfen
-    // HINWEIS: insights_last_refresh_at ist ein neues Feld (Migration 20260203195031)
-    // und noch nicht in database.types.ts. Nach `supabase gen types` kann der Cast entfernt werden.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: tenantData, error: tenantError } = await (supabase as any)
+    const { data: tenantData, error: tenantError } = await supabase
       .from('tenants')
       .select('insights_last_refresh_at')
       .eq('id', tenantId)
@@ -121,10 +121,8 @@ export async function POST(): Promise<NextResponse<RefreshResponse>> {
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tenantDataAny = tenantData as any;
-    const lastRefreshAt = tenantDataAny?.insights_last_refresh_at
-      ? new Date(tenantDataAny.insights_last_refresh_at)
+    const lastRefreshAt = tenantData?.insights_last_refresh_at
+      ? new Date(tenantData.insights_last_refresh_at)
       : null;
 
     if (lastRefreshAt) {
@@ -172,8 +170,7 @@ export async function POST(): Promise<NextResponse<RefreshResponse>> {
 
     // 6. lastRefreshAt aktualisieren
     const newRefreshAt = new Date().toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    await supabase
       .from('tenants')
       .update({ insights_last_refresh_at: newRefreshAt })
       .eq('id', tenantId);
@@ -207,8 +204,7 @@ export async function POST(): Promise<NextResponse<RefreshResponse>> {
  * Generiert Snapshots nur für einen bestimmten Tenant.
  */
 async function generateSnapshotsForTenant(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   analyticsRepository: SupabaseAnalyticsRepository,
   tenantId: string,
   today: string
@@ -294,8 +290,7 @@ async function generateSnapshotsForTenant(
  * Für jetzt führen wir den vollständigen UseCase aus (ist idempotent durch upsert).
  */
 async function generateInsightsForTenant(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   analyticsRepository: SupabaseAnalyticsRepository,
   textGenerator: InsightTextGenerator,
   _tenantId: string, // Nicht verwendet, da UseCase alle Tenants verarbeitet
@@ -337,15 +332,13 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 401 });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: tenantData } = await (supabase as any)
+    const { data: tenantData } = await supabase
       .from('tenants')
       .select('insights_last_refresh_at')
       .eq('id', userData.tenant_id)
       .single();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lastRefreshAt = (tenantData as any)?.insights_last_refresh_at || null;
+    const lastRefreshAt = tenantData?.insights_last_refresh_at || null;
     const canRefresh = !lastRefreshAt ||
       Date.now() - new Date(lastRefreshAt).getTime() >= RATE_LIMIT_MS;
 

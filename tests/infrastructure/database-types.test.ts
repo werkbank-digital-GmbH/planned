@@ -12,6 +12,10 @@ describe('Database Types', () => {
       name: 'Test Tenant',
       slug: 'test-tenant',
       settings: { defaultWeeklyHours: 40 },
+      company_address: null,
+      company_lat: null,
+      company_lng: null,
+      insights_last_refresh_at: null,
       created_at: '2026-01-29T00:00:00Z',
       updated_at: '2026-01-29T00:00:00Z',
     };
@@ -78,6 +82,7 @@ describe('Database Types', () => {
       actual_hours: 20,
       status: 'active',
       asana_gid: 'asana-123',
+      description: null,
       deleted_at: null,
       created_at: '2026-01-29T00:00:00Z',
       updated_at: '2026-01-29T00:00:00Z',

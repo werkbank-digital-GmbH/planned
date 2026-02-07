@@ -9,20 +9,22 @@ import type {
   TenantInsightsSummary,
   RiskProject,
   BurnRateTrend,
+  SuggestedAction,
 } from '@/domain/analytics/types';
+
+import type { Database, Json } from '@/lib/database.types';
+
+type PhaseSnapshotRow = Database['public']['Tables']['phase_snapshots']['Row'];
+type PhaseInsightRow = Database['public']['Tables']['phase_insights']['Row'];
+type ProjectInsightRow = Database['public']['Tables']['project_insights']['Row'];
 
 /**
  * Supabase-Implementierung des IAnalyticsRepository.
  *
  * Verwaltet Phase-Snapshots und Insights für das Analytics-System.
- *
- * HINWEIS: Diese Implementation nutzt `any` casts für die neuen Tabellen,
- * da die database.types.ts erst nach Anwendung der Migration aktualisiert werden.
- * Nach `supabase gen types` können die Typen präzisiert werden.
  */
 export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(private readonly supabase: SupabaseClient<any>) {}
+  constructor(private readonly supabase: SupabaseClient<Database>) {}
 
   // ═══════════════════════════════════════════════════════════════════════
   // SNAPSHOTS
@@ -48,8 +50,7 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
       .select();
 
     if (error) throw error;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (snapshots || []).map((s: any) => this.mapSnapshot(s));
+    return (snapshots || []).map((s) => this.mapSnapshot(s));
   }
 
   async getSnapshotsForPhase(phaseId: string, limit = 30): Promise<PhaseSnapshot[]> {
@@ -61,8 +62,7 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
       .limit(limit);
 
     if (error) throw error;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (data || []).map((s: any) => this.mapSnapshot(s));
+    return (data || []).map((s) => this.mapSnapshot(s));
   }
 
   async getSnapshotsForDateRange(
@@ -79,8 +79,7 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
       .order('snapshot_date', { ascending: true });
 
     if (error) throw error;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (data || []).map((s: any) => this.mapSnapshot(s));
+    return (data || []).map((s) => this.mapSnapshot(s));
   }
 
   async getSnapshotsForPhasesInDateRange(
@@ -109,13 +108,11 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
     if (error) throw error;
 
     // Gruppiere nach Phase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const row of data || []) {
-      const phaseId = row.phase_id as string;
+      const phaseId = row.phase_id;
       const snapshots = result.get(phaseId);
       if (snapshots) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        snapshots.push(this.mapSnapshot(row as any));
+        snapshots.push(this.mapSnapshot(row));
       }
     }
 
@@ -144,9 +141,10 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
   ): Promise<PhaseInsight> {
     const { data, error } = await this.supabase
       .from('phase_insights')
-      .upsert(insight, {
-        onConflict: 'phase_id,insight_date',
-      })
+      .upsert(
+        { ...insight, suggested_action: insight.suggested_action as unknown as Json },
+        { onConflict: 'phase_id,insight_date' }
+      )
       .select()
       .single();
 
@@ -175,8 +173,8 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
     });
 
     if (error) throw error;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (data || []).map((i: any) => this.mapPhaseInsight(i));
+    // RPC returns structurally identical rows but as a separate type
+    return (data || []).map((i) => this.mapPhaseInsight(i as PhaseInsightRow));
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -216,7 +214,8 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
   // ═══════════════════════════════════════════════════════════════════════
 
   async cleanupOldSnapshots(): Promise<number> {
-    const { data, error } = await this.supabase.rpc('cleanup_old_snapshots');
+    // cleanup_old_snapshots is SECURITY DEFINER and not in generated types
+    const { data, error } = await (this.supabase as SupabaseClient).rpc('cleanup_old_snapshots');
     if (error) throw error;
     return (data as number) || 0;
   }
@@ -436,8 +435,7 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
   // PRIVATE MAPPERS
   // ═══════════════════════════════════════════════════════════════════════
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mapSnapshot(row: any): PhaseSnapshot {
+  private mapSnapshot(row: PhaseSnapshotRow): PhaseSnapshot {
     return {
       id: row.id,
       tenant_id: row.tenant_id,
@@ -452,8 +450,7 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mapPhaseInsight(row: any): PhaseInsight {
+  private mapPhaseInsight(row: PhaseInsightRow): PhaseInsight {
     return {
       id: row.id,
       tenant_id: row.tenant_id,
@@ -478,13 +475,12 @@ export class SupabaseAnalyticsRepository implements IAnalyticsRepository {
       recommendation_text: row.recommendation_text,
       data_quality: row.data_quality as PhaseInsight['data_quality'],
       data_points_count: row.data_points_count,
-      suggested_action: row.suggested_action ?? null,
+      suggested_action: (row.suggested_action as unknown as SuggestedAction) ?? null,
       created_at: row.created_at,
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mapProjectInsight(row: any): ProjectInsight {
+  private mapProjectInsight(row: ProjectInsightRow): ProjectInsight {
     return {
       id: row.id,
       tenant_id: row.tenant_id,

@@ -14,6 +14,9 @@ ADD COLUMN IF NOT EXISTS address_conflict BOOLEAN DEFAULT FALSE;
 ALTER TABLE integration_credentials
 ADD COLUMN IF NOT EXISTS asana_address_field_id TEXT;
 
+-- Extension für Trigram-Suche (falls noch nicht vorhanden)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Index für Suche in Beschreibungen (optional, für spätere Insights)
 CREATE INDEX IF NOT EXISTS idx_project_phases_description_trgm
 ON project_phases USING gin (description gin_trgm_ops);

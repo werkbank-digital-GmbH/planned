@@ -72,8 +72,7 @@ export async function GET() {
     // 4. Unique Koordinaten sammeln (gerundet auf 2 Dezimalstellen für ~1km Genauigkeit)
     const uniqueLocations = new Map<string, { lat: number; lng: number }>();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const project of (projects || []) as any as ProjectWithCoords[]) {
+    for (const project of (projects || []) as ProjectWithCoords[]) {
       const roundedLat = Math.round(project.address_lat * 100) / 100;
       const roundedLng = Math.round(project.address_lng * 100) / 100;
       const key = `${roundedLat},${roundedLng}`;

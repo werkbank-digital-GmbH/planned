@@ -21,7 +21,13 @@ ON absences(asana_gid)
 WHERE asana_gid IS NOT NULL;
 
 -- Unique Constraint (ein Task = eine Absence)
-ALTER TABLE absences
-ADD CONSTRAINT unique_asana_gid UNIQUE (asana_gid);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'unique_asana_gid'
+  ) THEN
+    ALTER TABLE absences ADD CONSTRAINT unique_asana_gid UNIQUE (asana_gid);
+  END IF;
+END $$;
 
 COMMENT ON COLUMN absences.asana_gid IS 'Asana Task GID für Sync';

@@ -33,8 +33,12 @@ BEGIN
     -- Create new enum without timetac
     CREATE TYPE sync_service_new AS ENUM ('asana');
 
-    -- Update existing data
+    -- Update all columns that use the old enum type
     ALTER TABLE integration_mappings
+      ALTER COLUMN service TYPE sync_service_new
+      USING service::text::sync_service_new;
+
+    ALTER TABLE sync_logs
       ALTER COLUMN service TYPE sync_service_new
       USING service::text::sync_service_new;
 

@@ -12,7 +12,7 @@
 -- Tägliche Momentaufnahmen der Phase-Metriken für Burn-Rate-Berechnung
 -- ═══════════════════════════════════════════════════════════════════════════
 
-CREATE TABLE phase_snapshots (
+CREATE TABLE IF NOT EXISTS phase_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   phase_id UUID NOT NULL REFERENCES project_phases(id) ON DELETE CASCADE,
@@ -42,16 +42,23 @@ COMMENT ON COLUMN phase_snapshots.plan_hours IS 'PLAN-Stunden (Summe aller Alloc
 COMMENT ON COLUMN phase_snapshots.soll_hours IS 'SOLL-Stunden (Budget aus Asana)';
 
 -- Indizes für schnelle Abfragen
-CREATE INDEX idx_phase_snapshots_phase_date ON phase_snapshots(phase_id, snapshot_date DESC);
-CREATE INDEX idx_phase_snapshots_tenant ON phase_snapshots(tenant_id);
-CREATE INDEX idx_phase_snapshots_date ON phase_snapshots(snapshot_date);
+CREATE INDEX IF NOT EXISTS idx_phase_snapshots_phase_date ON phase_snapshots(phase_id, snapshot_date DESC);
+CREATE INDEX IF NOT EXISTS idx_phase_snapshots_tenant ON phase_snapshots(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_phase_snapshots_date ON phase_snapshots(snapshot_date);
 
 -- RLS aktivieren
 ALTER TABLE phase_snapshots ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-CREATE POLICY "phase_snapshots_tenant_isolation" ON phase_snapshots
-  FOR ALL USING (tenant_id = get_current_tenant_id());
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE policyname = 'phase_snapshots_tenant_isolation' AND tablename = 'phase_snapshots'
+  ) THEN
+    CREATE POLICY "phase_snapshots_tenant_isolation" ON phase_snapshots
+      FOR ALL USING (tenant_id = get_current_tenant_id());
+  END IF;
+END $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -59,7 +66,7 @@ CREATE POLICY "phase_snapshots_tenant_isolation" ON phase_snapshots
 -- KI-generierte Insights und Prognosen pro Phase
 -- ═══════════════════════════════════════════════════════════════════════════
 
-CREATE TABLE phase_insights (
+CREATE TABLE IF NOT EXISTS phase_insights (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   phase_id UUID NOT NULL REFERENCES project_phases(id) ON DELETE CASCADE,
@@ -120,15 +127,22 @@ COMMENT ON COLUMN phase_insights.summary_text IS 'Kurzer Satz für Popover (~100
 COMMENT ON COLUMN phase_insights.data_quality IS 'good (>= 5 Datenpunkte), limited (3-4), insufficient (< 3)';
 
 -- Indizes
-CREATE INDEX idx_phase_insights_phase_date ON phase_insights(phase_id, insight_date DESC);
-CREATE INDEX idx_phase_insights_tenant ON phase_insights(tenant_id);
-CREATE INDEX idx_phase_insights_status ON phase_insights(status);
+CREATE INDEX IF NOT EXISTS idx_phase_insights_phase_date ON phase_insights(phase_id, insight_date DESC);
+CREATE INDEX IF NOT EXISTS idx_phase_insights_tenant ON phase_insights(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_phase_insights_status ON phase_insights(status);
 
 -- RLS
 ALTER TABLE phase_insights ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "phase_insights_tenant_isolation" ON phase_insights
-  FOR ALL USING (tenant_id = get_current_tenant_id());
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE policyname = 'phase_insights_tenant_isolation' AND tablename = 'phase_insights'
+  ) THEN
+    CREATE POLICY "phase_insights_tenant_isolation" ON phase_insights
+      FOR ALL USING (tenant_id = get_current_tenant_id());
+  END IF;
+END $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -136,7 +150,7 @@ CREATE POLICY "phase_insights_tenant_isolation" ON phase_insights
 -- Aggregierte Insights pro Projekt (aus Phasen berechnet)
 -- ═══════════════════════════════════════════════════════════════════════════
 
-CREATE TABLE project_insights (
+CREATE TABLE IF NOT EXISTS project_insights (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -183,14 +197,21 @@ COMMENT ON COLUMN project_insights.latest_phase_deadline IS 'Späteste Deadline 
 COMMENT ON COLUMN project_insights.projected_completion_date IS 'Prognostiziertes Projektende basierend auf Phasen';
 
 -- Indizes
-CREATE INDEX idx_project_insights_project_date ON project_insights(project_id, insight_date DESC);
-CREATE INDEX idx_project_insights_tenant ON project_insights(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_project_insights_project_date ON project_insights(project_id, insight_date DESC);
+CREATE INDEX IF NOT EXISTS idx_project_insights_tenant ON project_insights(tenant_id);
 
 -- RLS
 ALTER TABLE project_insights ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "project_insights_tenant_isolation" ON project_insights
-  FOR ALL USING (tenant_id = get_current_tenant_id());
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE policyname = 'project_insights_tenant_isolation' AND tablename = 'project_insights'
+  ) THEN
+    CREATE POLICY "project_insights_tenant_isolation" ON project_insights
+      FOR ALL USING (tenant_id = get_current_tenant_id());
+  END IF;
+END $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════════════

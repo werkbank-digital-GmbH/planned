@@ -312,8 +312,7 @@ export async function getPhaseSnapshotsAction(
       return Result.fail('NOT_FOUND', 'Phase nicht gefunden');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tenantId = (phaseData.projects as any)?.tenant_id;
+    const tenantId = phaseData.projects.tenant_id;
     if (tenantId !== currentUser.tenantId) {
       return Result.fail('FORBIDDEN', 'Keine Berechtigung für diese Phase');
     }

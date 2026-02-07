@@ -241,9 +241,8 @@ export async function updateCompanyAddressAction(
       );
     }
 
-    // Tenant aktualisieren mit Type-Cast für neue Felder
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('tenants') as any)
+    // Tenant aktualisieren
+    const { error } = await supabase.from('tenants')
       .update({
         company_address: address,
         company_lat: geoResult.lat,

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       absence_conflicts: {
@@ -221,6 +246,7 @@ export type Database = {
         Row: {
           asana_absence_project_id: string | null
           asana_access_token: string | null
+          asana_address_field_id: string | null
           asana_ist_stunden_field_id: string | null
           asana_phase_bereich_field_id: string | null
           asana_phase_budget_hours_field_id: string | null
@@ -233,6 +259,7 @@ export type Database = {
           asana_source_project_id: string | null
           asana_team_id: string | null
           asana_token_expires_at: string | null
+          asana_webhook_gid: string | null
           asana_webhook_secret: string | null
           asana_workspace_id: string | null
           asana_zuordnung_field_id: string | null
@@ -246,6 +273,7 @@ export type Database = {
         Insert: {
           asana_absence_project_id?: string | null
           asana_access_token?: string | null
+          asana_address_field_id?: string | null
           asana_ist_stunden_field_id?: string | null
           asana_phase_bereich_field_id?: string | null
           asana_phase_budget_hours_field_id?: string | null
@@ -258,6 +286,7 @@ export type Database = {
           asana_source_project_id?: string | null
           asana_team_id?: string | null
           asana_token_expires_at?: string | null
+          asana_webhook_gid?: string | null
           asana_webhook_secret?: string | null
           asana_workspace_id?: string | null
           asana_zuordnung_field_id?: string | null
@@ -271,6 +300,7 @@ export type Database = {
         Update: {
           asana_absence_project_id?: string | null
           asana_access_token?: string | null
+          asana_address_field_id?: string | null
           asana_ist_stunden_field_id?: string | null
           asana_phase_bereich_field_id?: string | null
           asana_phase_budget_hours_field_id?: string | null
@@ -283,6 +313,7 @@ export type Database = {
           asana_source_project_id?: string | null
           asana_team_id?: string | null
           asana_token_expires_at?: string | null
+          asana_webhook_gid?: string | null
           asana_webhook_secret?: string | null
           asana_workspace_id?: string | null
           asana_zuordnung_field_id?: string | null
@@ -347,6 +378,249 @@ export type Database = {
           },
         ]
       }
+      phase_insights: {
+        Row: {
+          burn_rate_ist: number | null
+          burn_rate_ist_trend: string | null
+          burn_rate_plan: number | null
+          capacity_gap_days: number | null
+          capacity_gap_hours: number | null
+          completion_date_ist: string | null
+          completion_date_plan: string | null
+          created_at: string
+          data_points_count: number | null
+          data_quality: string | null
+          days_remaining_ist: number | null
+          days_remaining_plan: number | null
+          deadline_delta_ist: number | null
+          deadline_delta_plan: number | null
+          detail_text: string | null
+          id: string
+          insight_date: string
+          phase_id: string
+          progress_percent: number | null
+          recommendation_text: string | null
+          remaining_hours: number | null
+          status: string
+          suggested_action: Json | null
+          summary_text: string
+          tenant_id: string
+        }
+        Insert: {
+          burn_rate_ist?: number | null
+          burn_rate_ist_trend?: string | null
+          burn_rate_plan?: number | null
+          capacity_gap_days?: number | null
+          capacity_gap_hours?: number | null
+          completion_date_ist?: string | null
+          completion_date_plan?: string | null
+          created_at?: string
+          data_points_count?: number | null
+          data_quality?: string | null
+          days_remaining_ist?: number | null
+          days_remaining_plan?: number | null
+          deadline_delta_ist?: number | null
+          deadline_delta_plan?: number | null
+          detail_text?: string | null
+          id?: string
+          insight_date: string
+          phase_id: string
+          progress_percent?: number | null
+          recommendation_text?: string | null
+          remaining_hours?: number | null
+          status?: string
+          suggested_action?: Json | null
+          summary_text: string
+          tenant_id: string
+        }
+        Update: {
+          burn_rate_ist?: number | null
+          burn_rate_ist_trend?: string | null
+          burn_rate_plan?: number | null
+          capacity_gap_days?: number | null
+          capacity_gap_hours?: number | null
+          completion_date_ist?: string | null
+          completion_date_plan?: string | null
+          created_at?: string
+          data_points_count?: number | null
+          data_quality?: string | null
+          days_remaining_ist?: number | null
+          days_remaining_plan?: number | null
+          deadline_delta_ist?: number | null
+          deadline_delta_plan?: number | null
+          detail_text?: string | null
+          id?: string
+          insight_date?: string
+          phase_id?: string
+          progress_percent?: number | null
+          recommendation_text?: string | null
+          remaining_hours?: number | null
+          status?: string
+          suggested_action?: Json | null
+          summary_text?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_insights_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phase_insights_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phase_snapshots: {
+        Row: {
+          allocated_users_count: number
+          allocations_count: number
+          created_at: string
+          id: string
+          ist_hours: number
+          phase_id: string
+          plan_hours: number
+          snapshot_date: string
+          soll_hours: number
+          tenant_id: string
+        }
+        Insert: {
+          allocated_users_count?: number
+          allocations_count?: number
+          created_at?: string
+          id?: string
+          ist_hours?: number
+          phase_id: string
+          plan_hours?: number
+          snapshot_date: string
+          soll_hours?: number
+          tenant_id: string
+        }
+        Update: {
+          allocated_users_count?: number
+          allocations_count?: number
+          created_at?: string
+          id?: string
+          ist_hours?: number
+          phase_id?: string
+          plan_hours?: number
+          snapshot_date?: string
+          soll_hours?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_snapshots_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phase_snapshots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_insights: {
+        Row: {
+          created_at: string
+          detail_text: string | null
+          id: string
+          insight_date: string
+          latest_phase_deadline: string | null
+          overall_progress_percent: number | null
+          phases_at_risk: number | null
+          phases_behind: number | null
+          phases_completed: number | null
+          phases_count: number | null
+          phases_on_track: number | null
+          project_deadline_delta: number | null
+          project_id: string
+          projected_completion_date: string | null
+          recommendation_text: string | null
+          status: string
+          summary_text: string
+          tenant_id: string
+          total_ist_hours: number | null
+          total_plan_hours: number | null
+          total_remaining_hours: number | null
+          total_soll_hours: number | null
+        }
+        Insert: {
+          created_at?: string
+          detail_text?: string | null
+          id?: string
+          insight_date: string
+          latest_phase_deadline?: string | null
+          overall_progress_percent?: number | null
+          phases_at_risk?: number | null
+          phases_behind?: number | null
+          phases_completed?: number | null
+          phases_count?: number | null
+          phases_on_track?: number | null
+          project_deadline_delta?: number | null
+          project_id: string
+          projected_completion_date?: string | null
+          recommendation_text?: string | null
+          status?: string
+          summary_text: string
+          tenant_id: string
+          total_ist_hours?: number | null
+          total_plan_hours?: number | null
+          total_remaining_hours?: number | null
+          total_soll_hours?: number | null
+        }
+        Update: {
+          created_at?: string
+          detail_text?: string | null
+          id?: string
+          insight_date?: string
+          latest_phase_deadline?: string | null
+          overall_progress_percent?: number | null
+          phases_at_risk?: number | null
+          phases_behind?: number | null
+          phases_completed?: number | null
+          phases_count?: number | null
+          phases_on_track?: number | null
+          project_deadline_delta?: number | null
+          project_id?: string
+          projected_completion_date?: string | null
+          recommendation_text?: string | null
+          status?: string
+          summary_text?: string
+          tenant_id?: string
+          total_ist_hours?: number | null
+          total_plan_hours?: number | null
+          total_remaining_hours?: number | null
+          total_soll_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_insights_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_insights_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_phases: {
         Row: {
           actual_hours: number | null
@@ -355,6 +629,7 @@ export type Database = {
           budget_hours: number | null
           created_at: string | null
           deleted_at: string | null
+          description: string | null
           end_date: string | null
           id: string
           name: string
@@ -372,6 +647,7 @@ export type Database = {
           budget_hours?: number | null
           created_at?: string | null
           deleted_at?: string | null
+          description?: string | null
           end_date?: string | null
           id?: string
           name: string
@@ -389,6 +665,7 @@ export type Database = {
           budget_hours?: number | null
           created_at?: string | null
           deleted_at?: string | null
+          description?: string | null
           end_date?: string | null
           id?: string
           name?: string
@@ -412,6 +689,10 @@ export type Database = {
       projects: {
         Row: {
           address: string | null
+          address_conflict: boolean | null
+          address_geocoded_at: string | null
+          address_lat: number | null
+          address_lng: number | null
           asana_gid: string | null
           client_name: string | null
           created_at: string | null
@@ -425,6 +706,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_conflict?: boolean | null
+          address_geocoded_at?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
           asana_gid?: string | null
           client_name?: string | null
           created_at?: string | null
@@ -438,6 +723,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_conflict?: boolean | null
+          address_geocoded_at?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
           asana_gid?: string | null
           client_name?: string | null
           created_at?: string | null
@@ -594,24 +883,36 @@ export type Database = {
       }
       tenants: {
         Row: {
+          company_address: string | null
+          company_lat: number | null
+          company_lng: number | null
           created_at: string | null
           id: string
+          insights_last_refresh_at: string | null
           name: string
           settings: Json | null
           slug: string
           updated_at: string | null
         }
         Insert: {
+          company_address?: string | null
+          company_lat?: number | null
+          company_lng?: number | null
           created_at?: string | null
           id?: string
+          insights_last_refresh_at?: string | null
           name: string
           settings?: Json | null
           slug: string
           updated_at?: string | null
         }
         Update: {
+          company_address?: string | null
+          company_lat?: number | null
+          company_lng?: number | null
           created_at?: string | null
           id?: string
+          insights_last_refresh_at?: string | null
           name?: string
           settings?: Json | null
           slug?: string
@@ -733,6 +1034,45 @@ export type Database = {
           },
         ]
       }
+      weather_cache: {
+        Row: {
+          fetched_at: string | null
+          forecast_date: string
+          id: string
+          lat: number
+          lng: number
+          precipitation_probability: number | null
+          temp_max: number | null
+          temp_min: number | null
+          weather_code: number | null
+          wind_speed_max: number | null
+        }
+        Insert: {
+          fetched_at?: string | null
+          forecast_date: string
+          id?: string
+          lat: number
+          lng: number
+          precipitation_probability?: number | null
+          temp_max?: number | null
+          temp_min?: number | null
+          weather_code?: number | null
+          wind_speed_max?: number | null
+        }
+        Update: {
+          fetched_at?: string | null
+          forecast_date?: string
+          id?: string
+          lat?: number
+          lng?: number
+          precipitation_probability?: number | null
+          temp_max?: number | null
+          temp_min?: number | null
+          weather_code?: number | null
+          wind_speed_max?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -768,6 +1108,18 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: string
+      }
+      get_active_phases_with_metrics: {
+        Args: { p_tenant_id: string; p_today?: string }
+        Returns: {
+          allocated_users_count: number
+          allocations_count: number
+          id: string
+          ist_hours: number
+          plan_hours: number
+          soll_hours: number
+          tenant_id: string
+        }[]
       }
       get_allocations_for_week: {
         Args: { p_tenant_id: string; p_week_start: string }
@@ -821,13 +1173,53 @@ export type Database = {
           weekly_hours: number
         }[]
       }
+      get_latest_insights_for_phases: {
+        Args: { p_phase_ids: string[] }
+        Returns: {
+          burn_rate_ist: number | null
+          burn_rate_ist_trend: string | null
+          burn_rate_plan: number | null
+          capacity_gap_days: number | null
+          capacity_gap_hours: number | null
+          completion_date_ist: string | null
+          completion_date_plan: string | null
+          created_at: string
+          data_points_count: number | null
+          data_quality: string | null
+          days_remaining_ist: number | null
+          days_remaining_plan: number | null
+          deadline_delta_ist: number | null
+          deadline_delta_plan: number | null
+          detail_text: string | null
+          id: string
+          insight_date: string
+          phase_id: string
+          progress_percent: number | null
+          recommendation_text: string | null
+          remaining_hours: number | null
+          status: string
+          suggested_action: Json | null
+          summary_text: string
+          tenant_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "phase_insights"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       is_current_user_admin: { Args: never; Returns: boolean }
       is_current_user_planer_or_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       absence_type: "vacation" | "sick" | "holiday" | "training" | "other"
       conflict_resolution: "moved" | "deleted" | "ignored"
-      phase_bereich: "produktion" | "montage" | "externes_gewerk" | "nicht_definiert"
+      phase_bereich:
+        | "produktion"
+        | "montage"
+        | "externes_gewerk"
+        | "nicht_definiert"
       phase_status: "active" | "deleted"
       project_status: "planning" | "active" | "paused" | "completed"
       sync_service: "asana" | "timetac"
@@ -958,11 +1350,19 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       absence_type: ["vacation", "sick", "holiday", "training", "other"],
       conflict_resolution: ["moved", "deleted", "ignored"],
-      phase_bereich: ["produktion", "montage", "externes_gewerk", "nicht_definiert"],
+      phase_bereich: [
+        "produktion",
+        "montage",
+        "externes_gewerk",
+        "nicht_definiert",
+      ],
       phase_status: ["active", "deleted"],
       project_status: ["planning", "active", "paused", "completed"],
       sync_service: ["asana", "timetac"],
@@ -972,12 +1372,15 @@ export const Constants = {
   },
 } as const
 
-// Convenience type exports for use in application code
-export type AbsenceType = Database["public"]["Enums"]["absence_type"];
-export type ConflictResolution = Database["public"]["Enums"]["conflict_resolution"];
-export type PhaseBereich = Database["public"]["Enums"]["phase_bereich"];
-export type PhaseStatus = Database["public"]["Enums"]["phase_status"];
-export type ProjectStatus = Database["public"]["Enums"]["project_status"];
-export type SyncService = Database["public"]["Enums"]["sync_service"];
-export type SyncStatus = Database["public"]["Enums"]["sync_status"];
-export type UserRole = Database["public"]["Enums"]["user_role"];
+// ═══════════════════════════════════════════════════════════════════════════
+// Convenience type aliases for enums
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type UserRole = Database['public']['Enums']['user_role'];
+export type ProjectStatus = Database['public']['Enums']['project_status'];
+export type PhaseBereich = Database['public']['Enums']['phase_bereich'];
+export type PhaseStatus = Database['public']['Enums']['phase_status'];
+export type AbsenceType = Database['public']['Enums']['absence_type'];
+export type SyncService = Database['public']['Enums']['sync_service'];
+export type SyncStatus = Database['public']['Enums']['sync_status'];
+export type ConflictResolution = Database['public']['Enums']['conflict_resolution'];

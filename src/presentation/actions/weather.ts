@@ -115,8 +115,7 @@ export async function getProjectWeatherAction(
           lng = geoResult.lng;
 
           // Koordinaten in DB speichern für zukünftige Requests
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase.from('projects') as any)
+          await supabase.from('projects')
             .update({
               address_lat: lat,
               address_lng: lng,
