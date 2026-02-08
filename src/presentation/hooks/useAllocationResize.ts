@@ -41,8 +41,6 @@ export interface UseAllocationResizeReturn {
   previewSpanDays: number;
   /** Pixel-Offset für Echtzeit-Animation während des Drags */
   pixelOffset: number;
-  /** Ob gerade Snap-Animation läuft */
-  isSnapping: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -58,7 +56,7 @@ export interface UseAllocationResizeReturn {
  *
  * @example
  * ```tsx
- * const { handleProps, isResizing, previewSpanDays, pixelOffset, isSnapping } = useAllocationResize({
+ * const { handleProps, isResizing, previewSpanDays, pixelOffset } = useAllocationResize({
  *   allocationIds: ['alloc-1', 'alloc-2'],
  *   startDayIndex: 0,
  *   currentSpanDays: 2,
@@ -79,7 +77,6 @@ export function useAllocationResize({
   onResizeComplete,
 }: UseAllocationResizeOptions): UseAllocationResizeReturn {
   const [isResizing, setIsResizing] = useState(false);
-  const [isSnapping, setIsSnapping] = useState(false);
   const [previewSpanDays, setPreviewSpanDays] = useState(currentSpanDays);
   const [pixelOffset, setPixelOffset] = useState(0);
 
@@ -92,12 +89,12 @@ export function useAllocationResize({
   // Sync currentSpanDays mit ref
   useEffect(() => {
     currentSpanRef.current = currentSpanDays;
-    if (!isResizing && !isSnapping) {
+    if (!isResizing) {
       setPreviewSpanDays(currentSpanDays);
       previewSpanRef.current = currentSpanDays;
       setPixelOffset(0);
     }
-  }, [currentSpanDays, isResizing, isSnapping]);
+  }, [currentSpanDays, isResizing]);
 
   /**
    * Berechnet die maximal erlaubte Span-Länge basierend auf Constraints.
@@ -222,30 +219,20 @@ export function useAllocationResize({
 
         const finalSpan = previewSpanRef.current;
 
-        // Starte Snap-Animation
+        // Reset sofort — Grid-Column ändert sich direkt,
+        // CSS transition-all duration-150 auf der Card animiert automatisch
         setIsResizing(false);
-        setIsSnapping(true);
+        setPixelOffset(0);
 
-        // Animiere zum finalen Snap-Punkt
-        const snapPixelOffset = (finalSpan - currentSpanRef.current) * colWidth;
-        setPixelOffset(snapPixelOffset);
-
-        // Nach Animation: finalize
-        setTimeout(async () => {
-          setIsSnapping(false);
-          setPixelOffset(0);
-
-          if (finalSpan !== currentSpanRef.current) {
-            try {
-              await onResizeComplete(finalSpan);
-            } catch (error) {
-              // Bei Fehler zurücksetzen
-              setPreviewSpanDays(currentSpanRef.current);
-              previewSpanRef.current = currentSpanRef.current;
-              console.error('Resize failed:', error);
-            }
+        if (finalSpan !== currentSpanRef.current) {
+          try {
+            await onResizeComplete(finalSpan);
+          } catch (error) {
+            setPreviewSpanDays(currentSpanRef.current);
+            previewSpanRef.current = currentSpanRef.current;
+            console.warn('[Resize] Resize failed:', error);
           }
-        }, 150); // Match CSS transition duration
+        }
       };
 
       document.addEventListener('mousemove', handleMouseMove);
@@ -322,29 +309,20 @@ export function useAllocationResize({
 
         const finalSpan = previewSpanRef.current;
 
-        // Starte Snap-Animation
+        // Reset sofort — Grid-Column ändert sich direkt,
+        // CSS transition-all duration-150 auf der Card animiert automatisch
         setIsResizing(false);
-        setIsSnapping(true);
+        setPixelOffset(0);
 
-        // Animiere zum finalen Snap-Punkt
-        const snapPixelOffset = (finalSpan - currentSpanRef.current) * colWidth;
-        setPixelOffset(snapPixelOffset);
-
-        // Nach Animation: finalize
-        setTimeout(async () => {
-          setIsSnapping(false);
-          setPixelOffset(0);
-
-          if (finalSpan !== currentSpanRef.current) {
-            try {
-              await onResizeComplete(finalSpan);
-            } catch (error) {
-              setPreviewSpanDays(currentSpanRef.current);
-              previewSpanRef.current = currentSpanRef.current;
-              console.error('Resize failed:', error);
-            }
+        if (finalSpan !== currentSpanRef.current) {
+          try {
+            await onResizeComplete(finalSpan);
+          } catch (error) {
+            setPreviewSpanDays(currentSpanRef.current);
+            previewSpanRef.current = currentSpanRef.current;
+            console.warn('[Resize] Resize failed:', error);
           }
-        }, 150);
+        }
       };
 
       document.addEventListener('touchmove', handleTouchMove, {
@@ -364,6 +342,5 @@ export function useAllocationResize({
     isResizing,
     previewSpanDays,
     pixelOffset,
-    isSnapping,
   };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronRight, HelpCircle } from 'lucide-react';
+import { memo } from 'react';
 
 import type { ProjectRowData } from '@/application/queries';
 
@@ -21,6 +22,7 @@ interface ProjectRowProps {
   weekDates: Date[];
   onToggleExpand: (projectId: string) => void;
   onShowDetails?: (projectId: string) => void;
+  highlightPhaseId: string | null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -65,7 +67,7 @@ function getStatusLabel(status: string): string {
  * - KPIs: Wochenstunden, Budget, Verbleibend
  * - Phasen-Zeilen wenn aufgeklappt
  */
-export function ProjectRow({ project, weekDates, onToggleExpand, onShowDetails }: ProjectRowProps) {
+export const ProjectRow = memo(function ProjectRow({ project, weekDates, onToggleExpand, onShowDetails, highlightPhaseId }: ProjectRowProps) {
   const { isExpanded, hasActivePhasesThisWeek } = project;
 
   return (
@@ -147,6 +149,7 @@ export function ProjectRow({ project, weekDates, onToggleExpand, onShowDetails }
               phase={phase}
               weekDates={weekDates}
               projectId={project.project.id}
+              highlightPhaseId={highlightPhaseId}
             />
           ))}
         </div>
@@ -160,4 +163,6 @@ export function ProjectRow({ project, weekDates, onToggleExpand, onShowDetails }
       )}
     </div>
   );
-}
+});
+
+ProjectRow.displayName = 'ProjectRow';

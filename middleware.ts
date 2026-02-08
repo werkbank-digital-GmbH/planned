@@ -122,20 +122,24 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 5. Eingeloggt auf Auth-Route → Dashboard-Redirect
+  // 4b. User-Rolle einmalig laden (für alle rollenbasierten Entscheidungen)
   // ─────────────────────────────────────────────────────────────────────────
-  if (isAuthenticated && isAuthRoute) {
-    // User-Rolle aus Datenbank holen
+  let userRole: string | null = null;
+  if (isAuthenticated) {
     const { data: userData } = await supabase
       .from('users')
       .select('role')
       .eq('auth_id', authUser.id)
       .single();
 
-    const role = userData?.role ?? 'gewerblich';
+    userRole = userData?.role ?? 'gewerblich';
+  }
 
-    // Redirect basierend auf Rolle
-    if (role === 'gewerblich') {
+  // ─────────────────────────────────────────────────────────────────────────
+  // 5. Eingeloggt auf Auth-Route → Dashboard-Redirect
+  // ─────────────────────────────────────────────────────────────────────────
+  if (isAuthenticated && isAuthRoute) {
+    if (userRole === 'gewerblich') {
       return NextResponse.redirect(new URL('/meine-woche', request.url));
     } else {
       return NextResponse.redirect(new URL('/dashboard', request.url));
@@ -146,17 +150,7 @@ export async function middleware(request: NextRequest) {
   // 6. Rollen-basierte Zugriffskontrolle
   // ─────────────────────────────────────────────────────────────────────────
   if (isAuthenticated && isDesktopRoute) {
-    // User-Rolle aus Datenbank holen
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('auth_id', authUser.id)
-      .single();
-
-    const role = userData?.role ?? 'gewerblich';
-
-    // Gewerbliche dürfen nicht auf Desktop-Routen
-    if (role === 'gewerblich') {
+    if (userRole === 'gewerblich') {
       return NextResponse.redirect(new URL('/meine-woche', request.url));
     }
   }
@@ -166,15 +160,7 @@ export async function middleware(request: NextRequest) {
   // ─────────────────────────────────────────────────────────────────────────
   if (pathname === '/') {
     if (isAuthenticated) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('role')
-        .eq('auth_id', authUser.id)
-        .single();
-
-      const role = userData?.role ?? 'gewerblich';
-
-      if (role === 'gewerblich') {
+      if (userRole === 'gewerblich') {
         return NextResponse.redirect(new URL('/meine-woche', request.url));
       } else {
         return NextResponse.redirect(new URL('/dashboard', request.url));

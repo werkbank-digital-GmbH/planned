@@ -1,7 +1,7 @@
 'use client';
 
 import { GripHorizontal, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useResizable } from '@/presentation/hooks/useResizable';
@@ -136,9 +136,10 @@ export function PlanningGrid() {
     getWeekDates,
     toggleProjectExpanded,
     allUserRows,
+    highlightPhaseId,
   } = usePlanning();
 
-  const weekDates = getWeekDates();
+  const weekDates = useMemo(() => getWeekDates(), [getWeekDates]);
 
   // State für Projekt-Detail-Modal
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -238,6 +239,7 @@ export function PlanningGrid() {
                   weekDates={weekDates}
                   onToggleExpand={toggleProjectExpanded}
                   onShowDetails={setSelectedProjectId}
+                  highlightPhaseId={highlightPhaseId}
                 />
               ))
             )}

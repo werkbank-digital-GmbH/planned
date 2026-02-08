@@ -1,14 +1,13 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import type { InsightStatus } from '@/domain/analytics/types';
 
 import type { PhaseRowData } from '@/application/queries';
 
 import { Badge } from '@/presentation/components/ui/badge';
-import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
 import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
@@ -30,6 +29,7 @@ interface PhaseRowProps {
   phase: PhaseRowData;
   weekDates: Date[];
   projectId: string;
+  highlightPhaseId: string | null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -166,9 +166,8 @@ function DayCell({
  * - Multi-Tag-Spans als zusammenhängende Blöcke (z.B. "Mo-Fr")
  * - Drop-Zones für Drag & Drop aus dem Pool
  */
-export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
+export const PhaseRow = memo(function PhaseRow({ phase, weekDates, projectId, highlightPhaseId }: PhaseRowProps) {
   const { isActiveThisWeek, insightStatus } = phase;
-  const { highlightPhaseId } = usePlanning();
   const isHighlighted = highlightPhaseId === phase.phase.id;
 
   // Border-Farbe basierend auf Insight-Status
@@ -187,9 +186,13 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
   const multiDaySpans = useMemo(() => spans.filter((s) => s.spanDays > 1), [spans]);
 
   // Berechne die Summe der geplanten Stunden für diese Woche aus den Allocations
-  const weeklyPlannedHours = Object.values(phase.dayAllocations)
-    .flat()
-    .reduce((sum, allocation) => sum + (allocation.plannedHours ?? 0), 0);
+  const weeklyPlannedHours = useMemo(
+    () =>
+      Object.values(phase.dayAllocations)
+        .flat()
+        .reduce((sum, allocation) => sum + (allocation.plannedHours ?? 0), 0),
+    [phase.dayAllocations]
+  );
 
   return (
     <div
@@ -283,4 +286,6 @@ export function PhaseRow({ phase, weekDates, projectId }: PhaseRowProps) {
       </div>
     </div>
   );
-}
+});
+
+PhaseRow.displayName = 'PhaseRow';

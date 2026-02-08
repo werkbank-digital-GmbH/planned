@@ -2,6 +2,7 @@
 
 import { useDraggable } from '@dnd-kit/core';
 import { AlertCircle, Truck, User } from 'lucide-react';
+import { memo } from 'react';
 
 import type { AllocationWithDetails } from '@/application/queries';
 
@@ -44,7 +45,7 @@ interface AssignmentCardProps {
  * - Draggable für Verschieben
  * - Resize-Handle am rechten Rand mit Echtzeit-Preview
  */
-export function AssignmentCard({
+export const AssignmentCard = memo(function AssignmentCard({
   allocation,
   compact = false,
   dayIndex,
@@ -81,7 +82,7 @@ export function AssignmentCard({
   });
 
   // Resize Hook für Echtzeit-Preview mit pixelgenauer Animation
-  const { handleProps, isResizing, previewSpanDays, pixelOffset, isSnapping } = useAllocationResize({
+  const { handleProps, isResizing, previewSpanDays, pixelOffset } = useAllocationResize({
     allocationIds: [allocation.id],
     startDayIndex: dayIndex ?? 0,
     currentSpanDays: 1,
@@ -150,10 +151,10 @@ export function AssignmentCard({
       };
     }
     // Bei Resize: pixelgenaue Breitenanpassung
-    if ((isResizing || isSnapping) && pixelOffset !== 0) {
+    if (isResizing && pixelOffset !== 0) {
       return {
         width: `calc(100% + ${pixelOffset}px)`,
-        transition: isSnapping ? 'width 150ms ease-out' : 'none',
+        transition: 'none',
       };
     }
     return undefined;
@@ -191,7 +192,7 @@ export function AssignmentCard({
         isUser ? styles.cardUser : styles.cardResource,
         hasConflict && styles.cardConflict,
         isDragging && styles.cardDragging,
-        (isResizing || isSnapping) && styles.cardResizing,
+        isResizing && styles.cardResizing,
         compact && 'max-w-[80px]'
       )}
     >
@@ -219,7 +220,7 @@ export function AssignmentCard({
           className={cn(
             styles.resizeHandleBase,
             isUser ? styles.resizeHandleUser : styles.resizeHandleResource,
-            (isResizing || isSnapping) && styles.resizeHandleActive
+            isResizing && styles.resizeHandleActive
           )}
           title="Ziehen um Dauer zu ändern"
         />
@@ -243,7 +244,9 @@ export function AssignmentCard({
       {cardContent}
     </AllocationPopover>
   );
-}
+});
+
+AssignmentCard.displayName = 'AssignmentCard';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPERS

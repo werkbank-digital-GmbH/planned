@@ -2,6 +2,7 @@
 
 import { useDraggable } from '@dnd-kit/core';
 import { Calendar, Truck, User } from 'lucide-react';
+import { memo } from 'react';
 
 import {
   createAllocationAction,
@@ -61,7 +62,7 @@ function getSpanLabel(spanDays: number): string {
  * - Draggable für Verschieben des gesamten Blocks
  * - Resize-Handle am rechten Rand mit Echtzeit-Preview
  */
-export function SpanningAssignmentCard({
+export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
   span,
   phaseStartDate,
   phaseEndDate,
@@ -98,7 +99,7 @@ export function SpanningAssignmentCard({
   });
 
   // Resize Hook für Echtzeit-Preview mit pixelgenauer Animation
-  const { handleProps, isResizing, previewSpanDays, pixelOffset, isSnapping } = useAllocationResize({
+  const { handleProps, isResizing, previewSpanDays, pixelOffset } = useAllocationResize({
     allocationIds: span.allocations.map((a) => a.id),
     startDayIndex: span.startDayIndex,
     currentSpanDays: span.spanDays,
@@ -199,7 +200,7 @@ export function SpanningAssignmentCard({
   const isDragging = isMoveDragging;
 
   // Verwende Preview während Resize, sonst Original
-  const visualSpanDays = (isResizing || isSnapping) ? previewSpanDays : span.spanDays;
+  const visualSpanDays = isResizing ? previewSpanDays : span.spanDays;
   const spanLabel = getSpanLabel(visualSpanDays);
 
   // Kombinierte Styles für Drag und Resize
@@ -211,11 +212,10 @@ export function SpanningAssignmentCard({
       };
     }
     // Bei Resize: pixelgenaue Breitenanpassung
-    if ((isResizing || isSnapping) && pixelOffset !== 0) {
+    if (isResizing && pixelOffset !== 0) {
       return {
-        // Basis-Breite + Pixel-Offset für smooth Animation
         width: `calc(100% + ${pixelOffset}px)`,
-        transition: isSnapping ? 'width 150ms ease-out' : 'none',
+        transition: 'none',
       };
     }
     return undefined;
@@ -244,7 +244,7 @@ export function SpanningAssignmentCard({
         styles.cardBase,
         isUser ? styles.cardUser : styles.cardResource,
         isDragging && styles.cardDragging,
-        (isResizing || isSnapping) && styles.cardResizing
+        isResizing && styles.cardResizing
       )}
     >
       {/* Move-Bereich (gesamte Card außer Handle) */}
@@ -273,7 +273,7 @@ export function SpanningAssignmentCard({
         className={cn(
           styles.resizeHandleBase,
           isUser ? styles.resizeHandleUser : styles.resizeHandleResource,
-          (isResizing || isSnapping) && styles.resizeHandleActive
+          isResizing && styles.resizeHandleActive
         )}
         title="Ziehen um Dauer zu ändern"
       />
@@ -299,4 +299,6 @@ export function SpanningAssignmentCard({
       {cardContent}
     </AllocationPopover>
   );
-}
+});
+
+SpanningAssignmentCard.displayName = 'SpanningAssignmentCard';
