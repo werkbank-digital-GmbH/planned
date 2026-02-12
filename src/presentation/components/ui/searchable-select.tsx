@@ -51,6 +51,8 @@ export function SearchableSelect({
   const [open, setOpen] = useState(false);
 
   const selectedOption = options.find((o) => o.value === value);
+  const displayLabel = selectedOption?.label
+    ?? (value ? `Konfiguriert (${value.slice(-6)})` : null);
 
   const handleSelect = (selectedValue: string) => {
     onValueChange(selectedValue);
@@ -73,8 +75,8 @@ export function SearchableSelect({
         onClick={() => setOpen(true)}
         disabled={disabled}
       >
-        <span className={cn(!selectedOption && 'text-muted-foreground')}>
-          {selectedOption?.label || placeholder}
+        <span className={cn(!displayLabel && 'text-muted-foreground')}>
+          {displayLabel || placeholder}
         </span>
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>

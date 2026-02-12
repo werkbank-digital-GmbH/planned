@@ -85,11 +85,12 @@ export function useAllocationResize({
   const columnWidthRef = useRef(0);
   const currentSpanRef = useRef(currentSpanDays);
   const previewSpanRef = useRef(currentSpanDays);
+  const completingRef = useRef(false);
 
   // Sync currentSpanDays mit ref
   useEffect(() => {
     currentSpanRef.current = currentSpanDays;
-    if (!isResizing) {
+    if (!isResizing && !completingRef.current) {
       setPreviewSpanDays(currentSpanDays);
       previewSpanRef.current = currentSpanDays;
       setPixelOffset(0);
@@ -219,11 +220,15 @@ export function useAllocationResize({
 
         const finalSpan = previewSpanRef.current;
 
-        // Reset sofort — Grid-Column ändert sich direkt,
-        // CSS transition-all duration-150 auf der Card animiert automatisch
-        setIsResizing(false);
+        // 1. Preview auf finale Position locken
+        setPreviewSpanDays(finalSpan);
         setPixelOffset(0);
 
+        // 2. Guard aktivieren, damit useEffect nicht zurücksetzt
+        completingRef.current = true;
+        setIsResizing(false);
+
+        // 3. Server-Call + optimistisches Update
         if (finalSpan !== currentSpanRef.current) {
           try {
             await onResizeComplete(finalSpan);
@@ -233,6 +238,9 @@ export function useAllocationResize({
             console.warn('[Resize] Resize failed:', error);
           }
         }
+
+        // 4. Guard lösen
+        completingRef.current = false;
       };
 
       document.addEventListener('mousemove', handleMouseMove);
@@ -309,11 +317,15 @@ export function useAllocationResize({
 
         const finalSpan = previewSpanRef.current;
 
-        // Reset sofort — Grid-Column ändert sich direkt,
-        // CSS transition-all duration-150 auf der Card animiert automatisch
-        setIsResizing(false);
+        // 1. Preview auf finale Position locken
+        setPreviewSpanDays(finalSpan);
         setPixelOffset(0);
 
+        // 2. Guard aktivieren, damit useEffect nicht zurücksetzt
+        completingRef.current = true;
+        setIsResizing(false);
+
+        // 3. Server-Call + optimistisches Update
         if (finalSpan !== currentSpanRef.current) {
           try {
             await onResizeComplete(finalSpan);
@@ -323,6 +335,9 @@ export function useAllocationResize({
             console.warn('[Resize] Resize failed:', error);
           }
         }
+
+        // 4. Guard lösen
+        completingRef.current = false;
       };
 
       document.addEventListener('touchmove', handleTouchMove, {

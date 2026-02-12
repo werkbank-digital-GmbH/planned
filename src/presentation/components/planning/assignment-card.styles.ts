@@ -62,22 +62,6 @@ export const resizeHandleResource = 'to-orange-300';
 export const resizeHandleActive = 'opacity-100 bg-blue-400';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GHOST PREVIEW
-// ═══════════════════════════════════════════════════════════════════════════
-
-/** Basis-Styles für Ghost-Preview während Resize */
-export const ghostPreviewBase = [
-  'absolute top-0 bottom-0 left-0',
-  'border-2 border-dashed rounded pointer-events-none',
-].join(' ');
-
-/** Ghost-Preview für User-Card */
-export const ghostPreviewUser = 'border-blue-400 bg-blue-50/30';
-
-/** Ghost-Preview für Resource-Card */
-export const ghostPreviewResource = 'border-orange-400 bg-orange-50/30';
-
-// ═══════════════════════════════════════════════════════════════════════════
 // MOVE HANDLE
 // ═══════════════════════════════════════════════════════════════════════════
 

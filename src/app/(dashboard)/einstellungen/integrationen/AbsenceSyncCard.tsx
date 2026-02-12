@@ -35,6 +35,7 @@ export function AbsenceSyncCard() {
 
   const [projects, setProjects] = useState<AsanaProjectDTO[]>([]);
   const [absenceProjectId, setAbsenceProjectId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [syncResult, setSyncResult] = useState<{
     created: number;
     updated: number;
@@ -56,6 +57,8 @@ export function AbsenceSyncCard() {
 
       if (projectsResult.success) {
         setProjects(projectsResult.data);
+      } else {
+        setLoadError('Projekte konnten nicht geladen werden');
       }
 
       setIsLoading(false);
@@ -128,6 +131,17 @@ export function AbsenceSyncCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {loadError && (
+          <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+            <div className="text-sm text-red-800">
+              <p className="font-medium">Daten konnten nicht geladen werden</p>
+              <p className="mt-1">{loadError}</p>
+              <p className="mt-1">Die gespeicherte Konfiguration ist weiterhin aktiv.</p>
+            </div>
+          </div>
+        )}
+
         {/* Erklärung */}
         <div className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
           <p>

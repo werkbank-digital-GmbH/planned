@@ -215,8 +215,8 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
     if (isResizing && pixelOffset !== 0) {
       return {
         width: `calc(100% + ${pixelOffset}px)`,
-        transition: 'none',
-      };
+        transitionProperty: 'box-shadow, border-color, background-color, color, opacity',
+      } as React.CSSProperties;
     }
     return undefined;
   })();
@@ -278,19 +278,6 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
         title="Ziehen um Dauer zu ändern"
       />
 
-      {/* Ghost-Preview zeigt finale Snap-Position während des Drags */}
-      {isResizing && previewSpanDays !== span.spanDays && (
-        <div
-          className={cn(
-            styles.ghostPreviewBase,
-            isUser ? styles.ghostPreviewUser : styles.ghostPreviewResource
-          )}
-          style={{
-            // Preview zeigt finale Größe basierend auf previewSpanDays
-            width: `${(previewSpanDays / span.spanDays) * 100}%`,
-          }}
-        />
-      )}
     </div>
   );
 

@@ -82,7 +82,7 @@ export const AssignmentCard = memo(function AssignmentCard({
   });
 
   // Resize Hook für Echtzeit-Preview mit pixelgenauer Animation
-  const { handleProps, isResizing, previewSpanDays, pixelOffset } = useAllocationResize({
+  const { handleProps, isResizing, pixelOffset } = useAllocationResize({
     allocationIds: [allocation.id],
     startDayIndex: dayIndex ?? 0,
     currentSpanDays: 1,
@@ -154,8 +154,8 @@ export const AssignmentCard = memo(function AssignmentCard({
     if (isResizing && pixelOffset !== 0) {
       return {
         width: `calc(100% + ${pixelOffset}px)`,
-        transition: 'none',
-      };
+        transitionProperty: 'box-shadow, border-color, background-color, color, opacity',
+      } as React.CSSProperties;
     }
     return undefined;
   })();
@@ -226,16 +226,6 @@ export const AssignmentCard = memo(function AssignmentCard({
         />
       )}
 
-      {/* Ghost-Preview zeigt finale Snap-Position während des Drags */}
-      {isResizing && previewSpanDays > 1 && (
-        <div
-          className={cn(
-            styles.ghostPreviewBase,
-            isUser ? styles.ghostPreviewUser : styles.ghostPreviewResource
-          )}
-          style={{ width: `${previewSpanDays * 100}%` }}
-        />
-      )}
     </div>
   );
 

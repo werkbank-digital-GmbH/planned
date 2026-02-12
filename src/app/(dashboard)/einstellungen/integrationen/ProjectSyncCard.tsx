@@ -61,6 +61,7 @@ export function ProjectSyncCard() {
     addressFieldId: null,
   });
   const [syncResult, setSyncResult] = useState<TaskSyncResultDTO | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Daten laden
   useEffect(() => {
@@ -71,12 +72,18 @@ export function ProjectSyncCard() {
         getAsanaSourceConfig(),
       ]);
 
+      const errors: string[] = [];
+
       if (teamsResult.success) {
         setTeams(teamsResult.data);
+      } else {
+        errors.push('Teams konnten nicht geladen werden');
       }
 
       if (projectsResult.success) {
         setProjects(projectsResult.data);
+      } else {
+        errors.push('Projekte konnten nicht geladen werden');
       }
 
       if (configResult.success) {
@@ -87,8 +94,14 @@ export function ProjectSyncCard() {
           const fieldsResult = await getAsanaCustomFields();
           if (fieldsResult.success) {
             setCustomFields(fieldsResult.data);
+          } else {
+            errors.push('Custom Fields konnten nicht geladen werden');
           }
         }
+      }
+
+      if (errors.length > 0) {
+        setLoadError(errors.join('. '));
       }
 
       setIsLoading(false);
@@ -194,6 +207,17 @@ export function ProjectSyncCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {loadError && (
+          <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+            <div className="text-sm text-red-800">
+              <p className="font-medium">Daten konnten nicht geladen werden</p>
+              <p className="mt-1">{loadError}</p>
+              <p className="mt-1">Die gespeicherte Konfiguration ist weiterhin aktiv.</p>
+            </div>
+          </div>
+        )}
+
         {/* Quell-Konfiguration */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Quell-Konfiguration</h3>
