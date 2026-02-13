@@ -27,7 +27,7 @@ export const cardResource = 'bg-orange-50 text-orange-800 border-orange-200 hove
 export const cardDragging = 'opacity-50 ring-2 ring-blue-500 shadow-lg';
 
 /** Styles für Resize-Zustand */
-export const cardResizing = 'ring-2 ring-blue-400 z-10';
+export const cardResizing = 'z-10 shadow-lg';
 
 /** Styles für Konflikt-Markierung */
 export const cardConflict = 'ring-2 ring-red-400';

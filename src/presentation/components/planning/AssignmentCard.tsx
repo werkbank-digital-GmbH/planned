@@ -81,8 +81,8 @@ export const AssignmentCard = memo(function AssignmentCard({
     },
   });
 
-  // Resize Hook für Echtzeit-Preview mit pixelgenauer Animation
-  const { handleProps, isResizing, pixelOffset } = useAllocationResize({
+  // Resize Hook — snappt auf volle Tagesbreiten
+  const { handleProps, isResizing, previewSpanDays } = useAllocationResize({
     allocationIds: [allocation.id],
     startDayIndex: dayIndex ?? 0,
     currentSpanDays: 1,
@@ -150,11 +150,11 @@ export const AssignmentCard = memo(function AssignmentCard({
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
       };
     }
-    // Bei Resize: pixelgenaue Breitenanpassung
-    if (isResizing && pixelOffset !== 0) {
+    // Bei Resize: Width via previewSpanDays mit CSS-Transition
+    if (isResizing && previewSpanDays > 1) {
       return {
-        width: `calc(100% + ${pixelOffset}px)`,
-        transitionProperty: 'box-shadow, border-color, background-color, color, opacity',
+        width: `${previewSpanDays * 100}%`,
+        transition: 'width 150ms ease-out',
       } as React.CSSProperties;
     }
     return undefined;

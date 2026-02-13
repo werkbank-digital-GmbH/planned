@@ -98,8 +98,8 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
     },
   });
 
-  // Resize Hook für Echtzeit-Preview mit pixelgenauer Animation
-  const { handleProps, isResizing, previewSpanDays, pixelOffset } = useAllocationResize({
+  // Resize Hook — snappt auf volle Tagesbreiten
+  const { handleProps, isResizing, previewSpanDays } = useAllocationResize({
     allocationIds: span.allocations.map((a) => a.id),
     startDayIndex: span.startDayIndex,
     currentSpanDays: span.spanDays,
@@ -211,11 +211,11 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
       };
     }
-    // Bei Resize: pixelgenaue Breitenanpassung
-    if (isResizing && pixelOffset !== 0) {
+    // Bei Resize: Width via previewSpanDays Ratio mit CSS-Transition
+    if (isResizing && previewSpanDays !== span.spanDays) {
       return {
-        width: `calc(100% + ${pixelOffset}px)`,
-        transitionProperty: 'box-shadow, border-color, background-color, color, opacity',
+        width: `${(previewSpanDays / span.spanDays) * 100}%`,
+        transition: 'width 150ms ease-out',
       } as React.CSSProperties;
     }
     return undefined;
