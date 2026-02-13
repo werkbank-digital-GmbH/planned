@@ -60,7 +60,7 @@ export function AppHeader({ user, userRole }: AppHeaderProps) {
 
   return (
     <header className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           {/* Links: Hamburger + Seitentitel */}
           <div className="flex items-center gap-3">
