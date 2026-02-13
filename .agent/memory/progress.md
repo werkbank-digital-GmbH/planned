@@ -1,5 +1,58 @@
 # Progress Log
 
+## 2026-02-13 (Session 27)
+
+### Session: Query Parallelization + Analytics Test Coverage
+
+**Abgeschlossen:**
+
+1. **Feature 6: Query Parallelization (5→3 DB-Calls)** ✅
+   - `GetAllocationsForWeekQuery.ts` — `executeProjectCentric()` optimiert
+   - Vorher: 3 sequentielle Schritte, 5 DB-Calls (inkl. redundanten `findByIds`)
+   - Nachher: 2 sequentielle Schritte, 3 DB-Calls
+   - `Promise.all([allocations, allUsers, phases])` parallel, dann `absences` separat
+   - `userMap` direkt aus `allUsers` gefiltert (kein extra DB-Call)
+   - Geschätzte Einsparung: ~50-80ms pro Request
+
+2. **Feature 8: Analytics Test Coverage — 93 neue Tests** ✅
+   - **Domain Layer (67 Tests):**
+     - `BurnRateCalculator.test.ts` — 19 Tests: calculate(), trend detection (up/down/stable), hasEnoughData(), weekend normalization, PLAN burn rate
+     - `ProgressionCalculator.test.ts` — 32 Tests: calculate(), determineStatus() (7 Stufen), determineDataQuality(), workingDaysBetween(), addWorkingDays()
+     - `ProjectInsightAggregator.test.ts` — 16 Tests: aggregate(), SOLL back-calculation, status priority hierarchy, deadline delta, phase counting
+   - **Application Layer (26 Tests):**
+     - `GeneratePhaseSnapshotsUseCase.test.ts` — 9 Tests: no tenants, idempotency, multi-tenant, error handling, batch insert, Supabase mock chains
+     - `GenerateInsightsUseCase.test.ts` — 17 Tests: basic (no tenants, no projects, not_started, snapshots, text generation, project insights, errors, batches) + enhanced (weather, availability, cache hits, suggestedAction, error resilience)
+   - **Shared:** `test-helpers.ts` mit Factories (createSnapshot, createBurnRate, createPhaseInsight)
+
+**Bugs gefixt während Tests:**
+- BurnRateCalculator "stable" trend: Wochenend-Datumslücken verursachten normalization artifacts → nur Wochentag-Daten in Tests
+- TypeScript: `null` vs `undefined` für suggestedAction, fehlende Mock-Methoden (evaluateForConstruction, deleteOldEntries)
+- ESLint: Inline `import()` types → proper type imports, import ordering
+
+**Guard-Ergebnisse:**
+- ESLint: ✅
+- TypeScript: ✅
+- Tests: 695 passed (vorher 602, +93 neue)
+
+**Neue Dateien (6):**
+- `src/domain/analytics/__tests__/test-helpers.ts`
+- `src/domain/analytics/__tests__/BurnRateCalculator.test.ts`
+- `src/domain/analytics/__tests__/ProgressionCalculator.test.ts`
+- `src/domain/analytics/__tests__/ProjectInsightAggregator.test.ts`
+- `src/application/use-cases/analytics/__tests__/GeneratePhaseSnapshotsUseCase.test.ts`
+- `src/application/use-cases/analytics/__tests__/GenerateInsightsUseCase.test.ts`
+
+**Geänderte Dateien (1):**
+- `src/application/queries/GetAllocationsForWeekQuery.ts` — executeProjectCentric() parallelisiert
+
+**Commit:** `0cb11be` — feat: Planning UX improvements, query optimization and analytics test coverage
+**Pushed:** `origin/main` ✅
+
+Gesamter Commit umfasst Sessions 26+27: 31 Dateien, 2584 Insertions, 217 Deletions.
+Features 1-7 der Roadmap komplett abgeschlossen.
+
+---
+
 ## 2026-02-13 (Session 26)
 
 ### Session: 4 Planning UI Features (Drop Highlight, Hide Empty, Sticky Headers, Slide-Transition)
@@ -60,7 +113,7 @@
 - `src/app/(dashboard)/planung/page.tsx` — EmptyFilterProvider + Toggles
 - `tailwind.config.ts` — slide-in Keyframes + Animations
 
-**Noch kein Commit** — Alle 4 Features implementiert, Guards bestanden.
+**Commit:** Teil von `0cb11be` (zusammen mit Session 27 committed)
 
 ---
 

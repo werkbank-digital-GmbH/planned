@@ -10,6 +10,7 @@
 /** Basis-Styles für alle Assignment Cards */
 export const cardBase = [
   'group relative flex items-center gap-1.5',
+  'w-full',
   'px-2 py-1 rounded text-xs',
   'select-none cursor-pointer',
   'border shadow-sm',
@@ -28,9 +29,6 @@ export const cardDragging = 'opacity-50 ring-2 ring-blue-500 shadow-lg';
 
 /** Styles für Resize-Zustand */
 export const cardResizing = 'z-10 shadow-lg';
-
-/** Styles für Konflikt-Markierung */
-export const cardConflict = 'ring-2 ring-red-400';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ICON STYLES

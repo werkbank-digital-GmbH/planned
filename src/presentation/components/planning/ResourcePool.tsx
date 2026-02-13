@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 
 import { PoolCard } from './PoolCard';
 import type { MonthWeek } from './utils/month-week-utils';
-import { getAbsenceDaysLabel } from './utils/month-week-utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -304,29 +303,15 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates: _per
                 >
                   <div className="flex flex-col gap-1">
                     {availableInWeek.length > 0 ? (
-                      availableInWeek.map((item) => {
-                        const absenceLabel = getAbsenceDaysLabel(
-                          item,
-                          week.weekDates,
-                          allMonthDates
-                        );
-
-                        return (
-                          <div key={`${item.type}-${item.id}-${week.weekKey}`} className="relative">
-                            <PoolCard
-                              item={item}
-                              weekDates={week.weekDates}
-                              compact
-                              contextKey={week.weekKey}
-                            />
-                            {absenceLabel && (
-                              <span className="absolute -top-1 -right-1 bg-red-100 text-red-700 text-[9px] font-medium px-1 rounded">
-                                {absenceLabel}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })
+                      availableInWeek.map((item) => (
+                          <PoolCard
+                            key={`${item.type}-${item.id}-${week.weekKey}`}
+                            item={item}
+                            weekDates={week.weekDates}
+                            compact
+                            contextKey={week.weekKey}
+                          />
+                      ))
                     ) : (
                       <div className="text-center text-xs text-gray-400 py-4">
                         –

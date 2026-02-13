@@ -1,7 +1,7 @@
 'use client';
 
 import { useDraggable } from '@dnd-kit/core';
-import { Calendar, Truck, User } from 'lucide-react';
+import { Truck, User } from 'lucide-react';
 import { memo } from 'react';
 
 import {
@@ -33,19 +33,6 @@ interface SpanningAssignmentCardProps {
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Erzeugt das Tage-Label für den Span.
- * 5 Tage = "Mo-Fr"
- * Sonst = "X Tage"
- */
-function getSpanLabel(spanDays: number): string {
-  if (spanDays === 5) return 'Mo-Fr';
-  if (spanDays === 4) return '4 Tage';
-  if (spanDays === 3) return '3 Tage';
-  if (spanDays === 2) return '2 Tage';
-  return '';
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
@@ -201,8 +188,6 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
 
   // Verwende Preview während Resize, sonst Original
   const visualSpanDays = isResizing ? previewSpanDays : span.spanDays;
-  const spanLabel = getSpanLabel(visualSpanDays);
-
   // Kombinierte Styles für Drag und Resize
   const style = (() => {
     // Bei Move-Drag: transform für Position
@@ -229,7 +214,6 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
     isUser,
     spanDays: visualSpanDays,
     plannedHours: span.totalHours,
-    actualHours: span.allocations.reduce((sum, a) => sum + (a.actualHours ?? 0), 0) || undefined,
     phaseName: firstAllocation.projectPhase.name,
     projectName: firstAllocation.project.name,
     notes: firstAllocation.notes ?? undefined,
@@ -259,12 +243,6 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
           <Truck className={styles.iconSize} />
         )}
         <span className="font-medium truncate">{span.displayName}</span>
-        {spanLabel && (
-          <span className="text-[10px] opacity-70 flex items-center gap-0.5">
-            <Calendar className="h-3 w-3" />
-            {spanLabel}
-          </span>
-        )}
       </div>
 
       {/* Resize-Handle am rechten Rand */}

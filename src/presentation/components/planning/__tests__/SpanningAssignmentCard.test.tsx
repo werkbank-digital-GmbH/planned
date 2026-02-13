@@ -83,36 +83,12 @@ describe('SpanningAssignmentCard', () => {
       expect(screen.getByText('M. Müller')).toBeInTheDocument();
     });
 
-    it('should render span label for 3 days', () => {
-      const span = createMockSpan({ spanDays: 3 });
-      render(<SpanningAssignmentCard span={span} />);
-      expect(screen.getByText('3 Tage')).toBeInTheDocument();
-    });
-
-    it('should render span label for 4 days', () => {
-      const span = createMockSpan({ spanDays: 4 });
-      render(<SpanningAssignmentCard span={span} />);
-      expect(screen.getByText('4 Tage')).toBeInTheDocument();
-    });
-
-    it('should render Mo-Fr for 5 day span', () => {
+    it('should not render span label on card (labels moved to popover)', () => {
       const span = createMockSpan({ spanDays: 5 });
       render(<SpanningAssignmentCard span={span} />);
-      expect(screen.getByText('Mo-Fr')).toBeInTheDocument();
-    });
-
-    it('should render span label for 2 days', () => {
-      const span = createMockSpan({ spanDays: 2 });
-      render(<SpanningAssignmentCard span={span} />);
-      expect(screen.getByText('2 Tage')).toBeInTheDocument();
-    });
-
-    it('should not render span label for 1 day', () => {
-      const span = createMockSpan({ spanDays: 1 });
-      render(<SpanningAssignmentCard span={span} />);
-      // No "Tage" label should appear for single day
-      expect(screen.queryByText(/Tage/)).not.toBeInTheDocument();
+      // Span labels removed from card — only shown in popover
       expect(screen.queryByText('Mo-Fr')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Tage/)).not.toBeInTheDocument();
     });
   });
 

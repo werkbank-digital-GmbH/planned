@@ -120,6 +120,11 @@ export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolC
           {isUser ? <User className="h-3 w-3" /> : <Truck className="h-3 w-3" />}
         </div>
         <span className="text-xs font-medium truncate">{item.name}</span>
+        {item.hasAbsence && item.absenceLabel && (
+          <span className="bg-red-100 text-red-700 text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 ml-auto">
+            {item.absenceLabel}
+          </span>
+        )}
       </div>
     );
   }
@@ -144,7 +149,7 @@ export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolC
       <div className="flex items-center gap-2">
         <div
           className={cn(
-            'flex items-center justify-center w-7 h-7 rounded-full',
+            'flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0',
             isUser ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
           )}
         >
@@ -156,14 +161,12 @@ export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolC
             {isUser ? item.role : item.resourceType}
           </div>
         </div>
+        {item.hasAbsence && item.absenceLabel && (
+          <span className="bg-red-100 text-red-700 text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0">
+            {item.absenceLabel}
+          </span>
+        )}
       </div>
-
-      {/* Abwesenheits-Label */}
-      {item.hasAbsence && item.absenceLabel && (
-        <div className="text-xs text-red-600 font-medium">
-          {item.absenceLabel}
-        </div>
-      )}
 
       {/* Verfügbarkeits-Indikatoren */}
       <div className="flex items-center justify-between gap-1">

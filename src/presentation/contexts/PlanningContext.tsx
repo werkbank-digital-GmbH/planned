@@ -404,17 +404,30 @@ export function PlanningProvider({
     );
   }, [monthWeekDataMap, expandedProjects]);
 
-  // Computed: Merged monthPoolItems (union aller Wochen, first week wins)
+  // Computed: Merged monthPoolItems (availability über alle Wochen konkateniert)
   const monthPoolItems = useMemo((): PoolItem[] => {
     if (monthWeekDataMap.size === 0) return [];
 
     const poolMap = new Map<string, PoolItem>();
 
-    for (const weekData of monthWeekDataMap.values()) {
+    // Sortierung nach Wochen-Key ist entscheidend, damit die Availability-Indizes
+    // mit allMonthDates (= weeks.flatMap(w => w.weekDates)) in ResourcePool übereinstimmen
+    const sortedEntries = Array.from(monthWeekDataMap.entries()).sort(
+      ([a], [b]) => a.localeCompare(b)
+    );
+
+    for (const [, weekData] of sortedEntries) {
       for (const item of weekData.poolItems) {
         const key = `${item.type}-${item.id}`;
-        if (!poolMap.has(key)) {
-          poolMap.set(key, item);
+        const existing = poolMap.get(key);
+        if (existing) {
+          existing.availability = [...existing.availability, ...item.availability];
+          existing.hasAbsence = existing.hasAbsence || item.hasAbsence;
+          if (!existing.absenceLabel && item.absenceLabel) {
+            existing.absenceLabel = item.absenceLabel;
+          }
+        } else {
+          poolMap.set(key, { ...item, availability: [...item.availability] });
         }
       }
     }

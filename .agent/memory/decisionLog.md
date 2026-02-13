@@ -4,6 +4,61 @@ Architekturentscheidungen mit Begründung, um Zyklen und Wiederholungen zu verme
 
 ---
 
+## 2026-02-13: Query Parallelization — findByIds eliminiert, 3 statt 5 DB-Calls
+
+**Kontext:** `executeProjectCentric()` in `GetAllocationsForWeekQuery.ts` machte 5 DB-Calls in 3 sequentiellen Schritten: allocations → allUsers → `Promise.all([findByIds(userIds), phases, absences])`. `findByIds(userIds)` war redundant, da `allUsers` bereits alle User enthält.
+
+**Entscheidung:** Drei unabhängige Queries parallel (`Promise.all([allocations, allUsers, phases])`), dann `absences` separat (braucht `allUserIds` aus Schritt 1). `userMap` wird aus `allUsers` gefiltert statt extra `findByIds`-Call.
+
+**Begründung:**
+- `findByIds(userIds)` ist Subset von `findActiveByTenant()` → redundanter DB-Call
+- `allocations`, `allUsers` und `phases` sind voneinander unabhängig → parallelisierbar
+- Nur `absences` hängt von `allUserIds` ab → muss sequentiell nach Schritt 1
+- Spart 1 Netzwerk-Roundtrip + 2 DB-Calls → ~50-80ms
+
+**Alternativen verworfen:**
+- Alle 4 Queries parallel (inkl. absences) → Braucht allUserIds, geht nicht
+- absences mit leerer ID-Liste starten und nachfiltern → Ineffizient, lädt zu viele Daten
+
+---
+
+## 2026-02-13: Slide-Transition — State im PlanningContext statt eigener Context
+
+**Kontext:** Feature 4 benötigt `slideDirection` State um die Slide-Richtung beim Periodenwechsel zu steuern. Konnte in PlanningContext oder in separatem Context leben.
+
+**Entscheidung:** `slideDirection` als State direkt im PlanningContext, weil die Navigation-Funktionen (`goToNextPeriod`, `goToPreviousPeriod`, etc.) dort bereits definiert sind und `setSlideDirection` direkt vor `setWeekStart` aufgerufen werden muss.
+
+**Begründung:**
+- Enge Kopplung: slideDirection wird ausschließlich von Nav-Funktionen gesetzt → gehört logisch zum selben Context
+- Kein eigener Provider nötig → weniger Wrapper-Nesting
+- `clearSlideDirection` Callback für onTransitionEnd Pattern
+- Minimal-invasiv: 2 neue Felder im Context, 6 Einzeiler in Nav-Funktionen
+
+**Alternativen verworfen:**
+- Eigener SlideContext → Overengineered, Nav-Funktionen müssten über Import darauf zugreifen
+- CSS-only über :target oder Animation-Event → Kein State für direction, nicht steuerbar
+
+---
+
+## 2026-02-13: DragHighlight — Separater Context statt PlanningContext
+
+**Kontext:** Feature 1 benötigt Highlight-State (welche Zellen hervorgehoben werden) während DnD. Dieser State ändert sich hochfrequent (bei jedem DragOver). PlanningContext hat ~30 Consumer-Komponenten.
+
+**Entscheidung:** Eigener `DragHighlightContext` mit ref-basierter Key-Optimierung (`prevKeyRef`). Nur Zellen die den Hook `useDayHighlightStatus()` nutzen, werden re-gerendert.
+
+**Begründung:**
+- Hochfrequente Updates (jeden DragOver) in PlanningContext würden alle 30+ Consumer neu rendern
+- Ref-basierter Key-Vergleich: `prevKeyRef` speichert serialisierten Map-Key, Re-Render nur bei echten Änderungen
+- `useDayHighlightStatus(phaseId, dateISO)` — Consumer-seitig granular, O(1) Lookup
+- Gleiche Pattern wie EmptyFilterContext (separater leichtgewichtiger Context)
+
+**Alternativen verworfen:**
+- In PlanningContext integrieren → Performance-Killer bei DragOver
+- Zustand/Jotai → Zusätzliche Dependency für einen Use-Case
+- DOM-Manipulation (data-attributes + CSS) → Nicht React-idiomatisch, schwer testbar
+
+---
+
 ## 2026-02-13: MonthGrid — Multi-Week-Fetch mit Merged Rows statt eigener API
 
 **Kontext:** MonthGrid-Rewrite von 28-31 Tagesspalten auf 4-5 Wochenspalten. Die bestehende Server Action `getProjectWeekDataAction()` liefert Daten für eine einzelne Woche (Mo-Fr). Die Monatsansicht braucht 4-5 Wochen gleichzeitig.

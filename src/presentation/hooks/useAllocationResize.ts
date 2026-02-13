@@ -86,7 +86,16 @@ export function useAllocationResize({
   // Sync currentSpanDays mit ref
   useEffect(() => {
     currentSpanRef.current = currentSpanDays;
-    if (!isResizing && !completingRef.current) {
+
+    if (completingRef.current) {
+      // Guard aktiv: Neue Daten eingetroffen, synchronisiere und löse Guard
+      setPreviewSpanDays(currentSpanDays);
+      previewSpanRef.current = currentSpanDays;
+      completingRef.current = false;
+      return;
+    }
+
+    if (!isResizing) {
       setPreviewSpanDays(currentSpanDays);
       previewSpanRef.current = currentSpanDays;
     }
@@ -142,12 +151,12 @@ export function useAllocationResize({
 
     const rawDays = deltaX / colWidth;
 
-    // Threshold-basierte Rundung: Snap ab 50% der Zelle
+    // Threshold-basierte Rundung: Snap ab ~70% der Zelle
     // Funktioniert konsistent für positive und negative Werte
     if (rawDays >= 0) {
-      return Math.floor(rawDays + 0.5);
+      return Math.floor(rawDays + 0.3);
     } else {
-      return Math.ceil(rawDays - 0.5);
+      return Math.ceil(rawDays - 0.3);
     }
   }, []);
 
@@ -224,8 +233,14 @@ export function useAllocationResize({
           }
         }
 
-        // 4. Guard lösen
-        completingRef.current = false;
+        // 4. Safety-Timeout: Guard lösen falls useEffect nicht feuert
+        setTimeout(() => {
+          if (completingRef.current) {
+            completingRef.current = false;
+            setPreviewSpanDays(currentSpanRef.current);
+            previewSpanRef.current = currentSpanRef.current;
+          }
+        }, 3000);
       };
 
       document.addEventListener('mousemove', handleMouseMove);
@@ -312,8 +327,14 @@ export function useAllocationResize({
           }
         }
 
-        // 4. Guard lösen
-        completingRef.current = false;
+        // 4. Safety-Timeout: Guard lösen falls useEffect nicht feuert
+        setTimeout(() => {
+          if (completingRef.current) {
+            completingRef.current = false;
+            setPreviewSpanDays(currentSpanRef.current);
+            previewSpanRef.current = currentSpanRef.current;
+          }
+        }, 3000);
       };
 
       document.addEventListener('touchmove', handleTouchMove, {

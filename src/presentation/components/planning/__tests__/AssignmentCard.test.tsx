@@ -130,53 +130,52 @@ describe('AssignmentCard', () => {
   });
 
   describe('absence conflict', () => {
-    it('should show conflict indicator when hasAbsenceConflict is true', () => {
+    it('should show AlertCircle icon when hasAbsenceConflict is true', () => {
       const allocation = createMockAllocation({
         hasAbsenceConflict: true,
         absenceType: 'vacation',
       });
       const { container } = render(<AssignmentCard allocation={allocation} />);
-      // Should have red ring styling for conflict
-      const conflictElement = container.querySelector('[class*="ring-red"]');
-      expect(conflictElement).toBeInTheDocument();
+      // AlertCircle icon should be present as subtle conflict indicator
+      const alertIcon = container.querySelector('svg.text-red-500');
+      expect(alertIcon).toBeInTheDocument();
     });
 
-    it('should not show conflict indicator when hasAbsenceConflict is false', () => {
+    it('should not show AlertCircle icon when hasAbsenceConflict is false', () => {
       const allocation = createMockAllocation({
         hasAbsenceConflict: false,
       });
       const { container } = render(<AssignmentCard allocation={allocation} />);
-      const conflictElement = container.querySelector('[class*="ring-red"]');
-      expect(conflictElement).not.toBeInTheDocument();
+      const alertIcon = container.querySelector('svg.text-red-500');
+      expect(alertIcon).not.toBeInTheDocument();
     });
 
-    it('should show AlertCircle icon for conflict', () => {
+    it('should not apply red ring styling for conflicts', () => {
       const allocation = createMockAllocation({
         hasAbsenceConflict: true,
         absenceType: 'vacation',
       });
       const { container } = render(<AssignmentCard allocation={allocation} />);
-      // AlertCircle icon should be present (look for svg with text-red-500)
-      const alertIcon = container.querySelector('svg.text-red-500');
-      expect(alertIcon).toBeInTheDocument();
+      // Red ring was removed — only AlertCircle icon remains as indicator
+      const ringElement = container.querySelector('[class*="ring-red"]');
+      expect(ringElement).not.toBeInTheDocument();
     });
   });
 
-  describe('compact mode', () => {
-    it('should render with compact styling when compact=true', () => {
+  describe('full-width mode', () => {
+    it('should always render with full width (w-full)', () => {
       const allocation = createMockAllocation();
-      const { container } = render(<AssignmentCard allocation={allocation} compact />);
-      const card = container.querySelector('[class*="max-w-[80px]"]');
+      const { container } = render(<AssignmentCard allocation={allocation} />);
+      const card = container.querySelector('[class*="w-full"]');
       expect(card).toBeInTheDocument();
     });
 
-    it('should render without max-w constraint when compact=false', () => {
+    it('should not have max-w constraint', () => {
       const allocation = createMockAllocation();
-      const { container } = render(<AssignmentCard allocation={allocation} compact={false} />);
-      // Normal mode should not have max-w-[80px] constraint
+      const { container } = render(<AssignmentCard allocation={allocation} />);
       const card = container.querySelector('[class*="max-w-[80px]"]');
       expect(card).not.toBeInTheDocument();
-      // But card should still render with blue background for user
+      // Card should still render with blue background for user
       expect(container.querySelector('[class*="bg-blue"]')).toBeInTheDocument();
     });
   });
@@ -200,14 +199,14 @@ describe('AssignmentCard', () => {
       expect(container.querySelector('[class*="bg-blue"]')).toBeInTheDocument();
     });
 
-    it('should render card with conflict', () => {
+    it('should render card with conflict (AlertCircle icon)', () => {
       const allocation = createMockAllocation({
         plannedHours: undefined,
         hasAbsenceConflict: true,
         absenceType: 'vacation',
       });
       const { container } = render(<AssignmentCard allocation={allocation} />);
-      expect(container.querySelector('[class*="ring-red"]')).toBeInTheDocument();
+      expect(container.querySelector('svg.text-red-500')).toBeInTheDocument();
     });
 
     it('should render card without extra info', () => {

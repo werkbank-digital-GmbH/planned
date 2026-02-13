@@ -195,7 +195,6 @@ function MonthDayCell({
         <AssignmentCard
           key={allocation.id}
           allocation={allocation}
-          compact
           dayIndex={dayIndex}
           phaseStartDate={phaseStartDate}
           phaseEndDate={phaseEndDate}

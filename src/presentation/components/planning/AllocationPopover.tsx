@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, Calendar, Clock, Target, Truck, User } from 'lucide-react';
+import { AlertCircle, Calendar, Target, Truck, User } from 'lucide-react';
 
 import {
   Popover,
@@ -26,8 +26,6 @@ export interface AllocationPopoverData {
   spanDays: number;
   /** Geplante Stunden für diesen Tag/Span */
   plannedHours: number;
-  /** Tatsächlich gebuchte Stunden */
-  actualHours?: number;
   /** Budget-Stunden für die Phase */
   budgetHours?: number;
   /** Phase-Name */
@@ -65,13 +63,6 @@ function translateConflictType(type: string): string {
   return translations[type] ?? type;
 }
 
-/** Erzeugt das Tage-Label */
-function getSpanLabel(spanDays: number): string | null {
-  if (spanDays === 1) return null;
-  if (spanDays === 5) return 'Mo-Fr';
-  return `${spanDays} Tage`;
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -92,9 +83,7 @@ export function AllocationPopover({
   children,
   className,
 }: AllocationPopoverProps) {
-  const spanLabel = getSpanLabel(data.spanDays);
   const hasConflict = !!data.conflictType;
-  const hasVariance = data.actualHours !== undefined && data.actualHours !== data.plannedHours;
 
   // Berechne Auslastung wenn Budget vorhanden
   const utilization = data.budgetHours
@@ -131,30 +120,14 @@ export function AllocationPopover({
               <p className="font-medium text-sm truncate">
                 {data.fullName ?? data.displayName}
               </p>
-              {spanLabel && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {spanLabel}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                {data.spanDays === 1 ? '1 Tag' : `${data.spanDays} Tage`}
+              </p>
             </div>
           </div>
 
           {/* Stunden-Bereich */}
-          <div className="grid grid-cols-3 gap-2 text-center">
-            {/* IST */}
-            {data.actualHours !== undefined && (
-              <div className="space-y-0.5">
-                <div className="flex items-center justify-center gap-1 text-green-600">
-                  <Clock className="h-3 w-3" />
-                  <span className="text-xs font-medium">IST</span>
-                </div>
-                <p className="text-sm font-semibold">
-                  {formatHoursWithUnit(data.actualHours)}
-                </p>
-              </div>
-            )}
-
+          <div className={cn('grid gap-2 text-center', data.budgetHours !== undefined ? 'grid-cols-2' : 'grid-cols-1')}>
             {/* PLAN */}
             <div className="space-y-0.5">
               <div className="flex items-center justify-center gap-1 text-blue-600">
@@ -212,24 +185,6 @@ export function AllocationPopover({
                 />
               </div>
             </div>
-          )}
-
-          {/* Varianz-Hinweis */}
-          {hasVariance && (
-            <p className="text-xs text-muted-foreground">
-              Abweichung:{' '}
-              <span
-                className={cn(
-                  'font-medium',
-                  data.actualHours! > data.plannedHours
-                    ? 'text-red-600'
-                    : 'text-green-600'
-                )}
-              >
-                {data.actualHours! > data.plannedHours ? '+' : ''}
-                {formatHoursWithUnit(data.actualHours! - data.plannedHours)}
-              </span>
-            </p>
           )}
 
           {/* Phase & Projekt */}

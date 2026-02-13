@@ -140,20 +140,33 @@ function PlanningDndProviderInner({ children }: PlanningDndProviderProps) {
     const days = new Map<string, DropHighlightStatus>();
 
     if (isPoolItemDragData(dragData)) {
-      // Pool-Item: Ganze Woche (Mo-Fr) highlighten
-      const monday = getMonday(dropDate);
-      const weekDatesForHighlight = getWeekDates(monday);
+      if (viewMode === 'month') {
+        // Monatsansicht: Ganze Woche (Mo-Fr) highlighten
+        const monday = getMonday(dropDate);
+        const weekDatesForHighlight = getWeekDates(monday);
 
-      // Availability-Lookup aus DragData
-      const availabilityMap = new Map<string, string>();
-      if (dragData.availability) {
-        for (const a of dragData.availability) {
-          availabilityMap.set(a.date, a.status);
+        // Availability-Lookup aus DragData
+        const availabilityMap = new Map<string, string>();
+        if (dragData.availability) {
+          for (const a of dragData.availability) {
+            availabilityMap.set(a.date, a.status);
+          }
         }
-      }
 
-      for (const d of weekDatesForHighlight) {
-        const iso = formatDateISO(d);
+        for (const d of weekDatesForHighlight) {
+          const iso = formatDateISO(d);
+          const avStatus = availabilityMap.get(iso);
+          days.set(iso, avStatus === 'absence' ? 'absence' : 'valid');
+        }
+      } else {
+        // Wochen-/Teamansicht: Nur den einen Drop-Tag highlighten
+        const availabilityMap = new Map<string, string>();
+        if (dragData.availability) {
+          for (const a of dragData.availability) {
+            availabilityMap.set(a.date, a.status);
+          }
+        }
+        const iso = formatDateISO(dropDate);
         const avStatus = availabilityMap.get(iso);
         days.set(iso, avStatus === 'absence' ? 'absence' : 'valid');
       }
@@ -174,7 +187,7 @@ function PlanningDndProviderInner({ children }: PlanningDndProviderProps) {
     }
 
     setHighlight({ phaseId, days });
-  }, [clearHighlight, setHighlight]);
+  }, [clearHighlight, setHighlight, viewMode]);
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {

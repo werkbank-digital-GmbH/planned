@@ -138,7 +138,7 @@ function DayCell({
       data-day-index={dayIndex}
       className={cn(
         'min-h-[60px] p-1 border-r border-gray-200 last:border-r-0',
-        'flex flex-wrap gap-1 content-start',
+        'flex flex-col gap-1',
         // Multi-Day Highlight (Priorität über isOver)
         highlightStatus === 'valid' && 'bg-green-50 ring-2 ring-inset ring-green-400',
         highlightStatus === 'absence' && 'bg-orange-50 ring-2 ring-inset ring-orange-400',
@@ -150,13 +150,14 @@ function DayCell({
       )}
     >
       {singleAllocations.map((allocation) => (
-        <AssignmentCard
-          key={allocation.id}
-          allocation={allocation}
-          dayIndex={dayIndex}
-          phaseStartDate={phaseStartDate}
-          phaseEndDate={phaseEndDate}
-        />
+        <div key={allocation.id} className="relative z-[1]">
+          <AssignmentCard
+            allocation={allocation}
+            dayIndex={dayIndex}
+            phaseStartDate={phaseStartDate}
+            phaseEndDate={phaseEndDate}
+          />
+        </div>
       ))}
     </div>
   );

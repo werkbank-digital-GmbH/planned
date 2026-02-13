@@ -22,7 +22,6 @@ import * as styles from './assignment-card.styles';
 
 interface AssignmentCardProps {
   allocation: AllocationWithDetails;
-  compact?: boolean;
   /** Tag-Index für Resize (0-4 für Mo-Fr) */
   dayIndex?: number;
   /** Phase Start-Datum für Resize-Constraint */
@@ -47,7 +46,6 @@ interface AssignmentCardProps {
  */
 export const AssignmentCard = memo(function AssignmentCard({
   allocation,
-  compact = false,
   dayIndex,
   phaseStartDate,
   phaseEndDate,
@@ -176,7 +174,6 @@ export const AssignmentCard = memo(function AssignmentCard({
     isUser,
     spanDays: 1,
     plannedHours: allocation.plannedHours ?? 8,
-    actualHours: allocation.actualHours,
     phaseName: allocation.projectPhase.name,
     projectName: allocation.project.name,
     notes: allocation.notes ?? undefined,
@@ -190,10 +187,8 @@ export const AssignmentCard = memo(function AssignmentCard({
       className={cn(
         styles.cardBase,
         isUser ? styles.cardUser : styles.cardResource,
-        hasConflict && styles.cardConflict,
         isDragging && styles.cardDragging,
-        isResizing && styles.cardResizing,
-        compact && 'max-w-[80px]'
+        isResizing && styles.cardResizing
       )}
     >
       {/* Move-Bereich (gesamte Card außer Handle) */}

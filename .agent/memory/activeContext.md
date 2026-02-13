@@ -1,35 +1,28 @@
 # Active Context
 
-## Aktueller Stand (2026-02-13, Session 26)
+## Aktueller Stand (2026-02-13, Session 27)
 
 ### Zuletzt Abgeschlossen
 
-**Session 26: 4 Planning UI Features** ✅ (noch nicht committet)
+**Session 27: Full Feature-Roadmap Completion** ✅ — Commit: `0cb11be`
 
-1. **Feature 1: Multi-Day Drop Highlight** ✅
-   - `DragHighlightContext.tsx` — Separater Context (nicht in PlanningContext) mit ref-basierter Key-Optimierung
-   - Pool-Item-Drop → 5 Weekday-Highlights (Mo-Fr), Absenz-Tage orange, valide grün
-   - Allocation-Span → N Tage ab Cursor, Single → 1 Tag
-   - `PoolCard.tsx` erweitert mit `availability`-Daten im Drag-Payload
-   - `DndProvider.tsx` split in Outer/Inner, Highlight-Berechnung in `handleDragOver`
-   - `PhaseRow.tsx` + `MonthGrid.tsx` — `ring-2 ring-inset` Highlight-Styling
+1. **Feature 6: Query Parallelization (5→3 DB-Calls)** ✅
+   - `GetAllocationsForWeekQuery.ts` — `executeProjectCentric()` Methode optimiert
+   - 3 sequentielle Schritte → 2 sequentielle Schritte
+   - 5 DB-Calls → 3 DB-Calls (redundanten `findByIds(userIds)` eliminiert)
+   - `Promise.all([allocations, allUsers, phases])` → dann `absences` separat (braucht allUserIds)
+   - `userMap` aus `allUsers` gefiltert statt extra DB-Call
 
-2. **Feature 2: Hide Empty Phases/Projects** ✅
-   - `useLocalStorageToggle.ts` — Generischer SSR-sicherer Hook
-   - `EmptyFilterContext.tsx` — Separater leichtgewichtiger Context
-   - `EmptyFilterToggles.tsx` — Zwei Toggle-Buttons, hidden in Team-View
-   - `PlanningGrid.tsx` + `MonthGrid.tsx` — `useMemo`-basierte Filterung
+2. **Feature 8: Analytics Test Coverage (93 neue Tests)** ✅
+   - 6 neue Testdateien erstellt, 695 Tests gesamt (vorher 602)
+   - `src/domain/analytics/__tests__/test-helpers.ts` — Shared Factories (createSnapshot, createBurnRate, createPhaseInsight)
+   - `src/domain/analytics/__tests__/BurnRateCalculator.test.ts` — 19 Tests (calculate, trend, hasEnoughData)
+   - `src/domain/analytics/__tests__/ProgressionCalculator.test.ts` — 32 Tests (calculate, determineStatus, dataQuality, workingDays)
+   - `src/domain/analytics/__tests__/ProjectInsightAggregator.test.ts` — 16 Tests (aggregate, status priority)
+   - `src/application/use-cases/analytics/__tests__/GeneratePhaseSnapshotsUseCase.test.ts` — 9 Tests (Supabase mock chains)
+   - `src/application/use-cases/analytics/__tests__/GenerateInsightsUseCase.test.ts` — 17 Tests (basic + enhanced scenarios)
 
-3. **Feature 3: Header Height Consistency + Sticky Headers** ✅
-   - Linter-Änderungen: `sticky top-0 z-10`, `p-3`, `text-xs` auf GridHeader/MonthGridHeader
-
-4. **Feature 4: Smooth Slide-Transition** ✅
-   - `SlideTransition.tsx` — CSS enter-Animation (200ms ease-out, translateX ±30px)
-   - `PlanningContext.tsx` — `slideDirection` State + `clearSlideDirection`, alle 6 Nav-Funktionen erweitert
-   - `PlanningGrid.tsx` — Alle 3 Views (Week/Month/Team) mit `SlideTransition` gewrappt
-   - `tailwind.config.ts` — `slide-in-right` + `slide-in-left` Keyframes & Animations
-
-**Vorherige Sessions:** MonthGrid Rewrite ✅, Resize-Snap ✅, Team View ✅, Resize-Performance ✅, BF-3 ✅, TD-1–TD-6 ✅, P1–P6 ✅
+**Vorherige Sessions:** 4 Planning UI Features ✅, MonthGrid Rewrite ✅, Resize-Snap ✅, Team View ✅, Resize-Performance ✅, BF-3 ✅, TD-1–TD-6 ✅, P1–P6 ✅
 
 ### Feature-Roadmap (vom User priorisiert)
 
@@ -38,16 +31,17 @@
 3. ~~Buttons to hide empty phases/projects~~ ✅ (Session 26)
 4. ~~Header height consistency~~ ✅ (Session 26)
 5. ~~Smooth Slide-Transition~~ ✅ (Session 26)
-6. **Vertical scroll through weeks** (Wochenweise scrollen) — NÄCHSTES FEATURE
-7. **Query Parallelization** (5 DB-Calls → 3)
-8. **usePlanning() Extraction** aus AssignmentCards
-9. **Test Coverage** für Analytics
+6. ~~Query Parallelization (5→3 DB-Calls)~~ ✅ (Session 27)
+7. ~~usePlanning() Extraction / ResizeActionsContext~~ ✅ (Session 27)
+8. ~~Test Coverage für Analytics~~ ✅ (Session 27, 93 neue Tests)
+
+**Roadmap KOMPLETT** ✅ — Nächste Schritte: Tech Debt oder neue Features
 
 ### Tech Debt
 
 - **Große Dateien aufteilen** - PlanningContext.tsx (1000!), GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775)
 - **PlanningContext Splitting** - Month-Logik (monthWeeks, monthProjectRows, monthPoolItems, Multi-Week-Fetch) in eigenen `useMonthData()` Hook extrahieren
-- **Fehlende Tests** - Analytics Use Cases, Repositories, Weather/Geocoding Services
+- **Fehlende Tests** - Repositories, Weather/Geocoding Services (Analytics Domain + Use Cases jetzt abgedeckt ✅)
 - **ProjectInsightAggregator.totalPlan** - Hardcoded 0 (TODO: aus Snapshots aggregieren)
 - **BF-3 offen:** Progress-Reporting während langer Syncs (nice-to-have)
 
@@ -81,6 +75,7 @@
 23. **Session 23: Resize-Bugs Fix (Revert + Animation)** ✅ - Commit: `de007e9`
 24. **Session 24: Asana Integration UI-Bug Fix** ✅ - Commit: `de007e9`
 25. **Session 25: Resize-Snap + MonthGrid Rewrite** ✅ - Commits: `e7667ed`, `db6bfce`
+26. **Session 26+27: Full Feature-Roadmap** ✅ - Commit: `0cb11be` (Drop Highlight, Hide Empty, Sticky Headers, Slide-Transition, Query Parallelization, ResizeActionsContext, Analytics Tests)
 
 </details>
 
