@@ -8,6 +8,7 @@ import type { InsightStatus } from '@/domain/analytics/types';
 import type { PhaseRowData } from '@/application/queries';
 
 import { Badge } from '@/presentation/components/ui/badge';
+import { useDayHighlightStatus } from '@/presentation/contexts/DragHighlightContext';
 
 import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
@@ -124,6 +125,9 @@ function DayCell({
 
   const isToday = formatDateISO(new Date()) === dateKey;
 
+  // Multi-Day Drop Highlight aus DragHighlightContext
+  const highlightStatus = useDayHighlightStatus(phaseId, dateKey);
+
   // Filtere Allocations, die Teil eines Spans sind (werden über SpanningAssignmentCard angezeigt)
   const singleAllocations = allocations.filter((a) => !spannedAllocationIds.has(a.id));
 
@@ -135,9 +139,14 @@ function DayCell({
       className={cn(
         'min-h-[60px] p-1 border-r border-gray-200 last:border-r-0',
         'flex flex-wrap gap-1 content-start',
-        isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-300',
-        isToday && 'bg-amber-50',
-        !isActiveThisWeek && 'bg-gray-50'
+        // Multi-Day Highlight (Priorität über isOver)
+        highlightStatus === 'valid' && 'bg-green-50 ring-2 ring-inset ring-green-400',
+        highlightStatus === 'absence' && 'bg-orange-50 ring-2 ring-inset ring-orange-400',
+        // Cursor-Zelle Fallback (nur wenn kein Multi-Day-Highlight)
+        !highlightStatus && isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-300',
+        // Hintergrund-Farben (nur wenn kein Highlight aktiv)
+        !highlightStatus && isToday && 'bg-amber-50',
+        !highlightStatus && !isActiveThisWeek && 'bg-gray-50'
       )}
     >
       {singleAllocations.map((allocation) => (

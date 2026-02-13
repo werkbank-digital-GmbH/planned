@@ -8,7 +8,7 @@ import {
   createAllocationAction,
   deleteAllocationAction,
 } from '@/presentation/actions/allocations';
-import { usePlanning } from '@/presentation/contexts/PlanningContext';
+import { useResizeActions } from '@/presentation/contexts/ResizeActionsContext';
 import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
 import { formatDateISO, getWeekDates } from '@/lib/date-utils';
@@ -72,7 +72,7 @@ export const SpanningAssignmentCard = memo(function SpanningAssignmentCard({
     addAllocationOptimistic,
     removeAllocationOptimistic,
     replaceAllocationId,
-  } = usePlanning();
+  } = useResizeActions();
 
   // Wochentage für Resize-Berechnung
   const weekDates = getWeekDates(weekStart);

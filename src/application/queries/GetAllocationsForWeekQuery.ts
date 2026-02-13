@@ -506,30 +506,31 @@ export class GetAllocationsForWeekQuery {
     const friday = getFriday(weekStart);
     const weekDates = getWeekDates(weekStart);
 
-    // 1. Basis-Daten laden (wie in execute())
-    const allocations = await this.allocationRepository.findByTenantAndDateRange(
-      tenantId,
-      monday,
-      friday,
-      { projectId: request.projectId, userId: request.userId }
-    );
-
-    // 2. IDs sammeln für zusätzliche Daten
-    const userIds = [...new Set(allocations.filter((a) => a.userId).map((a) => a.userId!))];
-
-    // 3. Verknüpfte Entitäten laden (zuerst alle User für Absenzen)
-    const allUsers = await this.userRepository.findActiveByTenant(tenantId);
-    const allUserIds = allUsers.map((u) => u.id);
-
-    // 4. WICHTIG: Alle Phasen im Zeitraum laden, nicht nur die mit Allocations
-    const [users, phases, absences] = await Promise.all([
-      userIds.length > 0 ? this.userRepository.findByIds(userIds) : Promise.resolve([]),
+    // 1. Unabhängige Queries parallel laden (3 Calls, 1 Roundtrip)
+    const [allocations, allUsers, phases] = await Promise.all([
+      this.allocationRepository.findByTenantAndDateRange(
+        tenantId,
+        monday,
+        friday,
+        { projectId: request.projectId, userId: request.userId }
+      ),
+      this.userRepository.findActiveByTenant(tenantId),
       this.projectPhaseRepository.findByTenantAndDateRange(tenantId, monday, friday),
-      this.absenceRepository.findByUsersAndDateRange(allUserIds, monday, friday),
     ]);
 
-    // 4. Lookup-Maps erstellen
-    const userMap = new Map(users.map((u: User) => [u.id, u]));
+    // 2. Absences laden (braucht allUserIds aus Schritt 1)
+    const allUserIds = allUsers.map((u) => u.id);
+    const absences = await this.absenceRepository.findByUsersAndDateRange(
+      allUserIds,
+      monday,
+      friday
+    );
+
+    // 3. Lookup-Maps erstellen (userMap aus allUsers, kein extra DB-Call)
+    const userIds = [...new Set(allocations.filter((a) => a.userId).map((a) => a.userId!))];
+    const userMap = new Map(
+      allUsers.filter((u) => userIds.includes(u.id)).map((u) => [u.id, u])
+    );
     const phaseMap = new Map((phases as PhaseWithProject[]).map((p) => [p.id, p]));
     const absenceMap = this.buildAbsenceMap(absences as AbsenceData[]);
 

@@ -8,6 +8,8 @@ import type { AllocationWithDetails, PhaseRowData, ProjectRowData } from '@/appl
 
 import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
+import { useDayHighlightStatus } from '@/presentation/contexts/DragHighlightContext';
+import { useEmptyFilter } from '@/presentation/contexts/EmptyFilterContext';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
 import { formatDateISO } from '@/lib/date-utils';
@@ -58,10 +60,10 @@ function MonthGridHeader({ monthWeeks }: MonthGridHeaderProps) {
         return (
           <div
             key={week.weekKey}
-            className="border-r-2 border-gray-300 py-2 px-1 text-center last:border-r-0"
+            className="border-r-2 border-gray-300 p-3 text-center last:border-r-0"
           >
             <div className="font-medium text-sm">KW {week.calendarWeek}</div>
-            <div className="text-[10px] text-gray-500">
+            <div className="text-xs text-gray-500">
               {firstDate.getUTCDate()}.{firstDate.getUTCMonth() + 1}. &ndash;{' '}
               {lastDate.getUTCDate()}.{lastDate.getUTCMonth() + 1}.
             </div>
@@ -165,6 +167,9 @@ function MonthDayCell({
 
   const isToday = formatDateISO(new Date()) === dateKey;
 
+  // Multi-Day Drop Highlight aus DragHighlightContext
+  const highlightStatus = useDayHighlightStatus(phaseId, dateKey);
+
   // Filtere Allocations die Teil eines Multi-Day-Spans sind
   const singleAllocations = allocations.filter((a) => !spannedAllocationIds.has(a.id));
 
@@ -176,9 +181,14 @@ function MonthDayCell({
       className={cn(
         'min-h-[48px] p-0.5 border-r border-gray-200 last:border-r-0',
         'flex flex-wrap gap-0.5 content-start',
-        isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-300',
-        isToday && 'bg-amber-50',
-        !isActiveThisWeek && 'bg-gray-50'
+        // Multi-Day Highlight (Priorität über isOver)
+        highlightStatus === 'valid' && 'bg-green-50 ring-2 ring-inset ring-green-400',
+        highlightStatus === 'absence' && 'bg-orange-50 ring-2 ring-inset ring-orange-400',
+        // Cursor-Zelle Fallback (nur wenn kein Multi-Day-Highlight)
+        !highlightStatus && isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-300',
+        // Hintergrund-Farben (nur wenn kein Highlight aktiv)
+        !highlightStatus && isToday && 'bg-amber-50',
+        !highlightStatus && !isActiveThisWeek && 'bg-gray-50'
       )}
     >
       {singleAllocations.map((allocation) => (
@@ -455,6 +465,34 @@ export function MonthGrid() {
     toggleProjectExpanded,
   } = usePlanning();
 
+  const { hideEmptyProjects, hideEmptyPhases } = useEmptyFilter();
+
+  // Helper: Prüft ob eine Phase im gesamten Monat Allocations hat
+  const phaseHasMonthAllocations = (phase: PhaseRowData): boolean =>
+    Object.values(phase.dayAllocations).some((a) => a.length > 0);
+
+  // Filtering-Logik für Month-View
+  const filteredMonthProjectRows = useMemo(() => {
+    if (!hideEmptyProjects && !hideEmptyPhases) return monthProjectRows;
+
+    let rows = monthProjectRows;
+
+    if (hideEmptyPhases) {
+      rows = rows.map((p) => ({
+        ...p,
+        phases: p.phases.filter((phase) => phaseHasMonthAllocations(phase)),
+      }));
+    }
+
+    if (hideEmptyProjects) {
+      rows = rows.filter((p) =>
+        p.phases.some((phase) => phaseHasMonthAllocations(phase))
+      );
+    }
+
+    return rows;
+  }, [monthProjectRows, hideEmptyProjects, hideEmptyPhases]);
+
   // Fehler-Anzeige
   if (error) {
     return (
@@ -487,12 +525,14 @@ export function MonthGrid() {
       <MonthGridHeader monthWeeks={monthWeeks} />
 
       <div className="flex flex-col gap-2 p-2">
-        {monthProjectRows.length === 0 ? (
+        {filteredMonthProjectRows.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            Keine Projekte mit Phasen in diesem Monat
+            {(hideEmptyProjects || hideEmptyPhases) && monthProjectRows.length > 0
+              ? 'Alle Projekte sind in diesem Monat leer (Filter aktiv)'
+              : 'Keine Projekte mit Phasen in diesem Monat'}
           </div>
         ) : (
-          monthProjectRows.map((project) => (
+          filteredMonthProjectRows.map((project) => (
             <MonthProjectRow
               key={project.project.id}
               project={project}

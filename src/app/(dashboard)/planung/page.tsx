@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 
 import {
+  EmptyFilterToggles,
   PlanningDndProvider,
   PlanningGrid,
   PlanningKeyboardHandler,
@@ -9,6 +10,7 @@ import {
   WeekNavigation,
 } from '@/presentation/components/planning';
 import { TooltipProvider } from '@/presentation/components/ui/tooltip';
+import { EmptyFilterProvider } from '@/presentation/contexts/EmptyFilterContext';
 import { PlanningProvider } from '@/presentation/contexts/PlanningContext';
 import { SelectionProvider } from '@/presentation/contexts/SelectionContext';
 import { UndoProvider } from '@/presentation/contexts/UndoContext';
@@ -47,6 +49,7 @@ export default async function PlanungPage({ searchParams }: PlanungPageProps) {
       >
         <UndoProvider>
           <SelectionProvider>
+            <EmptyFilterProvider>
             <PlanningDndProvider>
               {/* Vollständige Höhe: 100vh - Navigation (64px) - Main Padding (48px) */}
               <div className="flex flex-col h-[calc(100vh-112px)]">
@@ -55,6 +58,7 @@ export default async function PlanungPage({ searchParams }: PlanungPageProps) {
                   <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold">Planung</h1>
                     <ViewModeToggle />
+                    <EmptyFilterToggles />
                   </div>
                   <div className="flex items-center gap-4">
                     <UndoToolbar />
@@ -79,6 +83,7 @@ export default async function PlanungPage({ searchParams }: PlanungPageProps) {
               {/* Keyboard Shortcuts Handler */}
               <PlanningKeyboardHandler />
             </PlanningDndProvider>
+            </EmptyFilterProvider>
           </SelectionProvider>
         </UndoProvider>
       </PlanningProvider>

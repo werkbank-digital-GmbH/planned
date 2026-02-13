@@ -7,7 +7,7 @@ import { memo } from 'react';
 import type { AllocationWithDetails } from '@/application/queries';
 
 import { createAllocationAction } from '@/presentation/actions/allocations';
-import { usePlanning } from '@/presentation/contexts/PlanningContext';
+import { useResizeActions } from '@/presentation/contexts/ResizeActionsContext';
 import { useAllocationResize } from '@/presentation/hooks/useAllocationResize';
 
 import { formatDateISO, getWeekDates } from '@/lib/date-utils';
@@ -57,7 +57,7 @@ export const AssignmentCard = memo(function AssignmentCard({
     addAllocationOptimistic,
     removeAllocationOptimistic,
     replaceAllocationId,
-  } = usePlanning();
+  } = useResizeActions();
 
   // Wochentage für Resize-Berechnung
   const weekDates = getWeekDates(weekStart);

@@ -3,6 +3,7 @@
 import { GripHorizontal, Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { useEmptyFilter } from '@/presentation/contexts/EmptyFilterContext';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 import { useResizable } from '@/presentation/hooks/useResizable';
 
@@ -13,6 +14,7 @@ import { MonthGrid } from './MonthGrid';
 import { ProjectDetailModal } from './ProjectDetailModal';
 import { ProjectRow } from './ProjectRow';
 import { ResourcePool } from './ResourcePool';
+import { SlideTransition } from './SlideTransition';
 import { UserRow } from './UserRow';
 
 /** Sichtbare Scrollbar-Styles für macOS (Auto-Hide-Scrollbar Override) */
@@ -30,7 +32,7 @@ interface GridHeaderProps {
 
 function GridHeader({ weekDates, headerLabel = 'Projekt / Phase' }: GridHeaderProps) {
   return (
-    <div className="grid grid-cols-[280px_repeat(5,1fr)] border-b bg-gray-50">
+    <div className="grid grid-cols-[280px_repeat(5,1fr)] border-b bg-gray-50 sticky top-0 z-10">
       {/* Erste Spalte Header */}
       <div className="border-r border-gray-200 p-3 font-medium text-sm">
         {headerLabel}
@@ -133,15 +135,54 @@ export function PlanningGrid() {
     error,
     viewMode,
     periodDates,
+    weekStart,
     getWeekDates,
     toggleProjectExpanded,
     allUserRows,
     highlightPhaseId,
     monthWeeks,
     monthPoolItems,
+    slideDirection,
+    clearSlideDirection,
   } = usePlanning();
 
+  // Transition-Key: ändert sich bei jedem Periodenwechsel
+  const transitionKey = weekStart.toISOString();
+
   const weekDates = useMemo(() => getWeekDates(), [getWeekDates]);
+
+  // Empty-Filter State
+  const { hideEmptyProjects, hideEmptyPhases } = useEmptyFilter();
+
+  // Filtering-Logik für Week-View
+  const filteredProjectRows = useMemo(() => {
+    if (!hideEmptyProjects && !hideEmptyPhases) return projectRows;
+
+    let rows = projectRows;
+
+    if (hideEmptyPhases) {
+      rows = rows.map((p) => ({
+        ...p,
+        phases: p.phases.filter(
+          (phase) =>
+            phase.isActiveThisWeek &&
+            Object.values(phase.dayAllocations).some((a) => a.length > 0)
+        ),
+      }));
+    }
+
+    if (hideEmptyProjects) {
+      rows = rows.filter((p) =>
+        p.phases.some(
+          (phase) =>
+            phase.isActiveThisWeek &&
+            Object.values(phase.dayAllocations).some((a) => a.length > 0)
+        )
+      );
+    }
+
+    return rows;
+  }, [projectRows, hideEmptyProjects, hideEmptyPhases]);
 
   // State für Projekt-Detail-Modal
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -153,7 +194,13 @@ export function PlanningGrid() {
       <div className="flex flex-col h-full">
         {/* Scrollable Grid Area */}
         <div className={cn('flex-1 overflow-auto min-h-0', SCROLLBAR_CLASSES)}>
-          <MonthGrid />
+          <SlideTransition
+            transitionKey={transitionKey}
+            direction={slideDirection}
+            onTransitionEnd={clearSlideDirection}
+          >
+            <MonthGrid />
+          </SlideTransition>
         </div>
 
         {/* Resizable Ressourcen-Pool */}
@@ -176,28 +223,34 @@ export function PlanningGrid() {
       <div className="flex flex-col h-full">
         {/* Scrollable Grid Area */}
         <div className={cn('flex-1 overflow-auto min-h-0', SCROLLBAR_CLASSES)}>
-          <div className="rounded-lg border bg-white relative">
-            <GridHeader weekDates={weekDates} headerLabel="Mitarbeiter" />
+          <SlideTransition
+            transitionKey={transitionKey}
+            direction={slideDirection}
+            onTransitionEnd={clearSlideDirection}
+          >
+            <div className="rounded-lg border bg-white relative">
+              <GridHeader weekDates={weekDates} headerLabel="Mitarbeiter" />
 
-            {allUserRows.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                Keine Mitarbeiter in dieser Woche
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                {allUserRows.map((user) => (
-                  <UserRow key={user.id} user={user} />
-                ))}
-              </div>
-            )}
+              {allUserRows.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  Keine Mitarbeiter in dieser Woche
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {allUserRows.map((user) => (
+                    <UserRow key={user.id} user={user} />
+                  ))}
+                </div>
+              )}
 
-            {/* Loading Overlay */}
-            {isLoading && allUserRows.length > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-            )}
-          </div>
+              {/* Loading Overlay */}
+              {isLoading && allUserRows.length > 0 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              )}
+            </div>
+          </SlideTransition>
         </div>
 
         {/* Resizable Ressourcen-Pool */}
@@ -231,35 +284,43 @@ export function PlanningGrid() {
     <div className="flex flex-col h-full">
       {/* Scrollable Grid Area */}
       <div className={cn('flex-1 overflow-auto min-h-0', SCROLLBAR_CLASSES)}>
-        <div className="rounded-lg border bg-white relative">
-          <GridHeader weekDates={weekDates} />
+        <SlideTransition
+          transitionKey={transitionKey}
+          direction={slideDirection}
+          onTransitionEnd={clearSlideDirection}
+        >
+          <div className="rounded-lg border bg-white relative">
+            <GridHeader weekDates={weekDates} />
 
-          <div className="flex flex-col gap-2 p-2">
-            {projectRows.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                Keine Projekte mit Phasen in dieser Woche
+            <div className="flex flex-col gap-2 p-2">
+              {filteredProjectRows.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  {(hideEmptyProjects || hideEmptyPhases) && projectRows.length > 0
+                    ? 'Alle Projekte sind in dieser Woche leer (Filter aktiv)'
+                    : 'Keine Projekte mit Phasen in dieser Woche'}
+                </div>
+              ) : (
+                filteredProjectRows.map((project) => (
+                  <ProjectRow
+                    key={project.project.id}
+                    project={project}
+                    weekDates={weekDates}
+                    onToggleExpand={toggleProjectExpanded}
+                    onShowDetails={setSelectedProjectId}
+                    highlightPhaseId={highlightPhaseId}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* Loading Overlay */}
+            {isLoading && projectRows.length > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+                <Loader2 className="h-6 w-6 animate-spin" />
               </div>
-            ) : (
-              projectRows.map((project) => (
-                <ProjectRow
-                  key={project.project.id}
-                  project={project}
-                  weekDates={weekDates}
-                  onToggleExpand={toggleProjectExpanded}
-                  onShowDetails={setSelectedProjectId}
-                  highlightPhaseId={highlightPhaseId}
-                />
-              ))
             )}
           </div>
-
-          {/* Loading Overlay */}
-          {isLoading && projectRows.length > 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          )}
-        </div>
+        </SlideTransition>
       </div>
 
       {/* Resizable Ressourcen-Pool */}

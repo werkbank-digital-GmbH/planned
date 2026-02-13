@@ -4,6 +4,42 @@ Architekturentscheidungen mit Begründung, um Zyklen und Wiederholungen zu verme
 
 ---
 
+## 2026-02-13: MonthGrid — Multi-Week-Fetch mit Merged Rows statt eigener API
+
+**Kontext:** MonthGrid-Rewrite von 28-31 Tagesspalten auf 4-5 Wochenspalten. Die bestehende Server Action `getProjectWeekDataAction()` liefert Daten für eine einzelne Woche (Mo-Fr). Die Monatsansicht braucht 4-5 Wochen gleichzeitig.
+
+**Entscheidung:** Parallel Fetch aller Wochen via `Promise.all(monthWeeks.map(week => getProjectWeekDataAction(week.mondayISO)))`, dann client-seitig mergen: `monthProjectRows` (union aller Projekte, Phases-dayAllocations über Wochen gemerged), `monthPoolItems` (union aller PoolItems, first-week-wins).
+
+**Begründung:**
+- Kein neuer Backend-Endpoint nötig — wiederverwendet existierende, getestete Server Action
+- `Promise.all` parallelisiert: 4-5 parallele Fetches statt sequentiell → ~1 Roundtrip-Zeit
+- Client-seitiges Mergen ist trivial: Map nach Projekt-ID, Phases nach Phase-ID, dayAllocations einfach zusammenführen
+- PlanningContext verwaltet `monthWeekDataMap` State für inkrementelle Updates
+
+**Alternativen verworfen:**
+- Eigene `getProjectMonthDataAction()` → Neuer Endpoint, DB-Query muss alle Wochen auf einmal laden, komplexere SQL, Maintenance-Aufwand
+- Single-Fetch mit Datumsbereich → `GetAllocationsForWeekQuery` ist auf 5 Tage optimiert, Umbau wäre riskant
+- Server-seitiges Mergen via API Route → Zusätzliche Latenz, Server-Last, gleicher Merge-Code nur woanders
+
+---
+
+## 2026-02-13: MonthGrid — Aligned Grid (280px + repeat(N, 1fr)) für ResourcePool
+
+**Kontext:** ResourcePool hatte im Monatsmodus ein eigenes Layout (`repeat(weekGroups.size, minmax(180px, 1fr))`) mit CardHeader, das nicht mit dem MonthGrid-Grid übereinstimmte.
+
+**Entscheidung:** ResourcePool Monatsmodus übernimmt exakt das MonthGrid-Grid: `280px + repeat(weekCount, 1fr)` mit linker Spalte (Label + Filter) und Wochenspalten. Week-Separator identisch (`border-r-2 border-gray-300`). Absence-Badges via `getAbsenceDaysLabel()`.
+
+**Begründung:**
+- Spalten von Grid und Pool müssen optisch aligned sein (gleiche Breiten für gleiche Wochen)
+- Konsistente UX: Wochenansicht hat bereits dieses aligned Pattern
+- Absenz-Badges geben im Monatskontext schnelle Info welche Tage betroffen sind (z.B. "Mo/Di")
+
+**Alternativen verworfen:**
+- Separate Column-Widths → Visuell verwirrend, Spalten stimmen nicht überein
+- ResourcePool ohne Week-Alignment → Gleicher Pool wie vorher, verfehlt den Zweck des Rewrites
+
+---
+
 ## 2026-02-12: Asana Integration — UI-Display-Bug statt Datenverlust
 
 **Kontext:** Nach Disconnect+Reconnect der Asana-Integration erscheinen alle Config-Dropdowns (Quell-Projekt, Team, Custom Fields, Abwesenheiten) als leer. User denkt alles sei weg.

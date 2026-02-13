@@ -20,7 +20,13 @@ import {
   deleteAllocationAction,
   moveAllocationAction,
 } from '@/presentation/actions/allocations';
+import {
+  DragHighlightProvider,
+  useDragHighlight,
+  type DropHighlightStatus,
+} from '@/presentation/contexts/DragHighlightContext';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
+import { ResizeActionsProvider } from '@/presentation/contexts/ResizeActionsContext';
 import { useUndo } from '@/presentation/contexts/UndoContext';
 
 import { formatDateISO, getMonday, getWeekDates } from '@/lib/date-utils';
@@ -61,6 +67,14 @@ interface PlanningDndProviderProps {
  * Verwendet @dnd-kit für volle Kontrolle über Drag-Verhalten.
  */
 export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
+  return (
+    <DragHighlightProvider>
+      <PlanningDndProviderInner>{children}</PlanningDndProviderInner>
+    </DragHighlightProvider>
+  );
+}
+
+function PlanningDndProviderInner({ children }: PlanningDndProviderProps) {
   const [activeData, setActiveData] = useState<DragData | null>(null);
   // overData wird für zukünftiges visuelles Feedback verwendet
   const [, setOverData] = useState<DropZoneData | null>(null);
@@ -68,6 +82,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
     refresh,
     getAllocationById,
     viewMode,
+    weekStart,
     addAllocationOptimistic,
     removeAllocationOptimistic,
     moveAllocationOptimistic,
@@ -75,6 +90,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
   } = usePlanning();
 
   const { pushAction } = useUndo();
+  const { setHighlight, clearHighlight } = useDragHighlight();
 
   // Sensor-Konfiguration
   const sensors = useSensors(
@@ -105,12 +121,60 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
     const overId = event.over?.id;
     if (!overId) {
       setOverData(null);
+      clearHighlight();
       return;
     }
 
     const parsed = parseDropZoneId(overId as string);
     setOverData(parsed);
-  }, []);
+
+    // ── Highlight-Berechnung ──────────────────────────────────────────
+    const dragData = event.active.data.current as DragData | undefined;
+    if (!parsed || !dragData || parsed.type !== 'phase' || !parsed.phaseId) {
+      clearHighlight();
+      return;
+    }
+
+    const phaseId = parsed.phaseId;
+    const dropDate = parsed.date;
+    const days = new Map<string, DropHighlightStatus>();
+
+    if (isPoolItemDragData(dragData)) {
+      // Pool-Item: Ganze Woche (Mo-Fr) highlighten
+      const monday = getMonday(dropDate);
+      const weekDatesForHighlight = getWeekDates(monday);
+
+      // Availability-Lookup aus DragData
+      const availabilityMap = new Map<string, string>();
+      if (dragData.availability) {
+        for (const a of dragData.availability) {
+          availabilityMap.set(a.date, a.status);
+        }
+      }
+
+      for (const d of weekDatesForHighlight) {
+        const iso = formatDateISO(d);
+        const avStatus = availabilityMap.get(iso);
+        days.set(iso, avStatus === 'absence' ? 'absence' : 'valid');
+      }
+    } else if (isAllocationSpanDragData(dragData)) {
+      // Allocation-Span: N Tage ab Cursor-Position, max bis Freitag
+      const spanDays = dragData.spanDays;
+      for (let i = 0; i < spanDays; i++) {
+        const d = new Date(dropDate);
+        d.setUTCDate(d.getUTCDate() + i);
+        // Clamp auf Wochentage (Mo-Fr)
+        if (d.getUTCDay() >= 1 && d.getUTCDay() <= 5) {
+          days.set(formatDateISO(d), 'valid');
+        }
+      }
+    } else {
+      // Einzelne Allocation oder ProjectPhase: nur der eine Tag
+      days.set(formatDateISO(dropDate), 'valid');
+    }
+
+    setHighlight({ phaseId, days });
+  }, [clearHighlight, setHighlight]);
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
@@ -118,6 +182,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
 
       setActiveData(null);
       setOverData(null);
+      clearHighlight();
 
       if (!over) return;
 
@@ -459,19 +524,27 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
       removeAllocationOptimistic,
       moveAllocationOptimistic,
       replaceAllocationId,
+      clearHighlight,
     ]
   );
 
   const handleDragCancel = useCallback(() => {
     setActiveData(null);
     setOverData(null);
-  }, []);
+    clearHighlight();
+  }, [clearHighlight]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
+    <ResizeActionsProvider
+      weekStart={weekStart}
+      addAllocationOptimistic={addAllocationOptimistic}
+      removeAllocationOptimistic={removeAllocationOptimistic}
+      replaceAllocationId={replaceAllocationId}
+    >
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
@@ -502,6 +575,7 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
         )}
       </DragOverlay>
     </DndContext>
+    </ResizeActionsProvider>
   );
 }
 

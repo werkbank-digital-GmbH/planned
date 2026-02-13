@@ -12,19 +12,13 @@ vi.mock('@dnd-kit/core', () => ({
   })),
 }));
 
-// Mock PlanningContext - must be before component import
-vi.mock('@/presentation/contexts/PlanningContext', () => ({
-  usePlanning: vi.fn(() => ({
+// Mock ResizeActionsContext - must be before component import
+vi.mock('@/presentation/contexts/ResizeActionsContext', () => ({
+  useResizeActions: vi.fn(() => ({
     weekStart: new Date('2025-01-27'),
-    weekDates: [
-      new Date('2025-01-27'),
-      new Date('2025-01-28'),
-      new Date('2025-01-29'),
-      new Date('2025-01-30'),
-      new Date('2025-01-31'),
-    ],
-    extendAllocation: vi.fn(),
-    shrinkAllocation: vi.fn(),
+    addAllocationOptimistic: vi.fn(),
+    removeAllocationOptimistic: vi.fn(),
+    replaceAllocationId: vi.fn(),
   })),
 }));
 

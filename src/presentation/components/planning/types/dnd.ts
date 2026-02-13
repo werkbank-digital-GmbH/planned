@@ -43,6 +43,8 @@ export interface PoolItemDragData {
   itemName: string;
   /** Die Werktage, für die Allocations erstellt werden sollen (bei Wochenansicht: 1 Tag, bei Monatsansicht: 5 Tage) */
   dates: string[];
+  /** Verfügbarkeits-Daten pro Tag für Drop-Highlight (Abwesenheiten orange markieren) */
+  availability?: { date: string; status: string }[];
 }
 
 /**

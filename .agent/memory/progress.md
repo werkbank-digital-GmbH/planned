@@ -1,5 +1,69 @@
 # Progress Log
 
+## 2026-02-13 (Session 26)
+
+### Session: 4 Planning UI Features (Drop Highlight, Hide Empty, Sticky Headers, Slide-Transition)
+
+**Abgeschlossen:**
+
+1. **Feature 1: Multi-Day Drop Highlight** ✅
+   - `DragHighlightContext.tsx` NEU — Separater Context mit `DropHighlight` (phaseId + Map<dateISO, 'valid'|'absence'>)
+   - Ref-basierter Key-Vergleich (`prevKeyRef`) für Performance (vermeidet unnötige Re-Renders)
+   - `useDayHighlightStatus(phaseId, dateISO)` Convenience-Hook
+   - `PoolCard.tsx` — `availability` Mapping im Drag-Payload
+   - `DndProvider.tsx` — Split in Outer (DragHighlightProvider) + Inner (DnD-Logik)
+   - `handleDragOver` erweitert: Pool-Item → Mo-Fr Highlight, Span → N Tage ab Cursor, Single → 1 Tag
+   - `PhaseRow.tsx` + `MonthGrid.tsx` — `ring-2 ring-inset ring-green-400` / `ring-orange-400`
+   - `types/dnd.ts` — `availability?: { date: string; status: string }[]` auf `PoolItemDragData`
+
+2. **Feature 2: Hide Empty Phases/Projects** ✅
+   - `useLocalStorageToggle.ts` NEU — Generischer SSR-safe Hook (localStorage-backed boolean)
+   - `EmptyFilterContext.tsx` NEU — Provider + `useEmptyFilter()` Hook
+   - `EmptyFilterToggles.tsx` NEU — FolderOpen/Layers + EyeOff Icons, hidden in Team-View
+   - `PlanningGrid.tsx` — `filteredProjectRows` useMemo mit Phase/Project-Filter
+   - `MonthGrid.tsx` — `filteredMonthProjectRows` useMemo analog
+   - `planung/page.tsx` — `EmptyFilterProvider` + `EmptyFilterToggles` im Header
+
+3. **Feature 3: Header Height Consistency + Sticky Headers** ✅
+   - Via Linter: `sticky top-0 z-10` auf GridHeader, `p-3` + `text-xs` auf MonthGridHeader
+
+4. **Feature 4: Smooth Slide-Transition beim Periodenwechsel** ✅
+   - `SlideTransition.tsx` NEU — CSS enter-Animation Wrapper
+   - `tailwind.config.ts` — `slide-in-right` + `slide-in-left` Keyframes (translateX ±30px, 200ms ease-out)
+   - `PlanningContext.tsx` — `slideDirection: 'left' | 'right' | null` State + `clearSlideDirection` Callback
+   - Alle 6 Nav-Funktionen setzen `slideDirection` vor `setWeekStart`
+   - `PlanningGrid.tsx` — Alle 3 Views (Week/Month/Team) gewrappt mit `<SlideTransition>`
+   - `index.ts` — `SlideTransition` Export
+
+**Guard-Ergebnisse:**
+- ESLint: ✅
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Neue Dateien (6):**
+- `src/presentation/components/planning/SlideTransition.tsx`
+- `src/presentation/contexts/DragHighlightContext.tsx`
+- `src/presentation/contexts/EmptyFilterContext.tsx`
+- `src/presentation/components/planning/EmptyFilterToggles.tsx`
+- `src/presentation/hooks/useLocalStorageToggle.ts`
+
+**Geänderte Dateien (10):**
+- `src/presentation/contexts/PlanningContext.tsx` — slideDirection + clearSlideDirection + Nav-Funktionen
+- `src/presentation/components/planning/PlanningGrid.tsx` — SlideTransition + EmptyFilter + SlideDirection
+- `src/presentation/components/planning/MonthGrid.tsx` — Highlight + EmptyFilter
+- `src/presentation/components/planning/DndProvider.tsx` — Split Outer/Inner + Highlight-Berechnung
+- `src/presentation/components/planning/PhaseRow.tsx` — Highlight-Styling
+- `src/presentation/components/planning/PoolCard.tsx` — availability in Drag-Data
+- `src/presentation/components/planning/types/dnd.ts` — availability Feld
+- `src/presentation/components/planning/index.ts` — Exports
+- `src/presentation/hooks/index.ts` — useLocalStorageToggle Export
+- `src/app/(dashboard)/planung/page.tsx` — EmptyFilterProvider + Toggles
+- `tailwind.config.ts` — slide-in Keyframes + Animations
+
+**Noch kein Commit** — Alle 4 Features implementiert, Guards bestanden.
+
+---
+
 ## 2026-02-13 (Session 25)
 
 ### Session: Resize-Snap + MonthGrid Rewrite (Wochenspalten)
@@ -57,80 +121,10 @@
 - `src/presentation/components/planning/SpanningAssignmentCard.tsx` - previewSpanDays statt pixelOffset
 - `src/presentation/components/planning/assignment-card.styles.ts` - shadow-lg statt ring
 
-**Status:** Noch nicht committed
-
----
-
-## 2026-02-12 (Session 24)
-
-### Session: Asana Integration "Reset"-Bug Fix
-
-**Typ:** Sparring & Planung (Implementierung durch anderen Agent)
-
-**Abgeschlossen:**
-
-1. **Root Cause Analyse** ✅
-   - User meldete: Nach Disconnect+Reconnect erscheinen alle Asana-Dropdowns leer
-   - DB-Check in Supabase: Config-Felder sind korrekt gespeichert (asana_source_project_id, asana_team_id, etc.)
-   - Problem: Rein UI-seitig — wenn `getAsanaTeams()` / `getAsanaProjects()` fehlschlagen, bleiben Options-Arrays `[]`
-   - `SearchableSelect` (Zeile 53): `options.find((o) => o.value === value)` → kein Match → Placeholder statt Wert
-   - Kein Error-Feedback: Alle drei Cards verschlucken API-Fehler komplett (kein else-Branch)
-
-2. **Plan erstellt** ✅
-   - Error-State + Banner in ProjectSyncCard und AbsenceSyncCard
-   - Fallback-Label in SearchableSelect: `Konfiguriert (${value.slice(-6)})`
-   - Keine Server-Action-Änderungen nötig (geben bereits korrekt `Result.fail()` zurück)
-
-3. **Implementierung durch anderen Agent** ✅
-   - `ProjectSyncCard.tsx` — `loadError` State, Fehler-Sammlung, rotes Error-Banner
-   - `AbsenceSyncCard.tsx` — `loadError` State, Error-Banner
-   - `searchable-select.tsx` — `displayLabel` Fallback mit GID-Suffix
-
-**Geänderte Dateien (3):**
-- `src/app/(dashboard)/einstellungen/integrationen/ProjectSyncCard.tsx` - Error-State + Banner
-- `src/app/(dashboard)/einstellungen/integrationen/AbsenceSyncCard.tsx` - Error-State + Banner
-- `src/presentation/components/ui/searchable-select.tsx` - Fallback-Label
-
-**Status:** Noch nicht committed
-
----
-
-## 2026-02-12 (Session 23)
-
-### Session: Resize-Bugs Fix (Revert-Bug + Broken Animation)
-
-**Abgeschlossen:**
-
-1. **Revert-Bug Fix: completingRef Guard** ✅
-   - Root Cause: Race condition — `useEffect` reset `previewSpanDays` to `currentSpanDays` before `onResizeComplete` (async) finished
-   - Fix: `completingRef` Ref-Guard in `useAllocationResize.ts`
-   - `useEffect` prüft `!completingRef.current` bevor es zurücksetzt
-   - `handleMouseUp`/`handleTouchEnd`: Guard aktivieren vor `setIsResizing(false)`, lösen nach `onResizeComplete`
-   - Reihenfolge: Preview locken → Guard an → isResizing off → Server-Call → Guard aus
-
-2. **Animation Fix: Gezielte transitionProperty** ✅
-   - Root Cause: `transition: 'none'` auf resize-width killed ALLE Transitions (shadow, color, opacity)
-   - Fix: `transitionProperty: 'box-shadow, border-color, background-color, color, opacity'` — erlaubt visuelles Feedback, blockiert nur width-Transition
-   - Angewendet in SpanningAssignmentCard + AssignmentCard
-
-3. **Ghost Preview entfernt** ✅
-   - Root Cause: Ghost-Preview hatte eigenes Koordinatensystem das mit Card-width kollidierte
-   - Fix: Kompletter Block entfernt aus AssignmentCard (war lines ~231-243) und SpanningAssignmentCard (war lines ~281-293)
-   - Dead styles entfernt: `ghostPreviewBase`, `ghostPreviewUser`, `ghostPreviewResource` aus assignment-card.styles.ts
-   - `previewSpanDays` aus AssignmentCard destructuring entfernt (unused nach Ghost-Removal)
-
-**Guard-Ergebnisse:**
-- ESLint: ✅
-- TypeScript: ✅
-- Tests: 602 passed
-
-**Geänderte Dateien (4):**
-- `src/presentation/hooks/useAllocationResize.ts` - completingRef Guard, reordered handleMouseUp/handleTouchEnd
-- `src/presentation/components/planning/SpanningAssignmentCard.tsx` - transitionProperty statt transition:'none', Ghost entfernt
-- `src/presentation/components/planning/AssignmentCard.tsx` - transitionProperty, Ghost entfernt, unused previewSpanDays entfernt
-- `src/presentation/components/planning/assignment-card.styles.ts` - Ghost-Styles entfernt
-
-**Status:** Noch nicht committed
+**Commits:**
+- `de007e9` - Resize revert bug + Asana config loading (Sessions 23+24)
+- `e7667ed` - Resize day-snapping with smooth CSS transition
+- `db6bfce` - MonthGrid redesign with week-columns, Mini-Cards and aligned ResourcePool
 
 ---
 
@@ -966,6 +960,9 @@
 ## Commit History (relevant)
 
 ```
+db6bfce feat: Redesign MonthGrid with week-columns, Mini-Cards and aligned ResourcePool
+e7667ed fix: Replace pixel-based resize with day-snapping and smooth CSS transition
+de007e9 fix: Resolve resize revert bug and show error state for Asana config loading
 82adfea feat: Add team view (Mitarbeiteransicht) and visible scrollbars
 55cb92c fix: Resize animation fix + performance optimizations
 80d3d2c feat: Add exponential backoff retry for Asana API

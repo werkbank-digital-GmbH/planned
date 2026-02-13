@@ -77,6 +77,11 @@ export function PoolCard({ item, weekDates, compact = false, contextKey }: PoolC
       itemName: item.name,
       // Übergebe die Werktage als ISO-Strings für die Allocation-Erstellung
       dates: workDates.map((d) => formatDateISO(d)),
+      // Verfügbarkeit pro Tag für Drop-Highlight (Abwesenheiten orange markieren)
+      availability: item.availability.map((a) => ({
+        date: formatDateISO(a.date),
+        status: a.status,
+      })),
     },
   });
 

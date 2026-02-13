@@ -80,6 +80,10 @@ interface PlanningContextValue {
   viewMode: ViewMode;
   highlightPhaseId: string | null;
 
+  // Slide Transition
+  slideDirection: 'left' | 'right' | null;
+  clearSlideDirection: () => void;
+
   // Navigation
   goToNextWeek: () => void;
   goToPreviousWeek: () => void;
@@ -183,6 +187,11 @@ export function PlanningProvider({
   const [highlightPhaseId] = useState<string | null>(
     highlightPhaseIdProp ?? null
   );
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+
+  const clearSlideDirection = useCallback(() => {
+    setSlideDirection(null);
+  }, []);
 
   // Load week data
   const loadWeekData = useCallback(async () => {
@@ -428,6 +437,7 @@ export function PlanningProvider({
 
   // Navigation functions
   const goToNextWeek = useCallback(() => {
+    setSlideDirection('right');
     setWeekStart((prev) => {
       const next = new Date(prev);
       next.setDate(next.getDate() + 7);
@@ -436,6 +446,7 @@ export function PlanningProvider({
   }, []);
 
   const goToPreviousWeek = useCallback(() => {
+    setSlideDirection('left');
     setWeekStart((prev) => {
       const next = new Date(prev);
       next.setDate(next.getDate() - 7);
@@ -444,15 +455,18 @@ export function PlanningProvider({
   }, []);
 
   const goToToday = useCallback(() => {
+    setSlideDirection('right');
     setWeekStart(getMonday(new Date()));
   }, []);
 
   const goToWeek = useCallback((date: Date) => {
+    setSlideDirection('right');
     setWeekStart(getMonday(date));
   }, []);
 
   // Period-based navigation (depends on viewMode)
   const goToNextPeriod = useCallback(() => {
+    setSlideDirection('right');
     if (viewMode === 'week' || viewMode === 'team') {
       setWeekStart((prev) => {
         const next = new Date(prev);
@@ -465,6 +479,7 @@ export function PlanningProvider({
   }, [viewMode]);
 
   const goToPreviousPeriod = useCallback(() => {
+    setSlideDirection('left');
     if (viewMode === 'week' || viewMode === 'team') {
       setWeekStart((prev) => {
         const next = new Date(prev);
@@ -904,6 +919,8 @@ export function PlanningProvider({
       filters,
       viewMode,
       highlightPhaseId,
+      slideDirection,
+      clearSlideDirection,
       goToNextWeek,
       goToPreviousWeek,
       goToToday,
@@ -945,6 +962,8 @@ export function PlanningProvider({
       filters,
       viewMode,
       highlightPhaseId,
+      slideDirection,
+      clearSlideDirection,
       goToNextWeek,
       goToPreviousWeek,
       goToToday,

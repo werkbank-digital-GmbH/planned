@@ -1,44 +1,55 @@
 # Active Context
 
-## Aktueller Stand (2026-02-13, Session 25)
+## Aktueller Stand (2026-02-13, Session 26)
 
 ### Zuletzt Abgeschlossen
 
-**MonthGrid Rewrite — Wochenspalten statt Tagesspalten** ✅ — Noch nicht committed
-- 28-31 einzelne Tagesspalten → 4-5 Wochenspalten mit je 5-col Sub-Grid (Mo-Fr)
-- **Schritt 1:** `month-week-utils.ts` erstellt (`groupMonthIntoWeeks()`, `getAbsenceDaysLabel()`)
-- **Schritt 2:** `PlanningContext.tsx` erweitert mit Multi-Week Fetch (`monthWeeks`, `monthProjectRows`, `monthPoolItems`, `isMonthLoading`)
-- **Schritt 3:** `MonthGrid.tsx` komplett rewritten (MonthGridHeader, MonthProjectRow, MonthPhaseRow, MonthPhaseWeekCell, MonthDayCell)
-- **Schritt 4:** `ResourcePool.tsx` Month-Branch aligned mit MonthGrid Grid (280px + repeat(weekCount, 1fr)), Absence-Badges
-- **Schritt 5:** `PlanningGrid.tsx` übergibt `monthWeeks` + `monthPoolItems` an ResourcePool
+**Session 26: 4 Planning UI Features** ✅ (noch nicht committet)
 
-**Resize-Snap Behavior** ✅ — Noch nicht committed
-- `pixelOffset` eliminiert → `previewSpanDays` + CSS Transitions (150ms ease-out)
-- Ring-Outline → Shadow-lg bei Resize
+1. **Feature 1: Multi-Day Drop Highlight** ✅
+   - `DragHighlightContext.tsx` — Separater Context (nicht in PlanningContext) mit ref-basierter Key-Optimierung
+   - Pool-Item-Drop → 5 Weekday-Highlights (Mo-Fr), Absenz-Tage orange, valide grün
+   - Allocation-Span → N Tage ab Cursor, Single → 1 Tag
+   - `PoolCard.tsx` erweitert mit `availability`-Daten im Drag-Payload
+   - `DndProvider.tsx` split in Outer/Inner, Highlight-Berechnung in `handleDragOver`
+   - `PhaseRow.tsx` + `MonthGrid.tsx` — `ring-2 ring-inset` Highlight-Styling
 
-**Asana Integration "Reset"-Bug Fix** ✅ — Noch nicht committed
-- Error-State + rotes Banner in ProjectSyncCard/AbsenceSyncCard
-- Fallback-Label in SearchableSelect
+2. **Feature 2: Hide Empty Phases/Projects** ✅
+   - `useLocalStorageToggle.ts` — Generischer SSR-sicherer Hook
+   - `EmptyFilterContext.tsx` — Separater leichtgewichtiger Context
+   - `EmptyFilterToggles.tsx` — Zwei Toggle-Buttons, hidden in Team-View
+   - `PlanningGrid.tsx` + `MonthGrid.tsx` — `useMemo`-basierte Filterung
 
-**Resize-Bugs: Revert-Bug + Broken Animation** ✅ — Noch nicht committed
-- `completingRef` Guard, Ghost Preview entfernt, `transitionProperty` statt `transition: 'none'`
+3. **Feature 3: Header Height Consistency + Sticky Headers** ✅
+   - Linter-Änderungen: `sticky top-0 z-10`, `p-3`, `text-xs` auf GridHeader/MonthGridHeader
 
-**Vorherige Sessions:** Team View ✅, Resize-Performance ✅, BF-3 ✅, TD-1–TD-6 ✅, P1–P6 ✅
+4. **Feature 4: Smooth Slide-Transition** ✅
+   - `SlideTransition.tsx` — CSS enter-Animation (200ms ease-out, translateX ±30px)
+   - `PlanningContext.tsx` — `slideDirection` State + `clearSlideDirection`, alle 6 Nav-Funktionen erweitert
+   - `PlanningGrid.tsx` — Alle 3 Views (Week/Month/Team) mit `SlideTransition` gewrappt
+   - `tailwind.config.ts` — `slide-in-right` + `slide-in-left` Keyframes & Animations
 
-### Nächste Features / Offene Prompts
+**Vorherige Sessions:** MonthGrid Rewrite ✅, Resize-Snap ✅, Team View ✅, Resize-Performance ✅, BF-3 ✅, TD-1–TD-6 ✅, P1–P6 ✅
 
-- **Commit ausstehend:** Sessions 23-25 (Resize-Fixes, Asana UI-Bug-Fix, Resize-Snap, MonthGrid Rewrite)
-- **BF-3 offen:** Progress-Reporting während langer Syncs (nice-to-have)
-- **Performance Follow-Up:** `GetAllocationsForWeekQuery` parallelisieren (5 DB-Calls → 3)
-- **Performance Follow-Up:** List-Virtualization für >20 Projekte
-- **Performance Follow-Up:** `AssignmentCard`/`SpanningAssignmentCard` — `usePlanning()` durch Props ersetzen
+### Feature-Roadmap (vom User priorisiert)
+
+1. ~~MonthGrid Alignment mit ResourcePool~~ ✅ (Session 25)
+2. ~~Drop Highlight covers whole allocation period~~ ✅ (Session 26)
+3. ~~Buttons to hide empty phases/projects~~ ✅ (Session 26)
+4. ~~Header height consistency~~ ✅ (Session 26)
+5. ~~Smooth Slide-Transition~~ ✅ (Session 26)
+6. **Vertical scroll through weeks** (Wochenweise scrollen) — NÄCHSTES FEATURE
+7. **Query Parallelization** (5 DB-Calls → 3)
+8. **usePlanning() Extraction** aus AssignmentCards
+9. **Test Coverage** für Analytics
 
 ### Tech Debt
 
-- **ENV-Vars auf Vercel** - Im Dashboard prüfen: CRON_SECRET, ASANA_REDIRECT_URI, ENCRYPTION_KEY, ANTHROPIC_API_KEY
-- **Große Dateien aufteilen** - GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775), PlanningContext.tsx (748)
+- **Große Dateien aufteilen** - PlanningContext.tsx (1000!), GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775)
+- **PlanningContext Splitting** - Month-Logik (monthWeeks, monthProjectRows, monthPoolItems, Multi-Week-Fetch) in eigenen `useMonthData()` Hook extrahieren
 - **Fehlende Tests** - Analytics Use Cases, Repositories, Weather/Geocoding Services
 - **ProjectInsightAggregator.totalPlan** - Hardcoded 0 (TODO: aus Snapshots aggregieren)
+- **BF-3 offen:** Progress-Reporting während langer Syncs (nice-to-have)
 
 ### Abgeschlossene Pläne (frühere Sessions)
 
@@ -67,9 +78,9 @@
 20. **Session 20: BF-3 Asana Retry** ✅ - Commit: `80d3d2c`
 21. **Session 21: Resize Fix + Performance** ✅ - Commit: `55cb92c`
 22. **Session 22: Team View + Scrollbars** ✅ - Commit: `82adfea`
-23. **Session 23: Resize-Bugs Fix (Revert + Animation)** ✅ - Noch nicht committed
-24. **Session 24: Asana Integration UI-Bug Fix** ✅ - Noch nicht committed
-25. **Session 25: Resize-Snap + MonthGrid Rewrite** ✅ - Noch nicht committed
+23. **Session 23: Resize-Bugs Fix (Revert + Animation)** ✅ - Commit: `de007e9`
+24. **Session 24: Asana Integration UI-Bug Fix** ✅ - Commit: `de007e9`
+25. **Session 25: Resize-Snap + MonthGrid Rewrite** ✅ - Commits: `e7667ed`, `db6bfce`
 
 </details>
 
