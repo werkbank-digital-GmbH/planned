@@ -1,32 +1,32 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
 
-import type { PhaseRowData, ProjectRowData } from '@/application/queries';
+import type { AllocationWithDetails, PhaseRowData, ProjectRowData } from '@/application/queries';
 
 import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
-import {
-  formatDateISO,
-  getDayOfWeek,
-  getWeekdayShort,
-  isToday,
-  isWeekend,
-} from '@/lib/date-utils';
-import { formatHoursWithUnit } from '@/lib/format';
+import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
+import { AssignmentCard } from './AssignmentCard';
 import { HoursDisplay } from './HoursDisplay';
+import { SpanningAssignmentCard } from './SpanningAssignmentCard';
 import { createPhaseDropZoneId } from './types/dnd';
+import {
+  groupConsecutiveAllocations,
+  getSpannedAllocationIds,
+} from './utils/allocation-grouping';
+import type { MonthWeek } from './utils/month-week-utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-const DAY_COLUMN_WIDTH = 32; // px pro Tag
 const PROJECT_COLUMN_WIDTH = 280; // px
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -34,54 +34,36 @@ const PROJECT_COLUMN_WIDTH = 280; // px
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface MonthGridHeaderProps {
-  monthDates: Date[];
+  monthWeeks: MonthWeek[];
 }
 
-function MonthGridHeader({ monthDates }: MonthGridHeaderProps) {
+function MonthGridHeader({ monthWeeks }: MonthGridHeaderProps) {
   return (
     <div
       className="grid border-b bg-gray-50 sticky top-0 z-10"
       style={{
-        gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthDates.length}, minmax(${DAY_COLUMN_WIDTH}px, 1fr))`,
+        gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthWeeks.length}, 1fr)`,
       }}
     >
       {/* Projekt/Phase-Spalte Header */}
-      <div className="border-r border-gray-200 p-3 font-medium text-sm sticky left-0 bg-gray-50 z-20">
+      <div className="border-r border-gray-200 p-3 font-medium text-sm">
         Projekt / Phase
       </div>
 
-      {/* Tages-Header */}
-      {monthDates.map((date) => {
-        const today = isToday(date);
-        const weekend = isWeekend(date);
-        const dayOfWeek = getDayOfWeek(date);
+      {/* Wochen-Header */}
+      {monthWeeks.map((week) => {
+        const firstDate = week.weekDates[0];
+        const lastDate = week.weekDates[4];
 
         return (
           <div
-            key={date.toISOString()}
-            className={cn(
-              'border-r border-gray-200 py-1 text-center last:border-r-0',
-              today && 'bg-amber-50',
-              weekend && !today && 'bg-gray-100'
-            )}
+            key={week.weekKey}
+            className="border-r-2 border-gray-300 py-2 px-1 text-center last:border-r-0"
           >
-            <div
-              className={cn(
-                'font-medium text-[10px] leading-tight',
-                today && 'text-amber-700',
-                weekend && !today && 'text-gray-400'
-              )}
-            >
-              {getWeekdayShort(dayOfWeek)}
-            </div>
-            <div
-              className={cn(
-                'text-[10px] leading-tight',
-                today ? 'text-amber-600' : 'text-gray-500',
-                weekend && !today && 'text-gray-400'
-              )}
-            >
-              {date.getDate()}
+            <div className="font-medium text-sm">KW {week.calendarWeek}</div>
+            <div className="text-[10px] text-gray-500">
+              {firstDate.getUTCDate()}.{firstDate.getUTCMonth() + 1}. &ndash;{' '}
+              {lastDate.getUTCDate()}.{lastDate.getUTCMonth() + 1}.
             </div>
           </div>
         );
@@ -91,14 +73,8 @@ function MonthGridHeader({ monthDates }: MonthGridHeaderProps) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PROJECT ROW
+// HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
-
-interface MonthProjectRowProps {
-  project: ProjectRowData;
-  monthDates: Date[];
-  onToggleExpand: (projectId: string) => void;
-}
 
 function getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
@@ -125,7 +101,254 @@ function getStatusLabel(status: string): string {
   return labels[status] ?? status.toUpperCase();
 }
 
-function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRowProps) {
+function getBereichBadgeColor(bereich: string): string {
+  switch (bereich) {
+    case 'produktion':
+      return 'bg-blue-100 text-blue-800';
+    case 'montage':
+      return 'bg-green-100 text-green-800';
+    case 'externes_gewerk':
+      return 'bg-purple-100 text-purple-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+}
+
+function getBereichLabel(bereich: string): string {
+  const labels: Record<string, string> = {
+    produktion: 'PRODUKTION',
+    montage: 'MONTAGE',
+    externes_gewerk: 'EXTERN',
+  };
+  return labels[bereich] ?? bereich.toUpperCase();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DAY CELL (inside MonthPhaseRow week sub-grid)
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface MonthDayCellProps {
+  phaseId: string;
+  projectId: string;
+  date: Date;
+  dayIndex: number;
+  allocations: AllocationWithDetails[];
+  isActiveThisWeek: boolean;
+  spannedAllocationIds: Set<string>;
+  phaseStartDate?: string;
+  phaseEndDate?: string;
+}
+
+function MonthDayCell({
+  phaseId,
+  projectId,
+  date,
+  dayIndex,
+  allocations,
+  isActiveThisWeek,
+  spannedAllocationIds,
+  phaseStartDate,
+  phaseEndDate,
+}: MonthDayCellProps) {
+  const dateKey = formatDateISO(date);
+  const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: droppableId,
+    data: {
+      type: 'phase-cell',
+      phaseId,
+      projectId,
+      date,
+    },
+  });
+
+  const isToday = formatDateISO(new Date()) === dateKey;
+
+  // Filtere Allocations die Teil eines Multi-Day-Spans sind
+  const singleAllocations = allocations.filter((a) => !spannedAllocationIds.has(a.id));
+
+  return (
+    <div
+      ref={setNodeRef}
+      data-day-cell
+      data-day-index={dayIndex}
+      className={cn(
+        'min-h-[48px] p-0.5 border-r border-gray-200 last:border-r-0',
+        'flex flex-wrap gap-0.5 content-start',
+        isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-300',
+        isToday && 'bg-amber-50',
+        !isActiveThisWeek && 'bg-gray-50'
+      )}
+    >
+      {singleAllocations.map((allocation) => (
+        <AssignmentCard
+          key={allocation.id}
+          allocation={allocation}
+          compact
+          dayIndex={dayIndex}
+          phaseStartDate={phaseStartDate}
+          phaseEndDate={phaseEndDate}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MONTH PHASE ROW (renders 5-col sub-grid per week)
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface MonthPhaseRowProps {
+  phase: PhaseRowData;
+  monthWeeks: MonthWeek[];
+  projectId: string;
+}
+
+function MonthPhaseRow({ phase, monthWeeks, projectId }: MonthPhaseRowProps) {
+  const bereichColor = getBereichBadgeColor(phase.phase.bereich);
+
+  // Berechne die Summe der geplanten Stunden über alle Wochen
+  const monthlyPlannedHours = Object.values(phase.dayAllocations)
+    .flat()
+    .reduce((sum, allocation) => sum + (allocation.plannedHours ?? 0), 0);
+
+  return (
+    <div
+      className="grid items-stretch border-t border-gray-100"
+      style={{
+        gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthWeeks.length}, 1fr)`,
+      }}
+    >
+      {/* Phase-Info (linke Spalte) */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-200 bg-white pl-10">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <span className="text-xs truncate">{phase.phase.name}</span>
+            <Badge
+              variant="outline"
+              className={cn('text-[9px] px-1 py-0 border-0', bereichColor)}
+            >
+              {getBereichLabel(phase.phase.bereich)}
+            </Badge>
+          </div>
+          <HoursDisplay
+            ist={phase.phase.actualHours}
+            plan={monthlyPlannedHours}
+            soll={phase.phase.budgetHours}
+            variant="phase"
+            className="text-[10px]"
+          />
+        </div>
+      </div>
+
+      {/* Pro Woche: 5-col Sub-Grid mit Cards */}
+      {monthWeeks.map((week) => (
+        <MonthPhaseWeekCell
+          key={week.weekKey}
+          phase={phase}
+          week={week}
+          projectId={projectId}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MONTH PHASE WEEK CELL (a single week column for a phase)
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface MonthPhaseWeekCellProps {
+  phase: PhaseRowData;
+  week: MonthWeek;
+  projectId: string;
+}
+
+function MonthPhaseWeekCell({ phase, week, projectId }: MonthPhaseWeekCellProps) {
+  // Filtere dayAllocations auf diese Woche
+  const weekDayAllocations = useMemo(() => {
+    const filtered: Record<string, AllocationWithDetails[]> = {};
+    for (const date of week.weekDates) {
+      const key = formatDateISO(date);
+      if (phase.dayAllocations[key]) {
+        filtered[key] = phase.dayAllocations[key];
+      }
+    }
+    return filtered;
+  }, [phase.dayAllocations, week.weekDates]);
+
+  // Gruppiere aufeinanderfolgende Allocations für diese Woche
+  const spans = useMemo(
+    () => groupConsecutiveAllocations(weekDayAllocations, week.weekDates),
+    [weekDayAllocations, week.weekDates]
+  );
+
+  const spannedAllocationIds = useMemo(() => getSpannedAllocationIds(spans), [spans]);
+  const multiDaySpans = useMemo(() => spans.filter((s) => s.spanDays > 1), [spans]);
+
+  return (
+    <div className="relative border-r-2 border-gray-300 last:border-r-0">
+      {/* 5-col sub-grid for day cells */}
+      <div className="grid grid-cols-5">
+        {week.weekDates.map((date, dayIndex) => {
+          const dateKey = formatDateISO(date);
+          const allocations = weekDayAllocations[dateKey] ?? [];
+
+          return (
+            <MonthDayCell
+              key={dateKey}
+              phaseId={phase.phase.id}
+              projectId={projectId}
+              date={date}
+              dayIndex={dayIndex}
+              allocations={allocations}
+              isActiveThisWeek={phase.isActiveThisWeek}
+              spannedAllocationIds={spannedAllocationIds}
+              phaseStartDate={phase.phase.startDate?.toISOString()}
+              phaseEndDate={phase.phase.endDate?.toISOString()}
+            />
+          );
+        })}
+      </div>
+
+      {/* Multi-Day Spans (absolut positioniert über den Zellen) */}
+      {multiDaySpans.length > 0 && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="grid grid-cols-5 h-full">
+            {multiDaySpans.map((span) => (
+              <div
+                key={span.allocations[0].id}
+                className="pointer-events-auto p-0.5"
+                style={{
+                  gridColumn: `${span.startDayIndex + 1} / span ${span.spanDays}`,
+                }}
+              >
+                <SpanningAssignmentCard
+                  span={span}
+                  phaseStartDate={phase.phase.startDate?.toISOString()}
+                  phaseEndDate={phase.phase.endDate?.toISOString()}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROJECT ROW
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface MonthProjectRowProps {
+  project: ProjectRowData;
+  monthWeeks: MonthWeek[];
+  onToggleExpand: (projectId: string) => void;
+}
+
+function MonthProjectRow({ project, monthWeeks, onToggleExpand }: MonthProjectRowProps) {
   const { isExpanded, hasActivePhasesThisWeek } = project;
 
   return (
@@ -138,11 +361,11 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
           hasActivePhasesThisWeek && 'bg-white hover:bg-gray-50'
         )}
         style={{
-          gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthDates.length}, minmax(${DAY_COLUMN_WIDTH}px, 1fr))`,
+          gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthWeeks.length}, 1fr)`,
         }}
       >
-        {/* Projekt-Info (linke Spalte, sticky) */}
-        <div className="flex items-center gap-2 px-3 py-2 border-r border-gray-200 sticky left-0 bg-inherit z-10">
+        {/* Projekt-Info (linke Spalte) */}
+        <div className="flex items-center gap-2 px-3 py-2 border-r border-gray-200 bg-inherit">
           <Button
             variant="ghost"
             size="sm"
@@ -169,7 +392,6 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
               </Badge>
             </div>
 
-            {/* KPIs: IST / PLAN / SOLL */}
             <HoursDisplay
               ist={project.totalActualHours}
               plan={project.weeklyPlannedHours}
@@ -180,22 +402,13 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
           </div>
         </div>
 
-        {/* Tageszellen (leer bei Projekt-Ebene) */}
-        {monthDates.map((date) => {
-          const weekend = isWeekend(date);
-          const today = isToday(date);
-
-          return (
-            <div
-              key={date.toISOString()}
-              className={cn(
-                'h-full min-h-[52px] border-r border-gray-200 last:border-r-0',
-                today && 'bg-amber-50/50',
-                weekend && !today && 'bg-gray-50'
-              )}
-            />
-          );
-        })}
+        {/* Leere Wochen-Zellen auf Projekt-Ebene */}
+        {monthWeeks.map((week) => (
+          <div
+            key={week.weekKey}
+            className="h-full min-h-[52px] border-r-2 border-gray-300 last:border-r-0"
+          />
+        ))}
       </div>
 
       {/* Phasen-Zeilen (wenn aufgeklappt) */}
@@ -205,7 +418,7 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
             <MonthPhaseRow
               key={phase.phase.id}
               phase={phase}
-              monthDates={monthDates}
+              monthWeeks={monthWeeks}
               projectId={project.project.id}
             />
           ))}
@@ -223,172 +436,21 @@ function MonthProjectRow({ project, monthDates, onToggleExpand }: MonthProjectRo
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PHASE ROW
-// ═══════════════════════════════════════════════════════════════════════════
-
-interface MonthPhaseRowProps {
-  phase: PhaseRowData;
-  monthDates: Date[];
-  projectId: string;
-}
-
-function getBereichColor(bereich: string): string {
-  switch (bereich) {
-    case 'produktion':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
-    case 'montage':
-      return 'bg-green-100 text-green-700 border-green-200';
-    case 'externes_gewerk':
-      return 'bg-purple-100 text-purple-700 border-purple-200';
-    default:
-      return 'bg-gray-100 text-gray-700 border-gray-200';
-  }
-}
-
-// Droppable Tageszelle für Monatsansicht
-interface MonthDayCellProps {
-  phaseId: string;
-  projectId: string;
-  date: Date;
-  totalHours: number;
-  bereichColor: string;
-  allocationsInfo: string;
-}
-
-function MonthDayCell({ phaseId, projectId, date, totalHours, bereichColor, allocationsInfo }: MonthDayCellProps) {
-  const weekend = isWeekend(date);
-  const today = isToday(date);
-  const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
-
-  const { setNodeRef, isOver } = useDroppable({
-    id: droppableId,
-    data: {
-      type: 'phase-cell',
-      phaseId,
-      projectId,
-      date,
-    },
-  });
-
-  // Wochenenden sind nicht droppable
-  if (weekend) {
-    return (
-      <div
-        className={cn(
-          'min-h-[36px] border-r border-gray-200 last:border-r-0 flex items-center justify-center',
-          today && 'bg-amber-50/50',
-          'bg-gray-50'
-        )}
-      >
-        {totalHours > 0 && (
-          <div
-            className={cn('text-[9px] font-medium rounded px-1 py-0.5', bereichColor)}
-            title={allocationsInfo}
-          >
-            {totalHours}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        'min-h-[36px] border-r border-gray-200 last:border-r-0 flex items-center justify-center',
-        today && 'bg-amber-50/50',
-        isOver && 'bg-blue-100 ring-1 ring-inset ring-blue-400'
-      )}
-    >
-      {totalHours > 0 && (
-        <div
-          className={cn('text-[9px] font-medium rounded px-1 py-0.5', bereichColor)}
-          title={allocationsInfo}
-        >
-          {totalHours}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MonthPhaseRow({ phase, monthDates, projectId }: MonthPhaseRowProps) {
-  const bereichColor = getBereichColor(phase.phase.bereich);
-
-  // Berechne die Summe der geplanten Stunden für diesen Monat aus den Allocations
-  const monthlyPlannedHours = Object.values(phase.dayAllocations)
-    .flat()
-    .reduce((sum, allocation) => sum + (allocation.plannedHours ?? 0), 0);
-
-  return (
-    <div
-      className="grid items-center border-t border-gray-100"
-      style={{
-        gridTemplateColumns: `${PROJECT_COLUMN_WIDTH}px repeat(${monthDates.length}, minmax(${DAY_COLUMN_WIDTH}px, 1fr))`,
-      }}
-    >
-      {/* Phase-Info (linke Spalte, sticky) */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-200 sticky left-0 bg-white z-10 pl-10">
-        <div
-          className={cn(
-            'w-2 h-2 rounded-full flex-shrink-0',
-            bereichColor.replace('text-', 'bg-').replace('-700', '-500')
-          )}
-        />
-        <div className="flex-1 min-w-0">
-          <span className="text-sm truncate block">{phase.phase.name}</span>
-          {/* Stunden-Info: IST / PLAN / SOLL */}
-          <HoursDisplay
-            ist={phase.phase.actualHours}
-            plan={monthlyPlannedHours}
-            soll={phase.phase.budgetHours}
-            variant="phase"
-            className="text-[10px]"
-          />
-        </div>
-      </div>
-
-      {/* Tageszellen mit Allocations - jetzt Droppable! */}
-      {monthDates.map((date) => {
-        const dateKey = formatDateISO(date);
-        const allocations = phase.dayAllocations[dateKey] ?? [];
-        const totalHours = allocations.reduce((sum, a) => sum + (a.plannedHours ?? 0), 0);
-        const allocationsInfo = `${formatHoursWithUnit(totalHours)} - ${allocations.map(a => a.user?.fullName ?? 'Unbekannt').join(', ')}`;
-
-        return (
-          <MonthDayCell
-            key={date.toISOString()}
-            phaseId={phase.phase.id}
-            projectId={projectId}
-            date={date}
-            totalHours={totalHours}
-            bereichColor={bereichColor}
-            allocationsInfo={allocationsInfo}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
  * Monats-Grid der Planungsansicht.
  *
- * Zeigt alle Tage eines Monats horizontal scrollbar mit:
- * - Feste linke Spalte (280px) für Projekt/Phase-Namen
- * - Kompakte Tagesspalten (~32px) mit Stunden-Chips
- * - Wochenenden grau hinterlegt
+ * Zeigt 4-5 Wochenspalten, wobei jede Woche intern ein 5-Spalten Sub-Grid
+ * (Mo-Fr) hat. Mini-Cards (AssignmentCard/SpanningAssignmentCard) werden
+ * identisch zur Wochenansicht angezeigt.
  */
 export function MonthGrid() {
   const {
-    projectRows,
-    periodDates,
-    isLoading,
+    monthProjectRows,
+    monthWeeks,
+    isMonthLoading,
     error,
     toggleProjectExpanded,
   } = usePlanning();
@@ -403,39 +465,50 @@ export function MonthGrid() {
   }
 
   // Lade-Anzeige
-  if (isLoading && projectRows.length === 0) {
+  if (isMonthLoading && monthProjectRows.length === 0) {
     return (
       <div className="flex items-center justify-center rounded-lg border p-8">
-        <span className="text-gray-500">Lade Daten...</span>
+        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        <span className="ml-2 text-gray-500">Lade Monatsdaten...</span>
       </div>
     );
   }
 
-  // Mindestbreite für horizontales Scrollen bei vielen Tagen
-  const minGridWidth = PROJECT_COLUMN_WIDTH + periodDates.length * DAY_COLUMN_WIDTH;
+  if (monthWeeks.length === 0) {
+    return (
+      <div className="flex items-center justify-center rounded-lg border p-8">
+        <span className="text-gray-500">Keine Wochendaten verfügbar</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-lg border bg-white overflow-x-auto relative w-full">
-      <div style={{ minWidth: minGridWidth }}>
-        <MonthGridHeader monthDates={periodDates} />
+    <div className="rounded-lg border bg-white relative w-full">
+      <MonthGridHeader monthWeeks={monthWeeks} />
 
-        <div className="flex flex-col gap-2 p-2">
-          {projectRows.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              Keine Projekte mit Phasen in diesem Monat
-            </div>
-          ) : (
-            projectRows.map((project) => (
-              <MonthProjectRow
-                key={project.project.id}
-                project={project}
-                monthDates={periodDates}
-                onToggleExpand={toggleProjectExpanded}
-              />
-            ))
-          )}
-        </div>
+      <div className="flex flex-col gap-2 p-2">
+        {monthProjectRows.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            Keine Projekte mit Phasen in diesem Monat
+          </div>
+        ) : (
+          monthProjectRows.map((project) => (
+            <MonthProjectRow
+              key={project.project.id}
+              project={project}
+              monthWeeks={monthWeeks}
+              onToggleExpand={toggleProjectExpanded}
+            />
+          ))
+        )}
       </div>
+
+      {/* Loading Overlay */}
+      {isMonthLoading && monthProjectRows.length > 0 && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      )}
     </div>
   );
 }

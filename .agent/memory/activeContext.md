@@ -1,51 +1,44 @@
 # Active Context
 
-## Aktueller Stand (2026-02-06, Session 16)
+## Aktueller Stand (2026-02-13, Session 25)
 
 ### Zuletzt Abgeschlossen
 
-**Bugfix-Session: BF-1 Performance + BF-2 Geocoding** ✅
+**MonthGrid Rewrite — Wochenspalten statt Tagesspalten** ✅ — Noch nicht committed
+- 28-31 einzelne Tagesspalten → 4-5 Wochenspalten mit je 5-col Sub-Grid (Mo-Fr)
+- **Schritt 1:** `month-week-utils.ts` erstellt (`groupMonthIntoWeeks()`, `getAbsenceDaysLabel()`)
+- **Schritt 2:** `PlanningContext.tsx` erweitert mit Multi-Week Fetch (`monthWeeks`, `monthProjectRows`, `monthPoolItems`, `isMonthLoading`)
+- **Schritt 3:** `MonthGrid.tsx` komplett rewritten (MonthGridHeader, MonthProjectRow, MonthPhaseRow, MonthPhaseWeekCell, MonthDayCell)
+- **Schritt 4:** `ResourcePool.tsx` Month-Branch aligned mit MonthGrid Grid (280px + repeat(weekCount, 1fr)), Absence-Badges
+- **Schritt 5:** `PlanningGrid.tsx` übergibt `monthWeeks` + `monthPoolItems` an ResourcePool
 
-| Prompt | Inhalt | Status |
-|--------|--------|--------|
-| BF-1 | Insights Performance-Optimierung (Batch + Parallel + Tenant-Level) | ✅ |
-| BF-2 | Robustes Geocoding mit Fallback + bessere Fehlermeldungen | ✅ |
+**Resize-Snap Behavior** ✅ — Noch nicht committed
+- `pixelOffset` eliminiert → `previewSpanDays` + CSS Transitions (150ms ease-out)
+- Ring-Outline → Shadow-lg bei Resize
 
-**BF-1: Performance-Optimierung (4 Dateien geändert)**
+**Asana Integration "Reset"-Bug Fix** ✅ — Noch nicht committed
+- Error-State + rotes Banner in ProjectSyncCard/AbsenceSyncCard
+- Fallback-Label in SearchableSelect
 
-1. `GenerateInsightsUseCase.ts` - Komplett refactored:
-   - Snapshots batch-geladen (1 Query statt N pro Phase)
-   - Availability einmal pro Tenant geladen (statt pro Phase)
-   - Wetter pro Koordinaten-Paar gecacht (statt pro Phase)
-   - Claude API Calls parallel in 10er-Batches (statt sequentiell)
-   - Zwei-Phasen-Architektur: Vorberechnung → KI-Texte parallel
-2. `AvailabilityAnalyzer.ts` - Neue `getTenantAvailabilityContext()` Methode + N+1 Fix:
-   - `getAllocationsForTenant()` statt N einzelne `findByUserAndDateRange()` Queries
-   - Nutzt `findByTenantAndDateRange()` für einen einzigen DB-Query
-3. `IAnalyticsRepository.ts` - Neue `getSnapshotsForPhasesInDateRange()` Methode
-4. `SupabaseAnalyticsRepository.ts` - Implementation mit `.in('phase_id', phaseIds)`
+**Resize-Bugs: Revert-Bug + Broken Animation** ✅ — Noch nicht committed
+- `completingRef` Guard, Ghost Preview entfernt, `transitionProperty` statt `transition: 'none'`
 
-**BF-2: Robustes Geocoding (2 Dateien geändert)**
-
-1. `GeocodingService.ts` - 3-Stufen Geocoding:
-   - Stufe 1: Volle Adresse suchen
-   - Stufe 2: PLZ + Stadt extrahieren (Fallback)
-   - Stufe 3: Strukturierte Suche (Straße, PLZ, Stadt separat)
-   - Logging auf jeder Stufe für Debugging
-2. `tenant.ts` - Bessere Fehlermeldung mit Formathinweis
+**Vorherige Sessions:** Team View ✅, Resize-Performance ✅, BF-3 ✅, TD-1–TD-6 ✅, P1–P6 ✅
 
 ### Nächste Features / Offene Prompts
 
-- **BF-3: Asana Sync Robustheit** - Noch nicht implementiert:
-  - Explizite Pagination für getTasksFromProject
-  - Graceful Degradation bei fehlenden Custom Fields
-  - Rate-Limit-aware Sync (min 100ms zwischen API-Calls)
+- **Commit ausstehend:** Sessions 23-25 (Resize-Fixes, Asana UI-Bug-Fix, Resize-Snap, MonthGrid Rewrite)
+- **BF-3 offen:** Progress-Reporting während langer Syncs (nice-to-have)
+- **Performance Follow-Up:** `GetAllocationsForWeekQuery` parallelisieren (5 DB-Calls → 3)
+- **Performance Follow-Up:** List-Virtualization für >20 Projekte
+- **Performance Follow-Up:** `AssignmentCard`/`SpanningAssignmentCard` — `usePlanning()` durch Props ersetzen
 
 ### Tech Debt
 
-- **Pre-Selection in Planungsview** - URL-Params werden gesetzt aber nicht gelesen
-- **DB-Migrationen auf Produktion** - Müssen manuell im Supabase Dashboard ausgeführt werden (3 Migrationen: D5, D6, D7)
-- **ENV-Vars auf Vercel** - CRON_SECRET, SUPABASE_SERVICE_ROLE_KEY, ENCRYPTION_KEY prüfen
+- **ENV-Vars auf Vercel** - Im Dashboard prüfen: CRON_SECRET, ASANA_REDIRECT_URI, ENCRYPTION_KEY, ANTHROPIC_API_KEY
+- **Große Dateien aufteilen** - GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775), PlanningContext.tsx (748)
+- **Fehlende Tests** - Analytics Use Cases, Repositories, Weather/Geocoding Services
+- **ProjectInsightAggregator.totalPlan** - Hardcoded 0 (TODO: aus Snapshots aggregieren)
 
 ### Abgeschlossene Pläne (frühere Sessions)
 
@@ -67,8 +60,16 @@
 13. **Plan D4: Analytics UI** ✅ - Commits: `145b2a0`, `749f3cc`, `acb535a`, `e4f9f16`
 14. **Plan D5: Asana-Sync Erweiterung** ✅ - Commit: `47bdf75`
 15. **Plan D6: Wetter-Integration** ✅ - Commit: `9b1203c`
-16. **Plan D7: Enhanced Recommendations** ✅ - (pending commit)
-17. **BF-1+BF-2: Performance + Geocoding Fixes** ✅ - (pending commit)
+16. **Plan D7: Enhanced Recommendations** ✅ - Commit: `6fefec9`
+17. **BF-1+BF-2+BF-4: Performance + Geocoding + Weather UI** ✅ - Commit: `a308bce`
+18. **Session 18: Infrastructure Hardening (P1-P6)** ✅ - Commits: `356a154`..`d076140`
+19. **Session 19: Tech Debt (TD-1-TD-6)** ✅ - Commits: `2a2df71`..`2d76b17`
+20. **Session 20: BF-3 Asana Retry** ✅ - Commit: `80d3d2c`
+21. **Session 21: Resize Fix + Performance** ✅ - Commit: `55cb92c`
+22. **Session 22: Team View + Scrollbars** ✅ - Commit: `82adfea`
+23. **Session 23: Resize-Bugs Fix (Revert + Animation)** ✅ - Noch nicht committed
+24. **Session 24: Asana Integration UI-Bug Fix** ✅ - Noch nicht committed
+25. **Session 25: Resize-Snap + MonthGrid Rewrite** ✅ - Noch nicht committed
 
 </details>
 
@@ -88,3 +89,4 @@
 - **D7:** QuickAssignDialog für schnelle Mitarbeiter-Zuweisung aus Insights
 - **BF-1:** Insights-Performance: Batch-Snapshots, Tenant-Level Availability, Parallel Claude Calls (10er Batches)
 - **BF-2:** Geocoding: 3-Stufen-Fallback (Freitext → PLZ+Stadt → Strukturiert)
+- **BF-4:** Wetter-UI: grid-cols-7 Layout, Inline-Daten, Legende im Header

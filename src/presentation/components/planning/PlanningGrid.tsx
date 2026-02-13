@@ -137,6 +137,8 @@ export function PlanningGrid() {
     toggleProjectExpanded,
     allUserRows,
     highlightPhaseId,
+    monthWeeks,
+    monthPoolItems,
   } = usePlanning();
 
   const weekDates = useMemo(() => getWeekDates(), [getWeekDates]);
@@ -156,7 +158,13 @@ export function PlanningGrid() {
 
         {/* Resizable Ressourcen-Pool */}
         <ResizablePoolWrapper>
-          <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
+          <ResourcePool
+            poolItems={monthPoolItems}
+            weekDates={weekDates}
+            viewMode={viewMode}
+            periodDates={periodDates}
+            monthWeeks={monthWeeks}
+          />
         </ResizablePoolWrapper>
       </div>
     );

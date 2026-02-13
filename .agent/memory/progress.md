@@ -1,5 +1,379 @@
 # Progress Log
 
+## 2026-02-13 (Session 25)
+
+### Session: Resize-Snap + MonthGrid Rewrite (Wochenspalten)
+
+**Abgeschlossen:**
+
+1. **Resize-Snap Behavior** ✅
+   - `pixelOffset` eliminiert aus `useAllocationResize.ts` (State, Move-Handler, Touch-Handler, Return-Interface)
+   - `AssignmentCard.tsx`: Width `${previewSpanDays * 100}%` + `transition: 'width 150ms ease-out'`
+   - `SpanningAssignmentCard.tsx`: Width `${(previewSpanDays / span.spanDays) * 100}%` + CSS Transition
+   - `assignment-card.styles.ts`: `cardResizing` von `ring-2 ring-blue-400 z-10` → `z-10 shadow-lg`
+
+2. **MonthGrid Rewrite — Wochenspalten statt Tagesspalten** ✅
+   - **Schritt 1:** `month-week-utils.ts` NEW
+     - `MonthWeek` Interface (weekKey, calendarWeek, weekDates, mondayISO)
+     - `groupMonthIntoWeeks(monthStart)` — berechnet alle KWs eines Monats
+     - `getAbsenceDaysLabel(item, weekDates, allDates)` — kompaktes Abwesenheits-Label
+   - **Schritt 2:** `PlanningContext.tsx` erweitert
+     - Neue Imports: `MonthWeek`, `groupMonthIntoWeeks`, `PhaseRowData`
+     - Context Interface: `monthWeeks`, `monthProjectRows`, `monthPoolItems`, `isMonthLoading`
+     - Multi-Week Fetch: `Promise.all` über alle `monthWeeks` mit `getProjectWeekDataAction()`
+     - `monthProjectRows`: Merged ProjectRowData über alle Wochen (Phases + dayAllocations)
+     - `monthPoolItems`: Union aller Wochen-PoolItems
+   - **Schritt 3:** `MonthGrid.tsx` komplett rewritten
+     - `MonthGridHeader` — KW Labels + Datumsbereich
+     - `MonthProjectRow` — Wochenspalten statt Tagesspalten
+     - `MonthPhaseRow` — Per-Week 5-col Sub-Grid
+     - `MonthPhaseWeekCell` — `groupConsecutiveAllocations()` + `SpanningAssignmentCard`
+     - `MonthDayCell` — Droppable mit `AssignmentCard`
+     - Grid: `280px + repeat(weekCount, 1fr)`, Week-Separation: `border-r-2 border-gray-300`
+   - **Schritt 4:** `ResourcePool.tsx` Month-Branch aligned
+     - Grid: `280px + repeat(weekCount, 1fr)` (statt `repeat(weekGroups.size, minmax(180px, 1fr))`)
+     - Linke Spalte: Label + Filter-Tabs (identisch zur Wochenansicht)
+     - Wochenspalten: Compact PoolCards + Absenz-Badges via `getAbsenceDaysLabel()`
+     - Neue Prop: `monthWeeks?: MonthWeek[]`
+   - **Schritt 5:** `PlanningGrid.tsx` aktualisiert
+     - `monthWeeks` + `monthPoolItems` aus Context
+     - Month-Branch: `monthPoolItems` → ResourcePool, `monthWeeks` → ResourcePool
+
+**Guard-Ergebnisse:**
+- ESLint: ✅
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Neue Dateien (1):**
+- `src/presentation/components/planning/utils/month-week-utils.ts`
+
+**Geänderte Dateien (7):**
+- `src/presentation/contexts/PlanningContext.tsx` - Multi-Week Fetch, monthProjectRows, monthPoolItems
+- `src/presentation/components/planning/MonthGrid.tsx` - Komplett-Rewrite mit Wochenspalten
+- `src/presentation/components/planning/ResourcePool.tsx` - Aligned Month-Grid, Absence-Badges
+- `src/presentation/components/planning/PlanningGrid.tsx` - monthWeeks + monthPoolItems Props
+- `src/presentation/hooks/useAllocationResize.ts` - pixelOffset entfernt
+- `src/presentation/components/planning/AssignmentCard.tsx` - previewSpanDays statt pixelOffset
+- `src/presentation/components/planning/SpanningAssignmentCard.tsx` - previewSpanDays statt pixelOffset
+- `src/presentation/components/planning/assignment-card.styles.ts` - shadow-lg statt ring
+
+**Status:** Noch nicht committed
+
+---
+
+## 2026-02-12 (Session 24)
+
+### Session: Asana Integration "Reset"-Bug Fix
+
+**Typ:** Sparring & Planung (Implementierung durch anderen Agent)
+
+**Abgeschlossen:**
+
+1. **Root Cause Analyse** ✅
+   - User meldete: Nach Disconnect+Reconnect erscheinen alle Asana-Dropdowns leer
+   - DB-Check in Supabase: Config-Felder sind korrekt gespeichert (asana_source_project_id, asana_team_id, etc.)
+   - Problem: Rein UI-seitig — wenn `getAsanaTeams()` / `getAsanaProjects()` fehlschlagen, bleiben Options-Arrays `[]`
+   - `SearchableSelect` (Zeile 53): `options.find((o) => o.value === value)` → kein Match → Placeholder statt Wert
+   - Kein Error-Feedback: Alle drei Cards verschlucken API-Fehler komplett (kein else-Branch)
+
+2. **Plan erstellt** ✅
+   - Error-State + Banner in ProjectSyncCard und AbsenceSyncCard
+   - Fallback-Label in SearchableSelect: `Konfiguriert (${value.slice(-6)})`
+   - Keine Server-Action-Änderungen nötig (geben bereits korrekt `Result.fail()` zurück)
+
+3. **Implementierung durch anderen Agent** ✅
+   - `ProjectSyncCard.tsx` — `loadError` State, Fehler-Sammlung, rotes Error-Banner
+   - `AbsenceSyncCard.tsx` — `loadError` State, Error-Banner
+   - `searchable-select.tsx` — `displayLabel` Fallback mit GID-Suffix
+
+**Geänderte Dateien (3):**
+- `src/app/(dashboard)/einstellungen/integrationen/ProjectSyncCard.tsx` - Error-State + Banner
+- `src/app/(dashboard)/einstellungen/integrationen/AbsenceSyncCard.tsx` - Error-State + Banner
+- `src/presentation/components/ui/searchable-select.tsx` - Fallback-Label
+
+**Status:** Noch nicht committed
+
+---
+
+## 2026-02-12 (Session 23)
+
+### Session: Resize-Bugs Fix (Revert-Bug + Broken Animation)
+
+**Abgeschlossen:**
+
+1. **Revert-Bug Fix: completingRef Guard** ✅
+   - Root Cause: Race condition — `useEffect` reset `previewSpanDays` to `currentSpanDays` before `onResizeComplete` (async) finished
+   - Fix: `completingRef` Ref-Guard in `useAllocationResize.ts`
+   - `useEffect` prüft `!completingRef.current` bevor es zurücksetzt
+   - `handleMouseUp`/`handleTouchEnd`: Guard aktivieren vor `setIsResizing(false)`, lösen nach `onResizeComplete`
+   - Reihenfolge: Preview locken → Guard an → isResizing off → Server-Call → Guard aus
+
+2. **Animation Fix: Gezielte transitionProperty** ✅
+   - Root Cause: `transition: 'none'` auf resize-width killed ALLE Transitions (shadow, color, opacity)
+   - Fix: `transitionProperty: 'box-shadow, border-color, background-color, color, opacity'` — erlaubt visuelles Feedback, blockiert nur width-Transition
+   - Angewendet in SpanningAssignmentCard + AssignmentCard
+
+3. **Ghost Preview entfernt** ✅
+   - Root Cause: Ghost-Preview hatte eigenes Koordinatensystem das mit Card-width kollidierte
+   - Fix: Kompletter Block entfernt aus AssignmentCard (war lines ~231-243) und SpanningAssignmentCard (war lines ~281-293)
+   - Dead styles entfernt: `ghostPreviewBase`, `ghostPreviewUser`, `ghostPreviewResource` aus assignment-card.styles.ts
+   - `previewSpanDays` aus AssignmentCard destructuring entfernt (unused nach Ghost-Removal)
+
+**Guard-Ergebnisse:**
+- ESLint: ✅
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Geänderte Dateien (4):**
+- `src/presentation/hooks/useAllocationResize.ts` - completingRef Guard, reordered handleMouseUp/handleTouchEnd
+- `src/presentation/components/planning/SpanningAssignmentCard.tsx` - transitionProperty statt transition:'none', Ghost entfernt
+- `src/presentation/components/planning/AssignmentCard.tsx` - transitionProperty, Ghost entfernt, unused previewSpanDays entfernt
+- `src/presentation/components/planning/assignment-card.styles.ts` - Ghost-Styles entfernt
+
+**Status:** Noch nicht committed
+
+---
+
+## 2026-02-08 (Session 22)
+
+### Session: Team View (Mitarbeiteransicht) + Sichtbare Scrollbars
+
+**Abgeschlossen:**
+
+1. **Team View — Mitarbeiteransicht** ✅ - Commit: `82adfea`
+   - `ViewMode` erweitert: `'week' | 'month' | 'team'`
+   - `ViewModeToggle.tsx`: Dritter Button "Mitarbeiter" mit Users-Icon
+   - `PlanningContext.tsx`: `allUserRows` computed property (userRows + poolItems merged, alphabetisch sortiert)
+   - `PlanningGrid.tsx`: Team-Branch rendert `UserRow` pro Mitarbeiter, `SCROLLBAR_CLASSES` für sichtbare Scrollbars
+   - `UserRow.tsx`: Grid 280px + 5×1fr, tägliche Kapazität (h/Tag), Wochen-Total, Überauslastungs-Warnung (rot)
+   - `WeekNavigation.tsx`: `viewMode !== 'month'` statt `viewMode === 'week'`
+   - `ResourcePool.tsx`: Team-Mode wie Week-Mode behandelt
+   - `GridHeader`: Optionales `headerLabel` Prop
+
+2. **Sichtbare Scrollbars (macOS)** ✅
+   - `SCROLLBAR_CLASSES` Konstante in PlanningGrid
+   - Webkit-Scrollbar overrides: 1.5px breit, grau, rounded
+   - Auf allen drei View-Modes (week, month, team)
+
+**Guard-Ergebnisse:**
+- ESLint: ✅
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Geänderte Dateien (7):**
+- `src/presentation/contexts/PlanningContext.tsx` - ViewMode + allUserRows + useMemo value
+- `src/presentation/components/planning/ViewModeToggle.tsx` - Dritter Button
+- `src/presentation/components/planning/UserRow.tsx` - Komplettes Rewrite mit Kapazität
+- `src/presentation/components/planning/PlanningGrid.tsx` - Team-Branch + Scrollbar-Styles
+- `src/presentation/components/planning/WeekNavigation.tsx` - Team-Mode Support
+- `src/presentation/components/planning/ResourcePool.tsx` - Team-Mode Support
+
+---
+
+## 2026-02-08 (Session 21)
+
+### Session: Resize-Animation Fix + Performance-Optimierung
+
+**Abgeschlossen:**
+
+1. **Resize-Animation Fix: isSnapping eliminiert** ✅
+   - Root Cause: `setTimeout(150)` in handleMouseUp verzögerte Grid-Update → Doppel-Effekt (CSS-Snap + Grid-Jump)
+   - Fix: Snap-Zwischen-Animation entfernt, `onResizeComplete()` direkt aufgerufen
+   - `isSnapping` State komplett entfernt (Interface, Export, Sync-Effect, alle Referenzen)
+   - 3 Dateien: `useAllocationResize.ts`, `SpanningAssignmentCard.tsx`, `AssignmentCard.tsx`
+
+2. **Performance: Middleware Role-Query konsolidiert** ✅
+   - 3 identische `supabase.from('users').select('role')` Queries → 1× pro Request
+   - Spart 100-200ms auf jeder authentifizierten Navigation
+
+3. **Performance: PlanningContext value memoized** ✅
+   - Context `value` Objekt in `useMemo` gewrappt
+   - Verhindert unnötige Re-Renders aller ~27 Context-Consumers
+   - `weekEnd`, `calendarWeek`, `summary` als stabile Variablen extrahiert
+
+4. **Performance: React.memo auf List-Components** ✅
+   - `ProjectRow`, `PhaseRow`, `AssignmentCard`, `SpanningAssignmentCard` mit `React.memo` gewrappt
+   - `highlightPhaseId` als Prop durchgereicht (PlanningGrid→ProjectRow→PhaseRow)
+   - `usePlanning()` aus PhaseRow entfernt → `React.memo` voll wirksam
+   - `weekDates` in PlanningGrid mit `useMemo` stabilisiert
+   - `weeklyPlannedHours` in PhaseRow memoized
+
+**Guard-Ergebnisse:**
+- ESLint: ✅ (nur bekannte console Warnings)
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Geänderte Dateien (10):**
+- `src/presentation/hooks/useAllocationResize.ts` - isSnapping entfernt, handleMouseUp/handleTouchEnd vereinfacht
+- `src/presentation/components/planning/SpanningAssignmentCard.tsx` - isSnapping entfernt, React.memo
+- `src/presentation/components/planning/AssignmentCard.tsx` - isSnapping entfernt, React.memo
+- `middleware.ts` - Role-Query 3×→1×
+- `src/presentation/contexts/PlanningContext.tsx` - value in useMemo
+- `src/presentation/components/planning/PlanningGrid.tsx` - weekDates memo, highlightPhaseId prop
+- `src/presentation/components/planning/ProjectRow.tsx` - React.memo, highlightPhaseId prop
+- `src/presentation/components/planning/PhaseRow.tsx` - React.memo, prop statt usePlanning(), weeklyPlannedHours memo
+
+---
+
+## 2026-02-07 (Session 20)
+
+### Session: BF-3 Asana Sync Robustheit - Exponential Backoff
+
+**Abgeschlossen:**
+
+1. **BF-3: Exponential Backoff Retry** ✅ - Commit: `80d3d2c`
+   - Neue `executeWithRetry<T>()` private Methode in `AsanaService`
+   - Retried HTTP 429, 500, 502, 503 mit Exponential Backoff (1s → 2s → 4s)
+   - 429: Respektiert `Retry-After` Header
+   - Netzwerk-Fehler (Timeout, ECONNRESET, ENOTFOUND, fetch failed) werden ebenfalls retried
+   - 401: Sofortiger Throw (nicht retrybar, Token-Refresh Logik)
+   - Max 3 Versuche
+   - `request()` und `requestWithBody()` refactored um `executeWithRetry` zu nutzen
+   - Test angepasst: `mockResolvedValue` + `text()` Mock für 500er-Test
+
+**Nicht erledigt:**
+- Vercel ENV-Vars prüfen (Chrome-Extension disconnected)
+- BF-3 Progress-Reporting (nice-to-have, nicht implementiert)
+
+**Guard-Ergebnisse:**
+- ESLint: ✅
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Geänderte Dateien:**
+- `src/infrastructure/services/AsanaService.ts` - executeWithRetry + Refactor
+- `src/infrastructure/services/__tests__/AsanaService.test.ts` - Mock angepasst
+
+---
+
+## 2026-02-07 (Session 19)
+
+### Session: Tech Debt Abarbeitung (TD-1–TD-6)
+
+**Abgeschlossen:**
+
+1. **TD-1: Duplizierte database.types.ts gelöscht** ✅
+   - `src/infrastructure/supabase/database.types.ts` entfernt (0 Imports, Duplikat)
+   - Kanonisch: `src/lib/database.types.ts`
+
+2. **TD-2: Doppelte Tenant-Query zusammengeführt** ✅ - Commit: `2a2df71`
+   - `einstellungen/unternehmen/page.tsx`: 2 Queries → 1 Query
+   - TODO-Kommentar und `as unknown as` Cast entfernt
+
+3. **TD-3: IProjectRepository Types** ✅ - Commit: `6583437`
+   - `phases: unknown[]` → `phases: ProjectPhase[]`
+   - TODO-Kommentar entfernt
+
+4. **TD-4: Debug Log entfernt** ✅ - Commit: `d323465`
+   - `console.log` und `eslint-disable` aus ProjectInsightsSection entfernt
+
+5. **TD-5: User-Rolle aus Session** ✅ - Commit: `fb76a27`
+   - Hardcoded `'admin'` → `getCurrentUserRoleAction()` aus shared/auth.ts
+   - Fallback auf `'gewerblich'` bei Fehler
+
+6. **TD-6: Planungsview Pre-Selection** ✅ - Commit: `2d76b17`
+   - `planung/page.tsx`: `searchParams` lesen (phaseId, userId, date)
+   - `PlanningContext.tsx`: `initialDate`, `highlightPhaseId`, `initialUserId` Props
+   - Auto-Expand des Projekts mit hervorgehobener Phase
+   - Highlight-Ring (`ring-2 ring-primary`) auf PhaseRow
+
+**Code Review & Hardening Zusammenfassung (Session 18+19):**
+- 13 Commits total (P1-P6 + TD-1-TD-6 + Migrations)
+- Kritischer Cron-Bug gefixt (POST→GET)
+- 3 Security-Fixes (Webhook, OAuth HMAC, Env-Validation)
+- Shared Auth-Utility extrahiert (10 Dateien dedupliziert)
+- Fetch Timeouts für alle externen APIs
+- Silent Catches → Warning Logs
+- N+1 Query gefixt
+- 27 Migrationen auf Production gepusht
+- Types regeneriert, `as any` bereinigt
+- 6 Tech-Debt-Items abgearbeitet
+
+---
+
+## 2026-02-07 (Session 18)
+
+### Session: Infrastructure Hardening (P1–P6) + Migrations & Types Cleanup
+
+**Abgeschlossen (über 2 Sessions, Code von anderem Agent + dieser Session):**
+
+1. **P1: Security Hardening** ✅ - Commit: `8a297ad`
+   - Webhook-Signatur mit timing-safe Vergleich
+   - ENV-Validation verschärft
+   - OAuth State-Parameter Security
+
+2. **P2: Use Case Tests** ✅ - Commit: (in P1)
+   - Tests für Webhook-Signatur + Use Cases
+
+3. **P3: getCurrentUserWithTenant Extraktion** ✅ - Commit: `52761a5`
+   - Duplizierte Auth-Funktion aus 10 Server-Action-Dateien in `shared/auth.ts` extrahiert
+
+4. **P4: Fetch Timeouts** ✅ - Commit: `d633752`
+   - `fetchWithTimeout` Utility mit AbortController
+   - Asana: 30s, Weather: 10s, Geocoding: 10s, Anthropic SDK: 60s
+
+5. **P5: Silent Catches → Warning Logs** ✅ - Commit: `fd32c7c`
+   - 11 stumme Catches in 8 Dateien durch `console.warn` mit Kontext-Tags ersetzt
+
+6. **P6: N+1 Query Fix** ✅ - Commit: `f9ede01`
+   - Batch-Query für Snapshot-Existenzprüfung in Insights Refresh
+
+7. **Migrations auf Produktion** ✅ - Commit: `d076140`
+   - 4 Migrationen idempotent gemacht (IF NOT EXISTS, DO-Blocks für Policies)
+   - `remove_timetac.sql`: ALTER TABLE vor DROP TYPE
+   - `asana_absences.sql`: Constraint-Guard
+   - `add_analytics_tables.sql`: 3 Tabellen, 8 Indexes, 3 Policies
+   - `add_description_and_address.sql`: pg_trgm Extension Guard
+   - Migration-History repariert (21 alte als "reverted" markiert)
+   - Alle 27 Migrationen erfolgreich auf Produktion gepusht
+
+8. **Types Regeneration & `as any` Cleanup** ✅ - Commit: `d076140`
+   - `database.types.ts` regeneriert und nach `src/lib/` synchronisiert
+   - 8 Enum-Convenience-Exports hinzugefügt (UserRole, ProjectStatus, etc.)
+   - 10× `as any` entfernt in 6 Dateien:
+     - `tenant.ts`, `weather.ts`, `insights.ts` - Supabase Query Casts
+     - `cron/weather/route.ts` - Double-Cast vereinfacht
+     - `insights/refresh/route.ts` - 5× Casts + `supabase: any` → `SupabaseClient<Database>`
+     - `SupabaseAnalyticsRepository.ts` - Komplett typisiert (Constructor, 3 Mapper, Row-Types)
+   - 2 Test-Dateien aktualisiert (neue DB-Felder in Mock-Objekten)
+
+**Guard-Ergebnisse:**
+- ESLint: ✅ (nur bekannte console Warnings)
+- TypeScript: ✅
+- Tests: 602 passed
+
+---
+
+## 2026-02-06 (Session 17)
+
+### Session: BF-4 Weather UI Redesign + Commit
+
+**Abgeschlossen:**
+
+1. **BF-4: Weather UI Redesign** ✅
+   - `WeatherForecast.tsx` komplett redesigned:
+     - Layout: `flex gap-1` → `grid grid-cols-7 gap-2`
+     - WeatherDay: Farbige Borders, Datumsanzeige, mehr Padding
+     - Inline-Daten: Regen-% und Wind direkt sichtbar
+     - Heute-Hervorhebung mit `ring-2 ring-primary/30`
+     - Temperaturen: Max groß (semibold), Min klein (muted)
+     - Legende in Header-Zeile verschoben (rechtsbündig)
+     - Icon vergrößert auf `h-7 w-7`
+
+2. **Commit für BF-1 + BF-2 + BF-4** ✅
+   - Commit: `a308bce`
+   - 15 Dateien geändert, 3254 Insertions, 390 Deletions
+
+**Guard-Ergebnisse:**
+- ESLint: ✅ (nur bekannte console Warnings)
+- TypeScript: ✅
+- Tests: 602 passed
+
+**Geänderte Dateien (1 neu):**
+- `src/presentation/components/project-details/WeatherForecast.tsx` - grid-cols-7 Layout + Inline-Daten
+
+---
+
 ## 2026-02-06 (Session 16)
 
 ### Session: Bugfix BF-1 (Performance) + BF-2 (Geocoding)
@@ -592,6 +966,17 @@
 ## Commit History (relevant)
 
 ```
+82adfea feat: Add team view (Mitarbeiteransicht) and visible scrollbars
+55cb92c fix: Resize animation fix + performance optimizations
+80d3d2c feat: Add exponential backoff retry for Asana API
+d076140 fix: Make migrations idempotent and regenerate types with as-any cleanup
+f9ede01 perf: Batch snapshot existence check in insights refresh
+fd32c7c fix: Replace silent error catches with warning logs
+d633752 feat: Add fetch timeouts for all external API calls
+52761a5 refactor: Extract shared getCurrentUserWithTenant utility
+8a297ad fix: Strengthen webhook signature, env validation, and OAuth state security
+a308bce fix: Optimize insights performance, geocoding fallback, and weather UI (BF-1+BF-2+BF-4)
+6fefec9 feat: Add enhanced recommendations with actionable insights (Plan D7)
 9b1203c feat: Add weather integration for construction sites (Plan D6)
 47bdf75 feat: Extend Asana sync with task descriptions and project addresses (Plan D5)
 e4f9f16 feat: Add manual insights refresh with rate limiting (Plan D4-4)

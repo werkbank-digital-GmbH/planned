@@ -13,6 +13,7 @@ import {
 import type {
   AllocationWithDetails,
   DayData,
+  PhaseRowData,
   PoolItem,
   ProjectRowData,
   WeekProjectData,
@@ -20,6 +21,8 @@ import type {
 } from '@/application/queries';
 
 import { getProjectWeekDataAction } from '@/presentation/actions/allocations';
+import type { MonthWeek } from '@/presentation/components/planning/utils/month-week-utils';
+import { groupMonthIntoWeeks } from '@/presentation/components/planning/utils/month-week-utils';
 
 import {
   addMonths,
@@ -101,6 +104,12 @@ interface PlanningContextValue {
   periodEnd: Date;
   periodDates: Date[];
   periodLabel: string;
+
+  // Computed - Month View (Multi-Week)
+  monthWeeks: MonthWeek[];
+  monthProjectRows: ProjectRowData[];
+  monthPoolItems: PoolItem[];
+  isMonthLoading: boolean;
 
   // Computed - Team View
   allUserRows: UserRowData[];
@@ -211,6 +220,198 @@ export function PlanningProvider({
   useEffect(() => {
     loadWeekData();
   }, [loadWeekData]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // MONTH VIEW: Multi-Week Data Fetching
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const [monthWeekDataMap, setMonthWeekDataMap] = useState<Map<string, WeekProjectData>>(
+    new Map()
+  );
+  const [isMonthLoading, setIsMonthLoading] = useState(false);
+
+  // Berechne monthWeeks aus weekStart (nur relevant im Month-Mode)
+  const monthWeeks = useMemo((): MonthWeek[] => {
+    if (viewMode !== 'month') return [];
+    return groupMonthIntoWeeks(weekStart);
+  }, [viewMode, weekStart]);
+
+  // Multi-Week Fetch für Monatsansicht
+  useEffect(() => {
+    if (viewMode !== 'month' || monthWeeks.length === 0) return;
+
+    let cancelled = false;
+
+    async function loadMonthData() {
+      setIsMonthLoading(true);
+
+      try {
+        const results = await Promise.all(
+          monthWeeks.map((week) =>
+            getProjectWeekDataAction({
+              weekStart: week.mondayISO,
+              projectId: filters.projectId,
+              userId: filters.userId,
+            })
+          )
+        );
+
+        if (cancelled) return;
+
+        const newMap = new Map<string, WeekProjectData>();
+        const autoExpanded = new Set<string>();
+
+        results.forEach((result, index) => {
+          if (result.success) {
+            newMap.set(monthWeeks[index].mondayISO, result.data);
+            // Auto-expand projects with active phases
+            for (const row of result.data.projectRows) {
+              if (row.hasActivePhasesThisWeek) {
+                autoExpanded.add(row.project.id);
+              }
+            }
+          }
+        });
+
+        setMonthWeekDataMap(newMap);
+        setExpandedProjects((prev) => new Set([...prev, ...autoExpanded]));
+      } catch {
+        // Individual week errors are handled per-week; ignore aggregate
+      } finally {
+        if (!cancelled) setIsMonthLoading(false);
+      }
+    }
+
+    loadMonthData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [viewMode, monthWeeks, filters]);
+
+  // Computed: Merged monthProjectRows (union aller Wochen)
+  const monthProjectRows = useMemo((): ProjectRowData[] => {
+    if (monthWeekDataMap.size === 0) return [];
+
+    // Sammle alle Projekte über alle Wochen, merge dayAllocations
+    const projectMap = new Map<
+      string,
+      {
+        project: ProjectRowData['project'];
+        phaseMap: Map<
+          string,
+          {
+            phase: PhaseRowData['phase'];
+            dayAllocations: Record<string, AllocationWithDetails[]>;
+            isActiveThisWeek: boolean;
+            insightStatus?: PhaseRowData['insightStatus'];
+          }
+        >;
+        weeklyPlannedHours: number;
+        totalBudgetHours: number;
+        totalActualHours: number;
+        remainingHours: number;
+        timelineStart?: Date;
+        timelineEnd?: Date;
+        hasActivePhasesThisWeek: boolean;
+      }
+    >();
+
+    for (const weekData of monthWeekDataMap.values()) {
+      for (const row of weekData.projectRows) {
+        let existing = projectMap.get(row.project.id);
+        if (!existing) {
+          existing = {
+            project: row.project,
+            phaseMap: new Map(),
+            weeklyPlannedHours: 0,
+            totalBudgetHours: row.totalBudgetHours,
+            totalActualHours: row.totalActualHours,
+            remainingHours: row.remainingHours,
+            timelineStart: row.timelineStart,
+            timelineEnd: row.timelineEnd,
+            hasActivePhasesThisWeek: false,
+          };
+          projectMap.set(row.project.id, existing);
+        }
+
+        // Aggregiere KPIs
+        existing.weeklyPlannedHours += row.weeklyPlannedHours;
+        if (row.hasActivePhasesThisWeek) {
+          existing.hasActivePhasesThisWeek = true;
+        }
+        // Budget/Actual: Nimm den höchsten Wert (identisch über Wochen)
+        existing.totalBudgetHours = Math.max(existing.totalBudgetHours, row.totalBudgetHours);
+        existing.totalActualHours = Math.max(existing.totalActualHours, row.totalActualHours);
+
+        // Merge Phasen
+        for (const phase of row.phases) {
+          let existingPhase = existing.phaseMap.get(phase.phase.id);
+          if (!existingPhase) {
+            existingPhase = {
+              phase: phase.phase,
+              dayAllocations: {},
+              isActiveThisWeek: false,
+              insightStatus: phase.insightStatus,
+            };
+            existing.phaseMap.set(phase.phase.id, existingPhase);
+          }
+
+          if (phase.isActiveThisWeek) {
+            existingPhase.isActiveThisWeek = true;
+          }
+
+          // Merge dayAllocations
+          for (const [dateKey, allocs] of Object.entries(phase.dayAllocations)) {
+            if (!existingPhase.dayAllocations[dateKey]) {
+              existingPhase.dayAllocations[dateKey] = allocs;
+            }
+          }
+        }
+      }
+    }
+
+    // Konvertiere Map → ProjectRowData[]
+    return Array.from(projectMap.values()).map(
+      (data): ProjectRowData => ({
+        project: data.project,
+        phases: Array.from(data.phaseMap.values()).map(
+          (ph): PhaseRowData => ({
+            phase: ph.phase,
+            dayAllocations: ph.dayAllocations,
+            isActiveThisWeek: ph.isActiveThisWeek,
+            insightStatus: ph.insightStatus,
+          })
+        ),
+        weeklyPlannedHours: data.weeklyPlannedHours,
+        totalBudgetHours: data.totalBudgetHours,
+        totalActualHours: data.totalActualHours,
+        remainingHours: data.remainingHours,
+        timelineStart: data.timelineStart,
+        timelineEnd: data.timelineEnd,
+        isExpanded: expandedProjects.has(data.project.id),
+        hasActivePhasesThisWeek: data.hasActivePhasesThisWeek,
+      })
+    );
+  }, [monthWeekDataMap, expandedProjects]);
+
+  // Computed: Merged monthPoolItems (union aller Wochen, first week wins)
+  const monthPoolItems = useMemo((): PoolItem[] => {
+    if (monthWeekDataMap.size === 0) return [];
+
+    const poolMap = new Map<string, PoolItem>();
+
+    for (const weekData of monthWeekDataMap.values()) {
+      for (const item of weekData.poolItems) {
+        const key = `${item.type}-${item.id}`;
+        if (!poolMap.has(key)) {
+          poolMap.set(key, item);
+        }
+      }
+    }
+
+    return Array.from(poolMap.values());
+  }, [monthWeekDataMap]);
 
   // Auto-expand project containing highlighted phase
   useEffect(() => {
@@ -717,6 +918,10 @@ export function PlanningProvider({
       periodEnd,
       periodDates,
       periodLabel,
+      monthWeeks,
+      monthProjectRows,
+      monthPoolItems,
+      isMonthLoading,
       allUserRows,
       userRows,
       days,
@@ -754,6 +959,10 @@ export function PlanningProvider({
       periodEnd,
       periodDates,
       periodLabel,
+      monthWeeks,
+      monthProjectRows,
+      monthPoolItems,
+      isMonthLoading,
       allUserRows,
       userRows,
       days,

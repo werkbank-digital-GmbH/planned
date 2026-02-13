@@ -4,6 +4,98 @@ Architekturentscheidungen mit Begründung, um Zyklen und Wiederholungen zu verme
 
 ---
 
+## 2026-02-12: Asana Integration — UI-Display-Bug statt Datenverlust
+
+**Kontext:** Nach Disconnect+Reconnect der Asana-Integration erscheinen alle Config-Dropdowns (Quell-Projekt, Team, Custom Fields, Abwesenheiten) als leer. User denkt alles sei weg.
+
+**Entscheidung:** Drei-Punkt-Fix: (1) Error-State + Banner in ProjectSyncCard/AbsenceSyncCard, (2) Fallback-Label in SearchableSelect wenn Wert gespeichert aber keine Option geladen, (3) Keine Server-Action-Änderungen.
+
+**Begründung:**
+- DB-Daten sind nachweislich intakt (User hat in Supabase verifiziert)
+- `SearchableSelect` zeigt `selectedOption?.label || placeholder` — bei leerem Options-Array wird Placeholder gezeigt
+- Error-Banner informiert User dass API-Problem vorliegt, Config aber erhalten bleibt
+- Fallback-Label `Konfiguriert (515588)` zeigt gespeicherten Wert auch ohne geladene Options
+- Minimaler Eingriff: 3 Dateien, keine Architekturänderung
+
+**Alternativen verworfen:**
+- Retry-Mechanismus → Over-Engineering für seltenen Fall
+- Options vorher cachen/speichern → Zusätzliche Komplexität, Sync-Problem
+- Token-Refresh in OAuth Callback erzwingen → Problem ist breiter (Rate Limits, Netzwerk)
+
+---
+
+## 2026-02-12: Resize — completingRef Guard gegen Race Condition
+
+**Kontext:** Nach dem Resize sprang der Balken kurz auf die alte Länge zurück, bevor er die neue Länge annahm. Ursache: `useEffect` in `useAllocationResize` synchronisiert `previewSpanDays` mit `currentSpanDays` — aber `setIsResizing(false)` triggerte den Effect bevor `onResizeComplete` (async) die neuen Daten geladen hatte.
+
+**Entscheidung:** `completingRef` als Guard einführen. Der Effect prüft `!isResizing && !completingRef.current` bevor er zurücksetzt. `handleMouseUp` aktiviert den Guard vor `setIsResizing(false)` und löst ihn nach `onResizeComplete`.
+
+**Begründung:**
+- Minimaler Eingriff: Nur 1 neuer Ref + 2 Zeilen in handleMouseUp/handleTouchEnd
+- Kein Timing-abhängiger Workaround (kein setTimeout)
+- Guard ist selbst-auflösend (wird in finally-Position gelöst)
+- Deckt auch den Error-Case ab (Guard wird nach catch gelöst)
+
+**Alternativen verworfen:**
+- `useRef` für isResizing statt State → Würde andere Abhängigkeiten brechen
+- `setTimeout` um Effect zu verzögern → Fragil, timing-abhängig
+- `currentSpanDays` nicht im Effect tracken → Würde externe Updates (z.B. Realtime) ignorieren
+
+---
+
+## 2026-02-12: Resize — Ghost Preview entfernt zugunsten Card-Width
+
+**Kontext:** Während des Resize erschienen gestrichelte Linien und Elemente fielen auseinander. Root Cause: Ghost-Preview (absolut positioniertes Element) hatte ein eigenes Koordinatensystem das mit der `calc(100% + Xpx)` Width der Card kollidierte.
+
+**Entscheidung:** Ghost Preview komplett entfernen. Die Card selbst zeigt die Resize-Preview via `width: calc(100% + pixelOffset)`.
+
+**Begründung:**
+- Eine visuelle Repräsentation reicht — Card-Width ist bereits pixelgenau
+- Ghost hatte hardcoded Offsets die bei verschiedenen Card-Größen nicht passten
+- Weniger DOM-Elemente = weniger Layout-Berechnungen während Drag
+
+**Alternativen verworfen:**
+- Ghost-Koordinaten fixen → Fragil, Card-Width ist das bessere Modell
+- Beide behalten → Redundant, verwirrt den User
+
+---
+
+## 2026-02-08: Performance — Prop-Drilling statt Context für PhaseRow
+
+**Kontext:** `PhaseRow` nutzte `usePlanning()` nur für `highlightPhaseId`. Da React Context alle Consumers bei jeder Änderung re-rendert, war `React.memo` auf PhaseRow wirkungslos — jede Context-Änderung (Loading, Filters, etc.) re-renderte alle PhaseRows.
+
+**Entscheidung:** `highlightPhaseId` als Prop von PlanningGrid → ProjectRow → PhaseRow durchreichen. `usePlanning()` aus PhaseRow komplett entfernt.
+
+**Begründung:**
+- PhaseRow wird N× pro Projekt gerendert — Multiplikator-Effekt bei unnötigen Re-Renders
+- `highlightPhaseId` ändert sich quasi nie (nur bei URL-Parameter) → Props bleiben stabil
+- `React.memo` wird dadurch voll wirksam: PhaseRow re-rendert nur bei echten Prop-Änderungen
+- Prop-Drilling über 2 Ebenen ist akzeptabel, Context-Splitting wäre Overengineering
+
+**Alternativen verworfen:**
+- Context-Splitting (separate Contexts für selten vs. häufig ändernde Werte) → Zu komplex für diesen Fall
+- `useContextSelector` (Zustand/jotai Pattern) → Erfordert Library-Wechsel
+- `useSyncExternalStore` → Overengineered
+
+---
+
+## 2026-02-08: Resize-Animation — isSnapping eliminiert
+
+**Kontext:** Beim Verkleinern eines Mehrtages-Balkens gab es einen Doppel-Effekt: Erst CSS-Snap-Animation (150ms), dann Grid-Jump (span 3→span 2).
+
+**Entscheidung:** `isSnapping` State komplett entfernt. `onResizeComplete()` wird sofort bei mouseup aufgerufen, kein `setTimeout(150)`.
+
+**Begründung:**
+- Die Card hat bereits `transition-all duration-150` als CSS-Klasse
+- Wenn das Grid sich sofort ändert (span wechselt), animiert CSS die Größenänderung automatisch
+- Die Snap-Zwischen-Animation war ein Artefakt das den Grid-Update verzögerte → 2 separate visuelle Schritte
+
+**Alternativen verworfen:**
+- FLIP-Animation (First-Last-Invert-Play) → Overengineered, CSS Transition reicht
+- requestAnimationFrame für synchronen Update → Unnötig komplex
+
+---
+
 ## 2026-02-06: Insights Performance - Tenant-Level statt Phase-Level
 
 **Kontext:** Der Insights-Cron-Job dauerte ~3-4 Minuten weil Availability, Wetter und Snapshots pro Phase geladen wurden (N+1 Queries) und Claude API Calls sequentiell liefen.
