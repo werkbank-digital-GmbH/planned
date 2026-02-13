@@ -42,6 +42,8 @@ function getBereichBadgeColor(bereich: string): string {
       return 'bg-green-100 text-green-800';
     case 'externes_gewerk':
       return 'bg-purple-100 text-purple-800';
+    case 'vertrieb':
+      return 'bg-yellow-100 text-yellow-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -52,6 +54,7 @@ function getBereichLabel(bereich: string): string {
     produktion: 'PRODUKTION',
     montage: 'MONTAGE',
     externes_gewerk: 'EXTERN',
+    vertrieb: 'VERTRIEB',
   };
   return labels[bereich] ?? bereich.toUpperCase();
 }

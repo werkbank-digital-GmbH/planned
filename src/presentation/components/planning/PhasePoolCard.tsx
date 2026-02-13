@@ -29,6 +29,8 @@ function getBereichColor(bereich: string): string {
       return 'bg-purple-100 text-purple-700';
     case 'externes_gewerk':
       return 'bg-green-100 text-green-700';
+    case 'vertrieb':
+      return 'bg-yellow-100 text-yellow-700';
     default:
       return 'bg-gray-100 text-gray-700';
   }
@@ -39,6 +41,7 @@ function getBereichLabel(bereich: string): string {
     produktion: 'PROD',
     montage: 'MONT',
     externes_gewerk: 'EXT',
+    vertrieb: 'VERTR',
   };
   return labels[bereich] ?? bereich.toUpperCase().slice(0, 4);
 }

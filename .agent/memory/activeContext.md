@@ -1,34 +1,45 @@
 # Active Context
 
-## Aktueller Stand (2026-02-13, Session 30)
+## Aktueller Stand (2026-02-13, Session 31+32)
 
 ### Zuletzt Abgeschlossen
 
-**Session 29+30: Bug-Runde 2 (3 Bugs) — Implementiert + Reviewed + Pushed** ✅ — Commit: `b494dd1`
+**Session 32: Prompt-Ausführung — 7 Änderungen** ✅
 
-1. **Bug 7: Team View ResourcePool** — Pool zeigt jetzt Phasen gruppiert nach Projekt
-   - `PlanningContext`: `teamPhasePool` computed property
-   - `PhasePoolCard.tsx` NEU: Draggable Phasen-Karte
+Session 31 (vorherige Kontext-Sitzung):
+1. **Bug 7: Team View ResourcePool** ✅ — Commit: `b494dd1`
+   - `PlanningContext`: `teamPhasePool` computed property + Types
+   - `PhasePoolCard.tsx` NEU: Draggable Phasen-Karte mit Badge
    - `ResourcePool.tsx`: Eigener Team-View Branch
    - `PlanningGrid.tsx`: `teamPhasePool` Prop durchgereicht
 
-2. **Bug 14: Card Overlap** — Unified Row Layout statt Two-Layer
-   - `PhaseRow.tsx`: DayCells = absolute Drop-Targets, alle Spans als eigene Grid-Rows
-   - `sortedSpans` sortiert nach Position, Single-Day → AssignmentCard, Multi-Day → SpanningAssignmentCard
+2. **Planning Header Cleanup** ✅ — Commit: `6566892`
+   - `EmptyFilterToggles.tsx`: Icon-only mit Tooltip (Text entfernt)
+   - `WeekNavigation.tsx`: Nur [< Heute >] Buttons (periodLabel/DateRange entfernt)
+   - `PlanningGrid.tsx GridHeader`: `periodLabel` in erster Spalte
 
-3. **Bug 15: Navigation Redesign** — Hamburger-Menü mit Sheet
-   - `DesktopNavigation.tsx` → `AppHeader` Export (Dateiname noch alt)
-   - `sheet.tsx` NEU (shadcn/ui)
-   - `layout.tsx`: `userRole` Prop, `h-14` statt `h-16`
-   - `SettingsTabs.tsx` gelöscht, Settings-Layout vereinfacht
-   - 7 Pages: `<h1>` Titel + Subtitles entfernt
+3. **MonthView Absence-Filter bei Drop** ✅ — Commit: `6d6c657`
+   - `DndProvider.tsx`: Abwesenheitstage beim Pool-Drop in Monatsansicht filtern
+
+4. **Allocation-Splitting um Abwesenheiten** ✅ — Commit: `3900f6d`
+   - `DndProvider.tsx`: `splitDatesAroundAbsences()` Hilfsfunktion
+
+Session 32 (diese Sitzung):
+5. **MonthGrid Unified Row Layout** ✅ — Commit: `95067e0`
+   - `MonthGrid.tsx MonthDayCell`: Pure Drop-Target (keine Cards, keine allocations-Props)
+   - `MonthGrid.tsx MonthPhaseWeekCell`: Unified Row Layout (wie PhaseRow.tsx)
+   - DayCells = absolute Hintergrund-Drop-Targets, sortedSpans = Vordergrund-Grid-Zeilen
+   - `AllocationWithDetails` + `getSpannedAllocationIds` Imports entfernt
 
 **Guards:** TypeScript ✅ | ESLint ✅ | Tests 691 passed ✅
 
+**Nicht gepusht:** Branch ist 6 Commits ahead von `origin/main`
+
 ### Nächste Schritte
 
-1. Nächste Bug-Runde oder Feature-Arbeit
-2. Tech Debt aufräumen (siehe unten)
+1. Pushen auf `origin/main`
+2. Nächste Bug-Runde oder Feature-Arbeit
+3. Tech Debt aufräumen (siehe unten)
 
 ### Tech Debt
 
@@ -72,6 +83,7 @@
 26. **Session 26+27: Full Feature-Roadmap** ✅ - Commit: `0cb11be`
 27. **Session 28: Bug-Fix-Runde 1 (12 Bugs)** ✅ - Commit: `dfac02e`
 28. **Session 29+30: Bug-Runde 2 (3 Bugs)** ✅ - Commit: `b494dd1`
+29. **Session 31+32: UI-Prompts (Team Pool, Header, Absence-Filter, MonthGrid Layout)** ✅ - Commits: `6566892`..`95067e0`
 
 </details>
 

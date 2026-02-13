@@ -144,7 +144,7 @@ export interface MappedPhaseData {
 export interface MappedTaskPhaseData {
   asanaGid: string;           // Task GID
   name: string;               // Task Name oder Projektphase-Custom-Field
-  bereich: 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert';
+  bereich: 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert' | 'vertrieb';
   startDate: Date | null;     // Task.start_on
   endDate: Date | null;       // Task.due_on
   budgetHours: number | null; // Soll-Stunden Custom Field

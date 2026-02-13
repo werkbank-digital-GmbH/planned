@@ -1220,6 +1220,7 @@ export type Database = {
         | "montage"
         | "externes_gewerk"
         | "nicht_definiert"
+        | "vertrieb"
       phase_status: "active" | "deleted"
       project_status: "planning" | "active" | "paused" | "completed"
       sync_service: "asana" | "timetac"
@@ -1362,6 +1363,7 @@ export const Constants = {
         "montage",
         "externes_gewerk",
         "nicht_definiert",
+        "vertrieb",
       ],
       phase_status: ["active", "deleted"],
       project_status: ["planning", "active", "paused", "completed"],

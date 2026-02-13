@@ -34,6 +34,7 @@ const BEREICH_BG_COLORS: Record<PhaseBereich, string> = {
   montage: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
   externes_gewerk: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
   nicht_definiert: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
+  vertrieb: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
 };
 
 const BEREICH_DOT_COLORS: Record<PhaseBereich, string> = {
@@ -41,6 +42,7 @@ const BEREICH_DOT_COLORS: Record<PhaseBereich, string> = {
   montage: 'bg-orange-500',
   externes_gewerk: 'bg-blue-500',
   nicht_definiert: 'bg-gray-500',
+  vertrieb: 'bg-yellow-500',
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

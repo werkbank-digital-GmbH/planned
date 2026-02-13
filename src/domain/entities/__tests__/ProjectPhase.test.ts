@@ -52,7 +52,7 @@ describe('ProjectPhase', () => {
     });
 
     it('should create phase with all valid bereiche', () => {
-      const bereiche: PhaseBereich[] = ['produktion', 'montage'];
+      const bereiche: PhaseBereich[] = ['produktion', 'montage', 'externes_gewerk', 'nicht_definiert', 'vertrieb'];
 
       bereiche.forEach((bereich) => {
         const phase = ProjectPhase.create({ ...validProps, bereich });

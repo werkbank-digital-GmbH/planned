@@ -113,9 +113,10 @@ describe('Database Types', () => {
   it('should have correct enum values for phase_bereich', () => {
     type PhaseBereich = Database['public']['Enums']['phase_bereich'];
 
-    const bereiche: PhaseBereich[] = ['produktion', 'montage'];
+    const bereiche: PhaseBereich[] = ['produktion', 'montage', 'externes_gewerk', 'nicht_definiert', 'vertrieb'];
     expect(bereiche).toContain('produktion');
     expect(bereiche).toContain('montage');
+    expect(bereiche).toContain('vertrieb');
   });
 
   it('should have correct enum values for absence_type', () => {

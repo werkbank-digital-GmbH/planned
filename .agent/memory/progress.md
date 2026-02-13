@@ -1,5 +1,85 @@
 # Progress Log
 
+## 2026-02-13 (Session 32)
+
+### Session: MonthGrid Unified Row Layout
+
+**Typ:** Direkte Implementierung (Fast Mode)
+
+**Abgeschlossen:**
+
+1. **MonthGrid Unified Row Layout (Card Overlap Fix)** ✅ — Commit: `95067e0`
+   - `MonthGrid.tsx MonthDayCell`: Props `allocations`, `spannedAllocationIds`, `phaseStartDate`, `phaseEndDate` entfernt
+   - Keine Cards mehr, nur Hintergrund-Drop-Target mit `h-full` (wie PhaseRow's DayCell)
+   - `MonthPhaseWeekCell`: Two-Layer → Unified Row Layout
+   - DayCells als `absolute inset-0 grid grid-cols-5` im Hintergrund
+   - `sortedSpans` (sortiert: startDayIndex asc, spanDays desc) als eigene Grid-Zeilen im Vordergrund
+   - Single-Day → AssignmentCard, Multi-Day → SpanningAssignmentCard
+   - `min-h-[48px]` (kompakt für Monatsansicht, vs `min-h-[60px]` in PhaseRow)
+   - Imports bereinigt: `AllocationWithDetails` und `getSpannedAllocationIds` entfernt
+   - `Record<string, AllocationWithDetails[]>` → `typeof phase.dayAllocations`
+
+**Guard-Ergebnisse:**
+- ESLint: ✅ (nur bekannte Warnings)
+- TypeScript: ✅
+- Tests: 691 passed
+
+**Geänderte Dateien (1):**
+- `src/presentation/components/planning/MonthGrid.tsx` — Unified Row Layout
+
+**Status:** 6 Commits ahead von `origin/main`, nicht gepusht
+
+---
+
+## 2026-02-13 (Session 31)
+
+### Session: Bug-Runde 3 — Prompt-Ausführung (5 Änderungen)
+
+**Typ:** Direkte Implementierung (Fast Mode)
+
+**Abgeschlossen:**
+
+1. **Bug 7: Team View ResourcePool** ✅ — Commit: `b494dd1`
+   - `PlanningContext.tsx`: `TeamPhasePoolItem`, `TeamPhasePoolGroup` Types + `teamPhasePool` useMemo
+   - `PhasePoolCard.tsx` NEU: Draggable Phasen-Karte mit Badge, lowercase bereich matching
+   - `ResourcePool.tsx`: Eigener Team-View Branch (Phasen gruppiert nach Projekt)
+   - `PlanningGrid.tsx`: `teamPhasePool` aus Context + Prop an ResourcePool
+
+2. **Planning Header Cleanup (3 Änderungen)** ✅ — Commit: `6566892`
+   - `EmptyFilterToggles.tsx`: Icon-only mit Tooltip (Text-Labels entfernt)
+   - `WeekNavigation.tsx`: Nur [< Heute >] Buttons (periodLabel/DateRange komplett entfernt)
+   - `PlanningGrid.tsx GridHeader`: `periodLabel` Prop in erster Spalte
+
+3. **MonthView Absence-Filter bei Drop** ✅ — Commit: `6d6c657`
+   - `DndProvider.tsx`: Abwesenheitstage beim Pool-Drop in Monatsansicht filtern
+
+4. **AppHeader volle Breite** ✅ — Commit: `db64be8`
+   - `DesktopNavigation.tsx`: `max-w-7xl mx-auto` entfernt
+
+5. **Allocation-Splitting um Abwesenheiten** ✅ — Commit: `3900f6d`
+   - `DndProvider.tsx`: `splitDatesAroundAbsences()` Hilfsfunktion
+   - Monatsansicht: Abwesenheitstage splitten Woche in separate Gruppen
+
+**Guard-Ergebnisse:**
+- ESLint: ✅ (nur bekannte Warnings)
+- TypeScript: ✅
+- Tests: 691 passed
+
+**Geänderte Dateien (8 + 1 neu):**
+- `src/presentation/contexts/PlanningContext.tsx` — teamPhasePool + Types
+- `src/presentation/components/planning/PhasePoolCard.tsx` — NEU
+- `src/presentation/components/planning/ResourcePool.tsx` — Team-View Branch
+- `src/presentation/components/planning/PlanningGrid.tsx` — teamPhasePool + periodLabel
+- `src/presentation/components/planning/EmptyFilterToggles.tsx` — Icon-only
+- `src/presentation/components/planning/WeekNavigation.tsx` — Stripped
+- `src/presentation/components/planning/DndProvider.tsx` — Absence-Filter + Split
+- `src/presentation/components/navigation/DesktopNavigation.tsx` — max-w entfernt
+- `src/presentation/components/planning/index.ts` — PhasePoolCard Export
+
+**Status:** 5 Commits ahead von `origin/main`, nicht gepusht
+
+---
+
 ## 2026-02-13 (Session 29)
 
 ### Session: Bug-Runde 2 — Planung + Prompts für Bug 7, 14, 15

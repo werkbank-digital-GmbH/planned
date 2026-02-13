@@ -4,6 +4,40 @@ Architekturentscheidungen mit Begründung, um Zyklen und Wiederholungen zu verme
 
 ---
 
+## 2026-02-13: MonthGrid — Unified Row Layout (gleicher Fix wie PhaseRow)
+
+**Kontext:** MonthGrid's `MonthPhaseWeekCell` nutzte dasselbe Two-Layer-System wie PhaseRow vor Bug 14: DayCells renderten Single-Day-Cards inline, Multi-Day-Spans waren absolut positioniert darüber. Gleiches Overlap-Problem.
+
+**Entscheidung:** Identisches Unified Row Layout Pattern von PhaseRow übernehmen: DayCells als reine Drop-Targets (absolute, Hintergrund), alle Spans als eigene Grid-Zeilen (relative, Vordergrund) mit `sortedSpans`.
+
+**Begründung:**
+- Konsistenz: Beide Views (Wochen + Monat) nutzen jetzt dasselbe Layout-Pattern
+- Bewährt: PhaseRow-Fix funktioniert seit Bug 14 fehlerfrei
+- Kompakte Anpassung: `min-h-[48px]` statt `min-h-[60px]` für Monatsansicht
+
+**Alternativen verworfen:**
+- Eigenes Layout für MonthGrid → Inkonsistent, doppelter Maintenance-Aufwand
+- Shared Component extrahieren → PhaseRow hat week-spezifische Features (insightStatus, borderColor), MonthPhaseWeekCell hat week-Filterung — zu unterschiedlich
+
+---
+
+## 2026-02-13: Allocation-Splitting um Abwesenheiten herum
+
+**Kontext:** Bei Drag&Drop aus dem Pool in der Monatsansicht wurden Allocations für Mo-Fr erstellt, Abwesenheitstage einfach rausgefiltert. Das ergab eine durchgehende SpanningAssignmentCard mit visueller Lücke am Abwesenheitstag.
+
+**Entscheidung:** `splitDatesAroundAbsences()` Hilfsfunktion splittet die Woche in aufeinanderfolgende Gruppen. Abwesenheitstage sind Trennzeichen. Mo-Fr mit Mi=absent → [Mo,Di] + [Do,Fr]. Die bestehende `groupConsecutiveAllocations`-Utility rendert automatisch 2 separate SpanningAssignmentCards.
+
+**Begründung:**
+- Visuell korrekt: 2 separate Spans statt 1 durchgehende mit Lücke
+- Minimale Code-Änderung: Nur DndProvider betroffen, Rendering-Layer unverändert
+- Zukunftssicher: Funktioniert auch für künftige Multi-Day-Drops in der Wochenansicht
+
+**Alternativen verworfen:**
+- Rendering-Layer anpassen (Spans bei Absence unterbrechen) → Zu komplex, betrifft viele Komponenten
+- Separate Allocations pro Tag erstellen (kein Spanning) → Unnötig, Grouping existiert bereits
+
+---
+
 ## 2026-02-13: Bug 14 — Unified Row Layout statt Two-Layer-System
 
 **Kontext:** PhaseRow nutzte ein Two-Layer-System: DayCells (normal flow) renderten Single-Day-Cards, ein absolut positioniertes Overlay renderte Multi-Day SpanningAssignmentCards. Bei gleichzeitigen Single- und Multi-Day-Allocations am selben Tag überlagerten sich die Karten.

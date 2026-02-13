@@ -371,7 +371,7 @@ export class AsanaService implements IAsanaService {
     // Bereich aus "Zuordnung" Custom Field
     // Default ist 'nicht_definiert', wird nur gesetzt wenn Custom Field einen bekannten Wert hat
     const zuordnungValue = getCustomFieldValue(config.zuordnungFieldId);
-    let bereich: 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert' = 'nicht_definiert';
+    let bereich: 'produktion' | 'montage' | 'externes_gewerk' | 'nicht_definiert' | 'vertrieb' = 'nicht_definiert';
     if (zuordnungValue.enum || zuordnungValue.text) {
       const value = (zuordnungValue.enum || zuordnungValue.text || '').toLowerCase();
       if (value.includes('produktion')) {
@@ -380,6 +380,8 @@ export class AsanaService implements IAsanaService {
         bereich = 'montage';
       } else if (value.includes('extern')) {
         bereich = 'externes_gewerk';
+      } else if (value.includes('vertrieb')) {
+        bereich = 'vertrieb';
       }
     }
 
