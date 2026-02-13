@@ -59,13 +59,6 @@ export default async function CompanySettingsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Unternehmens-Einstellungen</h1>
-        <p className="text-gray-500">
-          Verwalten Sie die Einstellungen Ihres Unternehmens
-        </p>
-      </div>
-
       <CompanyForm tenant={tenant} />
 
       {/* Firmenstandort für Wetter-Fallback */}

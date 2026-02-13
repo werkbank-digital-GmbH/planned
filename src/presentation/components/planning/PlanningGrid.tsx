@@ -142,6 +142,7 @@ export function PlanningGrid() {
     highlightPhaseId,
     monthWeeks,
     monthPoolItems,
+    teamPhasePool,
     slideDirection,
     clearSlideDirection,
   } = usePlanning();
@@ -255,7 +256,7 @@ export function PlanningGrid() {
 
         {/* Resizable Ressourcen-Pool */}
         <ResizablePoolWrapper>
-          <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} />
+          <ResourcePool poolItems={poolItems} weekDates={weekDates} viewMode={viewMode} periodDates={periodDates} teamPhasePool={teamPhasePool} />
         </ResizablePoolWrapper>
       </div>
     );

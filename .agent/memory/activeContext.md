@@ -1,49 +1,70 @@
 # Active Context
 
-## Aktueller Stand (2026-02-13, Session 27)
+## Aktueller Stand (2026-02-13, Session 28+29)
 
 ### Zuletzt Abgeschlossen
 
-**Session 27: Full Feature-Roadmap Completion** ✅ — Commit: `0cb11be`
+**Session 28: Bug-Fix-Runde 1 (12 Bugs)** ✅ — Commit: `dfac02e`
 
-1. **Feature 6: Query Parallelization (5→3 DB-Calls)** ✅
-   - `GetAllocationsForWeekQuery.ts` — `executeProjectCentric()` Methode optimiert
-   - 3 sequentielle Schritte → 2 sequentielle Schritte
-   - 5 DB-Calls → 3 DB-Calls (redundanten `findByIds(userIds)` eliminiert)
-   - `Promise.all([allocations, allUsers, phases])` → dann `absences` separat (braucht allUserIds)
-   - `userMap` aus `allUsers` gefiltert statt extra DB-Call
+12 Planning-UI-Bugs in 4 Arbeitspaketen (WP1-WP4) gefixt:
+1. PoolCard Absence-Badge Overflow → Badge in Header-Row verschoben
+2. Resize Revert-Bug → completingRef Guard + useEffect + 3s Safety Timeout
+3. AssignmentCard "2 Tage" Label → Entfernt (nur in Popover)
+4. AllocationPopover IST-Stunden → IST-Spalte entfernt (IST nur pro Phase, nicht pro Allocation)
+5. AllocationPopover Tageanzahl → Immer sichtbar
+6. ResourcePool Month-Items nur in erster Woche → Availability-Merge über alle Wochen
+7. Rote Border auf Cards mit Absence → `cardConflict` entfernt
+8. AssignmentCard nicht volle Breite → `w-full` in cardBase
+9. Resize-Threshold zu sensitiv → 0.5 → 0.3
+10. Mitarbeiter-Anzeige bei Allokation → DayCell `flex flex-col` + `relative z-[1]` pro Card
+11. Mehrere Allokationen stacking → `flex flex-col gap-1`
+12. Drag-Highlight alle Tage → viewMode-abhängig (Woche=1 Tag, Monat=ganze Woche)
 
-2. **Feature 8: Analytics Test Coverage (93 neue Tests)** ✅
-   - 6 neue Testdateien erstellt, 695 Tests gesamt (vorher 602)
-   - `src/domain/analytics/__tests__/test-helpers.ts` — Shared Factories (createSnapshot, createBurnRate, createPhaseInsight)
-   - `src/domain/analytics/__tests__/BurnRateCalculator.test.ts` — 19 Tests (calculate, trend, hasEnoughData)
-   - `src/domain/analytics/__tests__/ProgressionCalculator.test.ts` — 32 Tests (calculate, determineStatus, dataQuality, workingDays)
-   - `src/domain/analytics/__tests__/ProjectInsightAggregator.test.ts` — 16 Tests (aggregate, status priority)
-   - `src/application/use-cases/analytics/__tests__/GeneratePhaseSnapshotsUseCase.test.ts` — 9 Tests (Supabase mock chains)
-   - `src/application/use-cases/analytics/__tests__/GenerateInsightsUseCase.test.ts` — 17 Tests (basic + enhanced scenarios)
+**Session 29 (aktuelle): Bug-Runde 2 — Planung + Prompts** ✅
 
-**Vorherige Sessions:** 4 Planning UI Features ✅, MonthGrid Rewrite ✅, Resize-Snap ✅, Team View ✅, Resize-Performance ✅, BF-3 ✅, TD-1–TD-6 ✅, P1–P6 ✅
+Drei neue Bugs gesammelt, geplant und Prompts geschrieben:
 
-### Feature-Roadmap (vom User priorisiert)
+1. **Bug 7: Team View ResourcePool** — Pool zeigt Mitarbeiter statt Phasen
+   - Plan + Prompt geschrieben
+   - 4 Dateien (PlanningContext, PhasePoolCard NEU, ResourcePool, PlanningGrid)
+   - DnD-Handler existiert bereits
 
-1. ~~MonthGrid Alignment mit ResourcePool~~ ✅ (Session 25)
-2. ~~Drop Highlight covers whole allocation period~~ ✅ (Session 26)
-3. ~~Buttons to hide empty phases/projects~~ ✅ (Session 26)
-4. ~~Header height consistency~~ ✅ (Session 26)
-5. ~~Smooth Slide-Transition~~ ✅ (Session 26)
-6. ~~Query Parallelization (5→3 DB-Calls)~~ ✅ (Session 27)
-7. ~~usePlanning() Extraction / ResizeActionsContext~~ ✅ (Session 27)
-8. ~~Test Coverage für Analytics~~ ✅ (Session 27, 93 neue Tests)
+2. **Bug 14: Multi-Day/Single-Day Card Overlap** — PhaseRow Two-Layer-System → Unified Row Layout
+   - Plan + Prompt geschrieben
+   - Bug 14 bereits implementiert (PhaseRow.tsx modifiziert — DayCell = reine Drop-Targets, alle Spans als eigene Zeilen)
+   - 1 Datei (PhaseRow)
 
-**Roadmap KOMPLETT** ✅ — Nächste Schritte: Tech Debt oder neue Features
+3. **Bug 15: Navigation Redesign** — Horizontale Nav → Hamburger-Menü mit Sheet
+   - Plan + Prompt geschrieben
+   - shadcn Sheet muss installiert werden (`pnpx shadcn@latest add sheet`)
+   - 7+ Dateien (DesktopNav→AppHeader, layout.tsx, Settings-Layout, SettingsTabs löschen, Page-Titles entfernen)
+
+### Status der Prompts
+
+| Prompt | Bug | Status | Parallel? |
+|--------|-----|--------|-----------|
+| A | Bug 7 (Team Pool) | Prompt geschrieben, bereit | ✅ |
+| B | Bug 14 (Card Overlap) | BEREITS IMPLEMENTIERT (PhaseRow.tsx modifiziert) | — |
+| C | Bug 15 (Nav Redesign) | Prompt geschrieben, bereit | ✅ |
+
+**Bug 14 ist bereits umgesetzt** — PhaseRow.tsx wurde modifiziert (DayCell ohne Cards, Unified Row Layout mit sortedSpans).
+
+**Prompt A und C können parallel ausgeführt werden** — keine Datei-Konflikte.
+
+### Nächste Schritte
+
+1. Prompt A (Bug 7) und Prompt C (Bug 15) an ausführende Agenten geben
+2. Review der Ergebnisse
+3. Alle drei Bugs zusammen committen und pushen
+4. ggf. weitere Bug-Runde
 
 ### Tech Debt
 
-- **Große Dateien aufteilen** - PlanningContext.tsx (1000!), GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775)
-- **PlanningContext Splitting** - Month-Logik (monthWeeks, monthProjectRows, monthPoolItems, Multi-Week-Fetch) in eigenen `useMonthData()` Hook extrahieren
-- **Fehlende Tests** - Repositories, Weather/Geocoding Services (Analytics Domain + Use Cases jetzt abgedeckt ✅)
-- **ProjectInsightAggregator.totalPlan** - Hardcoded 0 (TODO: aus Snapshots aggregieren)
-- **BF-3 offen:** Progress-Reporting während langer Syncs (nice-to-have)
+- **Große Dateien aufteilen** - PlanningContext.tsx (1000+!), GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775)
+- **PlanningContext Splitting** - Month-Logik in eigenen `useMonthData()` Hook
+- **Fehlende Tests** - Repositories, Weather/Geocoding Services
+- **ProjectInsightAggregator.totalPlan** - Hardcoded 0
+- **BF-3 offen:** Progress-Reporting während langer Syncs
 
 ### Abgeschlossene Pläne (frühere Sessions)
 
@@ -75,7 +96,8 @@
 23. **Session 23: Resize-Bugs Fix (Revert + Animation)** ✅ - Commit: `de007e9`
 24. **Session 24: Asana Integration UI-Bug Fix** ✅ - Commit: `de007e9`
 25. **Session 25: Resize-Snap + MonthGrid Rewrite** ✅ - Commits: `e7667ed`, `db6bfce`
-26. **Session 26+27: Full Feature-Roadmap** ✅ - Commit: `0cb11be` (Drop Highlight, Hide Empty, Sticky Headers, Slide-Transition, Query Parallelization, ResizeActionsContext, Analytics Tests)
+26. **Session 26+27: Full Feature-Roadmap** ✅ - Commit: `0cb11be`
+27. **Session 28: Bug-Fix-Runde 1 (12 Bugs)** ✅ - Commit: `dfac02e`
 
 </details>
 
@@ -89,10 +111,5 @@
 - **Analytics:** Claude Haiku für KI-Textgenerierung mit regelbasiertem Fallback
 - **Analytics:** Snapshots um 05:00 UTC, Insights um 05:15 UTC, Wetter um 05:30 UTC
 - **Wetter:** Open-Meteo API (kostenlos, DSGVO), Nominatim Geocoding (1 req/s)
-- **Wetter:** Firmenstandort als Fallback wenn Projekt keine Adresse hat
-- **Wetter:** Cache auf 2 Dezimalstellen gerundet (~1km Genauigkeit)
-- **D7:** SuggestedAction Types: assign_user, reschedule, alert, none
-- **D7:** QuickAssignDialog für schnelle Mitarbeiter-Zuweisung aus Insights
-- **BF-1:** Insights-Performance: Batch-Snapshots, Tenant-Level Availability, Parallel Claude Calls (10er Batches)
-- **BF-2:** Geocoding: 3-Stufen-Fallback (Freitext → PLZ+Stadt → Strukturiert)
-- **BF-4:** Wetter-UI: grid-cols-7 Layout, Inline-Daten, Legende im Header
+- **Bug 14:** Unified Row Layout statt Two-Layer (DayCells = Drop-Targets, alle Spans als Zeilen)
+- **Bug 15:** Hamburger-Menü mit Sheet statt horizontaler Navigation, kein Logo

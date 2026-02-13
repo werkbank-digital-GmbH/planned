@@ -1,17 +1,18 @@
 'use client';
 
 import { useDroppable } from '@dnd-kit/core';
-import { Trash2, Truck, Users } from 'lucide-react';
+import { Layers, Trash2, Truck, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PoolItem } from '@/application/queries';
 
 import { Card, CardContent } from '@/presentation/components/ui/card';
-import type { ViewMode } from '@/presentation/contexts/PlanningContext';
+import type { TeamPhasePoolGroup, ViewMode } from '@/presentation/contexts/PlanningContext';
 
 import { formatDateISO } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 
+import { PhasePoolCard } from './PhasePoolCard';
 import { PoolCard } from './PoolCard';
 import type { MonthWeek } from './utils/month-week-utils';
 
@@ -26,6 +27,8 @@ interface ResourcePoolProps {
   periodDates: Date[];
   /** Nur für Monatsansicht: die Wochen des Monats */
   monthWeeks?: MonthWeek[];
+  /** Nur für Teamansicht: Phasen gruppiert nach Projekt */
+  teamPhasePool?: TeamPhasePoolGroup[];
 }
 
 const PROJECT_COLUMN_WIDTH = 280; // px — gleich wie MonthGrid
@@ -87,7 +90,7 @@ function isAvailableInMonthWeek(
  * - Verfügbarkeits-Indikatoren pro Tag/Woche
  * - Drop-Zone zum Löschen von Allocations
  */
-export function ResourcePool({ poolItems, weekDates, viewMode, periodDates: _periodDates, monthWeeks }: ResourcePoolProps) {
+export function ResourcePool({ poolItems, weekDates, viewMode, periodDates: _periodDates, monthWeeks, teamPhasePool }: ResourcePoolProps) {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
 
   // Drop-Zone für Allocation-Löschung
@@ -113,8 +116,65 @@ export function ResourcePool({ poolItems, weekDates, viewMode, periodDates: _per
   const userCount = poolItems.filter((p) => p.type === 'user').length;
   const resourceCount = poolItems.filter((p) => p.type === 'resource').length;
 
-  // Wochen- und Teamansicht: Nach Tagen gruppieren (aligned mit PlanningGrid)
-  if (viewMode === 'week' || viewMode === 'team') {
+  // Teamansicht: Phasen gruppiert nach Projekt (statt Mitarbeiter)
+  if (viewMode === 'team') {
+    const phasePool = teamPhasePool ?? [];
+    return (
+      <Card
+        ref={setNodeRef}
+        className={cn(
+          'bg-gray-50 transition-all h-full flex flex-col',
+          showDeleteHint && 'ring-2 ring-red-400 bg-red-50',
+          isDraggingAllocation && !isOver && 'ring-1 ring-dashed ring-gray-300'
+        )}
+      >
+        <CardContent className="p-0 flex-1 overflow-hidden min-h-0">
+          <div className="grid grid-cols-[280px_1fr] h-full">
+            {/* Linke Spalte: Label */}
+            <div className="border-r border-gray-200 p-3 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                {showDeleteHint ? (
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Layers className="h-4 w-4 text-gray-500" />
+                )}
+                <span className="text-sm font-medium text-gray-700">
+                  {showDeleteHint ? 'Hier ablegen zum Entfernen' : 'Phasen'}
+                </span>
+              </div>
+            </div>
+
+            {/* Rechte Spalte: Phasen gruppiert nach Projekt */}
+            <div className="p-3 overflow-y-auto">
+              {phasePool.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {phasePool.map(group => (
+                    <div key={group.projectId}>
+                      <div className="text-xs font-medium text-gray-500 mb-1 truncate">
+                        {group.projectName}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {group.phases.map(phase => (
+                          <PhasePoolCard key={phase.phaseId} phase={phase} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500 text-sm">
+                  Keine aktiven Phasen in dieser Woche
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Wochenansicht: Nach Tagen gruppieren (aligned mit PlanningGrid)
+  if (viewMode === 'week') {
     return (
       <Card
         ref={setNodeRef}

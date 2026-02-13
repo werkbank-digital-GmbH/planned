@@ -51,12 +51,11 @@ export default async function PlanungPage({ searchParams }: PlanungPageProps) {
           <SelectionProvider>
             <EmptyFilterProvider>
             <PlanningDndProvider>
-              {/* Vollständige Höhe: 100vh - Navigation (64px) - Main Padding (48px) */}
-              <div className="flex flex-col h-[calc(100vh-112px)]">
+              {/* Vollständige Höhe: 100vh - Navigation (56px) - Main Padding (48px) */}
+              <div className="flex flex-col h-[calc(100vh-104px)]">
                 {/* Header - feste Höhe */}
                 <div className="flex items-center justify-between shrink-0 pb-4">
                   <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-bold">Planung</h1>
                     <ViewModeToggle />
                     <EmptyFilterToggles />
                   </div>

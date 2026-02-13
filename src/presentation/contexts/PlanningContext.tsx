@@ -54,6 +54,25 @@ interface PlanningFilters {
 
 export type ViewMode = 'week' | 'month' | 'team';
 
+export interface TeamPhasePoolItem {
+  projectId: string;
+  projectName: string;
+  projectStatus: string;
+  phaseId: string;
+  phaseName: string;
+  bereich: string;
+  budgetHours?: number;
+  plannedHours?: number;
+  isActiveThisWeek: boolean;
+}
+
+export interface TeamPhasePoolGroup {
+  projectId: string;
+  projectName: string;
+  projectStatus: string;
+  phases: TeamPhasePoolItem[];
+}
+
 /**
  * Optimistic Allocation für lokale Updates vor Server-Response.
  */
@@ -117,6 +136,7 @@ interface PlanningContextValue {
 
   // Computed - Team View
   allUserRows: UserRowData[];
+  teamPhasePool: TeamPhasePoolGroup[];
 
   // Computed - Legacy (für Rückwärtskompatibilität)
   userRows: UserRowData[];
@@ -833,6 +853,33 @@ export function PlanningProvider({
     );
   }, [weekData, userRows, poolItems]);
 
+  // Computed: Team Phase Pool (Phasen gruppiert nach Projekt für Team View)
+  const teamPhasePool = useMemo((): TeamPhasePoolGroup[] => {
+    if (!weekData) return [];
+
+    return weekData.projectRows
+      .filter(row => row.phases.some(p => p.isActiveThisWeek))
+      .map(row => ({
+        projectId: row.project.id,
+        projectName: row.project.name,
+        projectStatus: row.project.status,
+        phases: row.phases
+          .filter(p => p.isActiveThisWeek)
+          .map(p => ({
+            projectId: row.project.id,
+            projectName: row.project.name,
+            projectStatus: row.project.status,
+            phaseId: p.phase.id,
+            phaseName: p.phase.name,
+            bereich: p.phase.bereich,
+            budgetHours: p.phase.budgetHours,
+            plannedHours: p.phase.plannedHours,
+            isActiveThisWeek: p.isActiveThisWeek,
+          })),
+      }))
+      .sort((a, b) => a.projectName.localeCompare(b.projectName, 'de'));
+  }, [weekData]);
+
   // Computed: Days (Legacy-Unterstützung)
   const days = useMemo((): DayData[] => {
     if (!weekData) return [];
@@ -953,6 +1000,7 @@ export function PlanningProvider({
       monthPoolItems,
       isMonthLoading,
       allUserRows,
+      teamPhasePool,
       userRows,
       days,
       summary,
@@ -996,6 +1044,7 @@ export function PlanningProvider({
       monthPoolItems,
       isMonthLoading,
       allUserRows,
+      teamPhasePool,
       userRows,
       days,
       summary,

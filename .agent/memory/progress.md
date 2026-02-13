@@ -1,5 +1,76 @@
 # Progress Log
 
+## 2026-02-13 (Session 29)
+
+### Session: Bug-Runde 2 — Planung + Prompts für Bug 7, 14, 15
+
+**Typ:** Sparring & Planung (kein Code direkt geschrieben)
+
+**Modus:** Sparringspartner — Planung, Review, Prompt-Erstellung für ausführende Agenten
+
+**Abgeschlossen:**
+
+1. **Bug-Sammlung (3 neue Bugs):**
+   - Bug 7: Team View ResourcePool zeigt Mitarbeiter statt Phasen
+   - Bug 14: Multi-Day + Single-Day Cards überlagern sich in PhaseRow
+   - Bug 15: Navigation Redesign — Hamburger-Menü statt horizontale Nav
+
+2. **Codebase-Exploration:**
+   - PhaseRow Two-Layer-Architektur analysiert (DayCell grid + absolute overlay)
+   - allocation-grouping.ts Span-Logik verstanden
+   - DesktopNavigation, SettingsTabs, layout.tsx, Page-Titles inventarisiert
+   - shadcn Sheet existiert noch nicht → muss installiert werden
+
+3. **Pläne geschrieben:**
+   - Bug 7: TeamPhasePool in PlanningContext, PhasePoolCard NEU, ResourcePool Team-Branch
+   - Bug 14: Unified Row Layout — DayCells=Drop-Targets, alle Spans als eigene Grid-Rows
+   - Bug 15: AppHeader mit Sheet-Menü, Settings in Hamburger, Titles entfernen
+
+4. **Prompts für ausführende Agenten:**
+   - Prompt A (Bug 7): Team View ResourcePool mit Phasen
+   - Prompt B (Bug 14): Card Overlap Fix — **bereits implementiert** (PhaseRow.tsx modifiziert)
+   - Prompt C (Bug 15): Navigation Redesign mit Hamburger
+
+**Bug 14 bereits umgesetzt:** PhaseRow.tsx wurde modifiziert — DayCell rendert keine Cards mehr, alle Spans als eigene Zeilen mit gridColumn.
+
+**Plan-File:** `/Users/jonas/.claude/plans/expressive-inventing-engelbart.md`
+
+---
+
+## 2026-02-13 (Session 28)
+
+### Session: Bug-Fix-Runde 1 (12 Bugs in 4 Arbeitspaketen)
+
+**Typ:** Sparring + Review
+
+**Abgeschlossen:**
+
+1. **Bug-Sammlung (13 Bugs total, 12 gefixt):**
+   - Bugs 1-6, 8-13 in WP1-WP4 aufgeteilt
+   - Alle 4 WPs von ausführendem Agent implementiert
+   - Review bestanden, alle korrekt umgesetzt
+
+2. **Review-Ergebnisse:**
+   - TypeScript: ✅
+   - Tests: 691 passed (4 obsolete Tests entfernt, vorher 695)
+   - Alle 12 Bugs korrekt implementiert
+
+3. **Commit + Push:** `dfac02e` auf `origin/main`
+
+**Geänderte Dateien:**
+- `PoolCard.tsx` — Absence-Badge in Header-Row
+- `useAllocationResize.ts` — completingRef Guard, Threshold 0.3
+- `AssignmentCard.tsx` — Span-Label entfernt, w-full
+- `SpanningAssignmentCard.tsx` — Span-Label entfernt
+- `AllocationPopover.tsx` — IST entfernt, Tageanzahl immer sichtbar
+- `DndProvider.tsx` — viewMode-abhängiges Highlight
+- `PhaseRow.tsx` — DayCell flex-col, relative z-[1]
+- `ResourcePool.tsx` — Absolute Badge entfernt
+- `PlanningContext.tsx` — monthPoolItems Availability-Merge
+- `assignment-card.styles.ts` — w-full, cardConflict entfernt
+
+---
+
 ## 2026-02-13 (Session 27)
 
 ### Session: Query Parallelization + Analytics Test Coverage

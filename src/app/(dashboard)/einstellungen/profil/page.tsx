@@ -43,11 +43,6 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Mein Profil</h1>
-        <p className="text-gray-500">Verwalten Sie Ihre persönlichen Daten</p>
-      </div>
-
       <ProfileForm user={user} />
 
       <hr />

@@ -50,13 +50,6 @@ export default async function IntegrationenPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Integrationen</h1>
-        <p className="text-gray-500">
-          Verbinden Sie externe Dienste mit planned.
-        </p>
-      </div>
-
       {/* 1. Asana Verbindung (immer sichtbar) */}
       <AsanaConnectionCard isConnected={isConnected} workspaceId={workspaceId ?? undefined} />
 

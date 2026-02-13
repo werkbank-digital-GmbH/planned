@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation';
 
+import type { UserRole } from '@/domain/types';
+
 import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
-import { DesktopNavigation } from '@/presentation/components/navigation';
+import { AppHeader } from '@/presentation/components/navigation';
 import { SyncNotificationListener } from '@/presentation/components/notifications/SyncNotificationListener';
 import { SyncToast } from '@/presentation/components/notifications/SyncToast';
 
@@ -10,7 +12,7 @@ import { SyncToast } from '@/presentation/components/notifications/SyncToast';
  * Dashboard Layout
  *
  * Prüft ob der User eingeloggt ist und leitet zur Login-Seite weiter wenn nicht.
- * Zeigt die Desktop-Navigation für Admin und Planer.
+ * Zeigt den AppHeader mit Hamburger-Menü.
  */
 export default async function DashboardLayout({
   children,
@@ -30,7 +32,7 @@ export default async function DashboardLayout({
   // User-Daten aus der Datenbank holen
   const { data: userData } = await supabase
     .from('users')
-    .select('full_name, avatar_url')
+    .select('full_name, avatar_url, role')
     .eq('auth_id', authUser.id)
     .single();
 
@@ -40,9 +42,11 @@ export default async function DashboardLayout({
     avatarUrl: userData?.avatar_url,
   };
 
+  const userRole = (userData?.role as UserRole) ?? 'gewerblich';
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <DesktopNavigation user={user} />
+      <AppHeader user={user} userRole={userRole} />
       <main className="p-6">{children}</main>
 
       {/* Sync Notifications */}

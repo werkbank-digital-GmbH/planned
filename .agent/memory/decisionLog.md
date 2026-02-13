@@ -4,6 +4,44 @@ Architekturentscheidungen mit Begründung, um Zyklen und Wiederholungen zu verme
 
 ---
 
+## 2026-02-13: Bug 14 — Unified Row Layout statt Two-Layer-System
+
+**Kontext:** PhaseRow nutzte ein Two-Layer-System: DayCells (normal flow) renderten Single-Day-Cards, ein absolut positioniertes Overlay renderte Multi-Day SpanningAssignmentCards. Bei gleichzeitigen Single- und Multi-Day-Allocations am selben Tag überlagerten sich die Karten.
+
+**Entscheidung:** Unified Row-Based Layout. DayCells werden zu reinen Drop-Targets (absolut positioniert, Hintergrund). ALLE Spans (single + multi-day) werden als eigene Grid-Rows im Vordergrund gerendert, jede mit `grid-cols-5` und `gridColumn` Positionierung.
+
+**Begründung:**
+- Jede Allocation hat ihre eigene Zeile → physisch unmöglich sich zu überlagern
+- DayCells behalten volle Drop-Zone-Funktionalität und Highlight-Styling
+- `pointer-events-none` auf Container, `pointer-events-auto` auf Cards — Click/Drag funktioniert wie vorher
+- Sortierung: `startDayIndex` aufsteigend, `spanDays` absteigend → breitere Spans zuerst
+
+**Alternativen verworfen:**
+- z-index Trick (Multi-Day über Single-Day) → Überdeckung bleibt, nur Reihenfolge ändert sich
+- Flex-Wrap mit Gap → Breite nicht zuverlässig über Tage steuerbar
+- Separate Rows per User → Komplexe Gruppierungslogik, overkill
+
+---
+
+## 2026-02-13: Bug 15 — Hamburger-Menü mit Sheet statt horizontaler Navigation
+
+**Kontext:** Horizontale Navigation mit Logo nahm dauerhaft Platz ein. User wollte kompaktere Navigation mit allen Items (inkl. Settings-Subtabs) in einem Menü.
+
+**Entscheidung:** AppHeader mit Hamburger-Button (Sheet von links) + dynamischem Seitentitel. SettingsTabs entfällt als separate Komponente — Settings-Navigation ist Teil des Hamburger-Menüs.
+
+**Begründung:**
+- Spart vertikalen Platz (1 Zeile statt 2 bei Settings)
+- Alle Navigation an einem Ort — kein Kontextwechsel zwischen Haupt-Nav und Settings-Tabs
+- Sheet (shadcn) ist konsistent mit dem bestehenden UI-Framework
+- Dynamischer Seitentitel eliminiert doppelte H1-Tags auf Pages
+
+**Alternativen verworfen:**
+- Sidebar (permanent sichtbar) → Nimmt horizontalen Platz weg, App ist breitenoptimiert
+- Dropdown-Menü statt Sheet → Zu klein für 10+ Items inkl. User-Info
+- Tab-Navigation beibehalten und nur Logo entfernen → User wollte explizit Hamburger
+
+---
+
 ## 2026-02-13: Query Parallelization — findByIds eliminiert, 3 statt 5 DB-Calls
 
 **Kontext:** `executeProjectCentric()` in `GetAllocationsForWeekQuery.ts` machte 5 DB-Calls in 3 sequentiellen Schritten: allocations → allUsers → `Promise.all([findByIds(userIds), phases, absences])`. `findByIds(userIds)` war redundant, da `allUsers` bereits alle User enthält.

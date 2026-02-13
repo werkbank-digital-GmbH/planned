@@ -31,13 +31,6 @@ export default async function RessourcenPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold">Ressourcen-Verwaltung</h1>
-        <p className="text-gray-500">
-          Verwalten Sie Maschinen, Fahrzeuge und andere Ressourcen
-        </p>
-      </div>
-
       <div className="rounded-lg border bg-gray-50 p-8 text-center">
         <p className="text-gray-500">
           Diese Funktion wird in einer späteren Version implementiert.
