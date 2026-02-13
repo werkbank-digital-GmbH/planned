@@ -4,7 +4,7 @@ import type { UserRole } from '@/domain/types';
 
 import { createServerSupabaseClient } from '@/infrastructure/supabase';
 
-import { AppHeader } from '@/presentation/components/navigation';
+import { FloatingNav } from '@/presentation/components/navigation';
 import { SyncNotificationListener } from '@/presentation/components/notifications/SyncNotificationListener';
 import { SyncToast } from '@/presentation/components/notifications/SyncToast';
 
@@ -12,7 +12,7 @@ import { SyncToast } from '@/presentation/components/notifications/SyncToast';
  * Dashboard Layout
  *
  * Prüft ob der User eingeloggt ist und leitet zur Login-Seite weiter wenn nicht.
- * Zeigt den AppHeader mit Hamburger-Menü.
+ * Zeigt die FloatingNav mit schwebendem Hamburger-Menü.
  */
 export default async function DashboardLayout({
   children,
@@ -46,8 +46,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader user={user} userRole={userRole} />
-      <main className="p-6">{children}</main>
+      <FloatingNav user={user} userRole={userRole} />
+      <main className="p-4">{children}</main>
 
       {/* Sync Notifications */}
       <SyncNotificationListener />

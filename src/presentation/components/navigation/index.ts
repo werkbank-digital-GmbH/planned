@@ -1,1 +1,1 @@
-export { AppHeader } from './DesktopNavigation';
+export { FloatingNav } from './DesktopNavigation';
