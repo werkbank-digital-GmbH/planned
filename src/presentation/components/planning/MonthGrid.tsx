@@ -4,7 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 
-import type { AllocationWithDetails, PhaseRowData, ProjectRowData } from '@/application/queries';
+import type { PhaseRowData, ProjectRowData } from '@/application/queries';
 
 import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
@@ -19,10 +19,7 @@ import { AssignmentCard } from './AssignmentCard';
 import { HoursDisplay } from './HoursDisplay';
 import { SpanningAssignmentCard } from './SpanningAssignmentCard';
 import { createPhaseDropZoneId } from './types/dnd';
-import {
-  groupConsecutiveAllocations,
-  getSpannedAllocationIds,
-} from './utils/allocation-grouping';
+import { groupConsecutiveAllocations } from './utils/allocation-grouping';
 import type { MonthWeek } from './utils/month-week-utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -134,11 +131,7 @@ interface MonthDayCellProps {
   projectId: string;
   date: Date;
   dayIndex: number;
-  allocations: AllocationWithDetails[];
   isActiveThisWeek: boolean;
-  spannedAllocationIds: Set<string>;
-  phaseStartDate?: string;
-  phaseEndDate?: string;
 }
 
 function MonthDayCell({
@@ -146,11 +139,7 @@ function MonthDayCell({
   projectId,
   date,
   dayIndex,
-  allocations,
   isActiveThisWeek,
-  spannedAllocationIds,
-  phaseStartDate,
-  phaseEndDate,
 }: MonthDayCellProps) {
   const dateKey = formatDateISO(date);
   const droppableId = createPhaseDropZoneId(phaseId, projectId, date);
@@ -170,37 +159,20 @@ function MonthDayCell({
   // Multi-Day Drop Highlight aus DragHighlightContext
   const highlightStatus = useDayHighlightStatus(phaseId, dateKey);
 
-  // Filtere Allocations die Teil eines Multi-Day-Spans sind
-  const singleAllocations = allocations.filter((a) => !spannedAllocationIds.has(a.id));
-
   return (
     <div
       ref={setNodeRef}
       data-day-cell
       data-day-index={dayIndex}
       className={cn(
-        'min-h-[48px] p-0.5 border-r border-gray-200 last:border-r-0',
-        'flex flex-wrap gap-0.5 content-start',
-        // Multi-Day Highlight (Priorität über isOver)
+        'h-full border-r border-gray-200 last:border-r-0',
         highlightStatus === 'valid' && 'bg-green-50 ring-2 ring-inset ring-green-400',
         highlightStatus === 'absence' && 'bg-orange-50 ring-2 ring-inset ring-orange-400',
-        // Cursor-Zelle Fallback (nur wenn kein Multi-Day-Highlight)
         !highlightStatus && isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-300',
-        // Hintergrund-Farben (nur wenn kein Highlight aktiv)
         !highlightStatus && isToday && 'bg-amber-50',
         !highlightStatus && !isActiveThisWeek && 'bg-gray-50'
       )}
-    >
-      {singleAllocations.map((allocation) => (
-        <AssignmentCard
-          key={allocation.id}
-          allocation={allocation}
-          dayIndex={dayIndex}
-          phaseStartDate={phaseStartDate}
-          phaseEndDate={phaseEndDate}
-        />
-      ))}
-    </div>
+    />
   );
 }
 
@@ -277,7 +249,7 @@ interface MonthPhaseWeekCellProps {
 function MonthPhaseWeekCell({ phase, week, projectId }: MonthPhaseWeekCellProps) {
   // Filtere dayAllocations auf diese Woche
   const weekDayAllocations = useMemo(() => {
-    const filtered: Record<string, AllocationWithDetails[]> = {};
+    const filtered: typeof phase.dayAllocations = {};
     for (const date of week.weekDates) {
       const key = formatDateISO(date);
       if (phase.dayAllocations[key]) {
@@ -293,56 +265,62 @@ function MonthPhaseWeekCell({ phase, week, projectId }: MonthPhaseWeekCellProps)
     [weekDayAllocations, week.weekDates]
   );
 
-  const spannedAllocationIds = useMemo(() => getSpannedAllocationIds(spans), [spans]);
-  const multiDaySpans = useMemo(() => spans.filter((s) => s.spanDays > 1), [spans]);
+  // Sortiert: nach startDayIndex, bei Gleichheit breitere zuerst
+  const sortedSpans = useMemo(
+    () => [...spans].sort((a, b) =>
+      a.startDayIndex - b.startDayIndex || b.spanDays - a.spanDays
+    ),
+    [spans]
+  );
 
   return (
     <div className="relative border-r-2 border-gray-300 last:border-r-0">
-      {/* 5-col sub-grid for day cells */}
-      <div className="grid grid-cols-5">
-        {week.weekDates.map((date, dayIndex) => {
-          const dateKey = formatDateISO(date);
-          const allocations = weekDayAllocations[dateKey] ?? [];
-
-          return (
-            <MonthDayCell
-              key={dateKey}
-              phaseId={phase.phase.id}
-              projectId={projectId}
-              date={date}
-              dayIndex={dayIndex}
-              allocations={allocations}
-              isActiveThisWeek={phase.isActiveThisWeek}
-              spannedAllocationIds={spannedAllocationIds}
-              phaseStartDate={phase.phase.startDate?.toISOString()}
-              phaseEndDate={phase.phase.endDate?.toISOString()}
-            />
-          );
-        })}
+      {/* Hintergrund: DayCells als reine Drop-Targets (absolut, füllt gesamte Fläche) */}
+      <div className="absolute inset-0 grid grid-cols-5">
+        {week.weekDates.map((date, dayIndex) => (
+          <MonthDayCell
+            key={formatDateISO(date)}
+            phaseId={phase.phase.id}
+            projectId={projectId}
+            date={date}
+            dayIndex={dayIndex}
+            isActiveThisWeek={phase.isActiveThisWeek}
+          />
+        ))}
       </div>
 
-      {/* Multi-Day Spans (absolut positioniert über den Zellen) */}
-      {multiDaySpans.length > 0 && (
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="grid grid-cols-5 h-full">
-            {multiDaySpans.map((span) => (
+      {/* Vordergrund: Alle Spans als eigene Zeilen (kein Overlap!) */}
+      <div className="relative z-[1] pointer-events-none min-h-[48px]">
+        {sortedSpans.length === 0 ? (
+          <div className="h-[48px]" />
+        ) : (
+          sortedSpans.map((span) => (
+            <div key={span.allocations[0].id} className="grid grid-cols-5">
               <div
-                key={span.allocations[0].id}
-                className="pointer-events-auto p-0.5"
+                className="p-0.5 pointer-events-auto"
                 style={{
                   gridColumn: `${span.startDayIndex + 1} / span ${span.spanDays}`,
                 }}
               >
-                <SpanningAssignmentCard
-                  span={span}
-                  phaseStartDate={phase.phase.startDate?.toISOString()}
-                  phaseEndDate={phase.phase.endDate?.toISOString()}
-                />
+                {span.spanDays === 1 ? (
+                  <AssignmentCard
+                    allocation={span.allocations[0]}
+                    dayIndex={span.startDayIndex}
+                    phaseStartDate={phase.phase.startDate?.toISOString()}
+                    phaseEndDate={phase.phase.endDate?.toISOString()}
+                  />
+                ) : (
+                  <SpanningAssignmentCard
+                    span={span}
+                    phaseStartDate={phase.phase.startDate?.toISOString()}
+                    phaseEndDate={phase.phase.endDate?.toISOString()}
+                  />
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
