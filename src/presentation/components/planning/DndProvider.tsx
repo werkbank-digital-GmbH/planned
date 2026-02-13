@@ -432,7 +432,26 @@ function PlanningDndProviderInner({ children }: PlanningDndProviderProps) {
             // Monatsansicht: Alle 5 Werktage der Woche des Drop-Datums
             const monday = getMonday(dropZone.date);
             const weekDatesForMonth = getWeekDates(monday);
-            datesToCreate = weekDatesForMonth.map((d) => formatDateISO(d));
+            const allDates = weekDatesForMonth.map((d) => formatDateISO(d));
+
+            // Absence-Tage rausfiltern (gleiche Logik wie in handleDragOver)
+            if (dragData.availability) {
+              const availabilityMap = new Map<string, string>();
+              for (const a of dragData.availability) {
+                availabilityMap.set(a.date, a.status);
+              }
+              datesToCreate = allDates.filter((dateStr) => {
+                const status = availabilityMap.get(dateStr);
+                return status !== 'absence';
+              });
+            } else {
+              datesToCreate = allDates;
+            }
+
+            // Keine verfügbaren Tage → abbrechen
+            if (datesToCreate.length === 0) {
+              return;
+            }
           } else {
             // Wochenansicht: Nur der Drop-Tag
             datesToCreate = [formatDateISO(dropZone.date)];
