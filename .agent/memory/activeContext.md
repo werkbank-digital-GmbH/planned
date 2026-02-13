@@ -1,66 +1,39 @@
 # Active Context
 
-## Aktueller Stand (2026-02-13, Session 28+29)
+## Aktueller Stand (2026-02-13, Session 30)
 
 ### Zuletzt Abgeschlossen
 
-**Session 28: Bug-Fix-Runde 1 (12 Bugs)** ✅ — Commit: `dfac02e`
+**Session 29+30: Bug-Runde 2 (3 Bugs) — Implementiert + Reviewed + Pushed** ✅ — Commit: `b494dd1`
 
-12 Planning-UI-Bugs in 4 Arbeitspaketen (WP1-WP4) gefixt:
-1. PoolCard Absence-Badge Overflow → Badge in Header-Row verschoben
-2. Resize Revert-Bug → completingRef Guard + useEffect + 3s Safety Timeout
-3. AssignmentCard "2 Tage" Label → Entfernt (nur in Popover)
-4. AllocationPopover IST-Stunden → IST-Spalte entfernt (IST nur pro Phase, nicht pro Allocation)
-5. AllocationPopover Tageanzahl → Immer sichtbar
-6. ResourcePool Month-Items nur in erster Woche → Availability-Merge über alle Wochen
-7. Rote Border auf Cards mit Absence → `cardConflict` entfernt
-8. AssignmentCard nicht volle Breite → `w-full` in cardBase
-9. Resize-Threshold zu sensitiv → 0.5 → 0.3
-10. Mitarbeiter-Anzeige bei Allokation → DayCell `flex flex-col` + `relative z-[1]` pro Card
-11. Mehrere Allokationen stacking → `flex flex-col gap-1`
-12. Drag-Highlight alle Tage → viewMode-abhängig (Woche=1 Tag, Monat=ganze Woche)
+1. **Bug 7: Team View ResourcePool** — Pool zeigt jetzt Phasen gruppiert nach Projekt
+   - `PlanningContext`: `teamPhasePool` computed property
+   - `PhasePoolCard.tsx` NEU: Draggable Phasen-Karte
+   - `ResourcePool.tsx`: Eigener Team-View Branch
+   - `PlanningGrid.tsx`: `teamPhasePool` Prop durchgereicht
 
-**Session 29 (aktuelle): Bug-Runde 2 — Planung + Prompts** ✅
+2. **Bug 14: Card Overlap** — Unified Row Layout statt Two-Layer
+   - `PhaseRow.tsx`: DayCells = absolute Drop-Targets, alle Spans als eigene Grid-Rows
+   - `sortedSpans` sortiert nach Position, Single-Day → AssignmentCard, Multi-Day → SpanningAssignmentCard
 
-Drei neue Bugs gesammelt, geplant und Prompts geschrieben:
+3. **Bug 15: Navigation Redesign** — Hamburger-Menü mit Sheet
+   - `DesktopNavigation.tsx` → `AppHeader` Export (Dateiname noch alt)
+   - `sheet.tsx` NEU (shadcn/ui)
+   - `layout.tsx`: `userRole` Prop, `h-14` statt `h-16`
+   - `SettingsTabs.tsx` gelöscht, Settings-Layout vereinfacht
+   - 7 Pages: `<h1>` Titel + Subtitles entfernt
 
-1. **Bug 7: Team View ResourcePool** — Pool zeigt Mitarbeiter statt Phasen
-   - Plan + Prompt geschrieben
-   - 4 Dateien (PlanningContext, PhasePoolCard NEU, ResourcePool, PlanningGrid)
-   - DnD-Handler existiert bereits
-
-2. **Bug 14: Multi-Day/Single-Day Card Overlap** — PhaseRow Two-Layer-System → Unified Row Layout
-   - Plan + Prompt geschrieben
-   - Bug 14 bereits implementiert (PhaseRow.tsx modifiziert — DayCell = reine Drop-Targets, alle Spans als eigene Zeilen)
-   - 1 Datei (PhaseRow)
-
-3. **Bug 15: Navigation Redesign** — Horizontale Nav → Hamburger-Menü mit Sheet
-   - Plan + Prompt geschrieben
-   - shadcn Sheet muss installiert werden (`pnpx shadcn@latest add sheet`)
-   - 7+ Dateien (DesktopNav→AppHeader, layout.tsx, Settings-Layout, SettingsTabs löschen, Page-Titles entfernen)
-
-### Status der Prompts
-
-| Prompt | Bug | Status | Parallel? |
-|--------|-----|--------|-----------|
-| A | Bug 7 (Team Pool) | Prompt geschrieben, bereit | ✅ |
-| B | Bug 14 (Card Overlap) | BEREITS IMPLEMENTIERT (PhaseRow.tsx modifiziert) | — |
-| C | Bug 15 (Nav Redesign) | Prompt geschrieben, bereit | ✅ |
-
-**Bug 14 ist bereits umgesetzt** — PhaseRow.tsx wurde modifiziert (DayCell ohne Cards, Unified Row Layout mit sortedSpans).
-
-**Prompt A und C können parallel ausgeführt werden** — keine Datei-Konflikte.
+**Guards:** TypeScript ✅ | ESLint ✅ | Tests 691 passed ✅
 
 ### Nächste Schritte
 
-1. Prompt A (Bug 7) und Prompt C (Bug 15) an ausführende Agenten geben
-2. Review der Ergebnisse
-3. Alle drei Bugs zusammen committen und pushen
-4. ggf. weitere Bug-Runde
+1. Nächste Bug-Runde oder Feature-Arbeit
+2. Tech Debt aufräumen (siehe unten)
 
 ### Tech Debt
 
-- **Große Dateien aufteilen** - PlanningContext.tsx (1000+!), GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775)
+- **Dateiname `DesktopNavigation.tsx`** → Rename zu `AppHeader.tsx`
+- **Große Dateien aufteilen** - PlanningContext.tsx (1050+!), GetAllocationsForWeekQuery.ts (829), GenerateInsightsUseCase.ts (775)
 - **PlanningContext Splitting** - Month-Logik in eigenen `useMonthData()` Hook
 - **Fehlende Tests** - Repositories, Weather/Geocoding Services
 - **ProjectInsightAggregator.totalPlan** - Hardcoded 0
@@ -98,6 +71,7 @@ Drei neue Bugs gesammelt, geplant und Prompts geschrieben:
 25. **Session 25: Resize-Snap + MonthGrid Rewrite** ✅ - Commits: `e7667ed`, `db6bfce`
 26. **Session 26+27: Full Feature-Roadmap** ✅ - Commit: `0cb11be`
 27. **Session 28: Bug-Fix-Runde 1 (12 Bugs)** ✅ - Commit: `dfac02e`
+28. **Session 29+30: Bug-Runde 2 (3 Bugs)** ✅ - Commit: `b494dd1`
 
 </details>
 

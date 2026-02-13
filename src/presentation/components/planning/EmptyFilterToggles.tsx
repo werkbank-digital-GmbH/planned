@@ -2,6 +2,11 @@
 
 import { EyeOff, FolderOpen, Layers } from 'lucide-react';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/presentation/components/ui/tooltip';
 import { useEmptyFilter } from '@/presentation/contexts/EmptyFilterContext';
 import { usePlanning } from '@/presentation/contexts/PlanningContext';
 
@@ -64,20 +69,25 @@ interface ToggleButtonProps {
 }
 
 function ToggleButton({ isActive, onClick, icon, activeIcon, label }: ToggleButtonProps) {
+  const tooltipText = isActive ? `${label} einblenden` : `${label} ausblenden`;
+
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors',
-        isActive
-          ? 'bg-gray-100 text-gray-900'
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-      )}
-      aria-pressed={isActive}
-      title={isActive ? `${label} einblenden` : `${label} ausblenden`}
-    >
-      {isActive ? activeIcon : icon}
-      <span className="hidden sm:inline">{label}</span>
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={onClick}
+          className={cn(
+            'flex items-center gap-2 px-2 py-1.5 rounded text-sm font-medium transition-colors',
+            isActive
+              ? 'bg-gray-100 text-gray-900'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          )}
+          aria-pressed={isActive}
+        >
+          {isActive ? activeIcon : icon}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{tooltipText}</TooltipContent>
+    </Tooltip>
   );
 }

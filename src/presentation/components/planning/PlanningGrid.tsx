@@ -28,14 +28,18 @@ const SCROLLBAR_CLASSES =
 interface GridHeaderProps {
   weekDates: Date[];
   headerLabel?: string;
+  periodLabel?: string;
 }
 
-function GridHeader({ weekDates, headerLabel = 'Projekt / Phase' }: GridHeaderProps) {
+function GridHeader({ weekDates, headerLabel = 'Projekt / Phase', periodLabel }: GridHeaderProps) {
   return (
     <div className="grid grid-cols-[280px_repeat(5,1fr)] border-b bg-gray-50 sticky top-0 z-10">
       {/* Erste Spalte Header */}
-      <div className="border-r border-gray-200 p-3 font-medium text-sm">
-        {headerLabel}
+      <div className="border-r border-gray-200 p-3">
+        {periodLabel && (
+          <div className="font-semibold text-sm">{periodLabel}</div>
+        )}
+        <div className="text-xs text-muted-foreground">{headerLabel}</div>
       </div>
 
       {/* Tages-Header */}
@@ -143,6 +147,7 @@ export function PlanningGrid() {
     monthWeeks,
     monthPoolItems,
     teamPhasePool,
+    periodLabel,
     slideDirection,
     clearSlideDirection,
   } = usePlanning();
@@ -230,7 +235,7 @@ export function PlanningGrid() {
             onTransitionEnd={clearSlideDirection}
           >
             <div className="rounded-lg border bg-white relative">
-              <GridHeader weekDates={weekDates} headerLabel="Mitarbeiter" />
+              <GridHeader weekDates={weekDates} headerLabel="Mitarbeiter" periodLabel={periodLabel} />
 
               {allUserRows.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
@@ -291,7 +296,7 @@ export function PlanningGrid() {
           onTransitionEnd={clearSlideDirection}
         >
           <div className="rounded-lg border bg-white relative">
-            <GridHeader weekDates={weekDates} />
+            <GridHeader weekDates={weekDates} periodLabel={periodLabel} />
 
             <div className="flex flex-col gap-2 p-2">
               {filteredProjectRows.length === 0 ? (
