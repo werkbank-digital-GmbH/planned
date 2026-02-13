@@ -74,6 +74,49 @@ export function PlanningDndProvider({ children }: PlanningDndProviderProps) {
   );
 }
 
+/**
+ * Splittet ein Datum-Array in aufeinanderfolgende Gruppen.
+ * Abwesenheitstage werden als Trennzeichen verwendet.
+ *
+ * Beispiel: ['Mo','Di','Mi','Do','Fr'] mit Mi=absence → [['Mo','Di'], ['Do','Fr']]
+ */
+function splitDatesAroundAbsences(
+  allDates: string[],
+  availability?: Array<{ date: string; status: string }>
+): string[][] {
+  if (!availability || availability.length === 0) {
+    return [allDates]; // Keine Availability-Info → eine Gruppe
+  }
+
+  const availabilityMap = new Map<string, string>();
+  for (const a of availability) {
+    availabilityMap.set(a.date, a.status);
+  }
+
+  const groups: string[][] = [];
+  let currentGroup: string[] = [];
+
+  for (const dateStr of allDates) {
+    const status = availabilityMap.get(dateStr);
+    if (status === 'absence') {
+      // Abwesenheit → aktuelle Gruppe abschließen
+      if (currentGroup.length > 0) {
+        groups.push(currentGroup);
+        currentGroup = [];
+      }
+    } else {
+      currentGroup.push(dateStr);
+    }
+  }
+
+  // Letzte Gruppe abschließen
+  if (currentGroup.length > 0) {
+    groups.push(currentGroup);
+  }
+
+  return groups;
+}
+
 function PlanningDndProviderInner({ children }: PlanningDndProviderProps) {
   const [activeData, setActiveData] = useState<DragData | null>(null);
   // overData wird für zukünftiges visuelles Feedback verwendet
@@ -425,37 +468,39 @@ function PlanningDndProviderInner({ children }: PlanningDndProviderProps) {
           }
 
           // Wochenansicht: 1 Allocation für den Drop-Tag
-          // Monatsansicht: 5 Allocations für alle Werktage der Woche (Mo-Fr)
-          let datesToCreate: string[];
+          // Monatsansicht: 5 Allocations für alle Werktage der Woche (Mo-Fr),
+          //   gesplittet in Gruppen um Abwesenheiten herum
+          let dateGroups: string[][];
 
           if (viewMode === 'month') {
-            // Monatsansicht: Alle 5 Werktage der Woche des Drop-Datums
             const monday = getMonday(dropZone.date);
             const weekDatesForMonth = getWeekDates(monday);
             const allDates = weekDatesForMonth.map((d) => formatDateISO(d));
 
-            // Absence-Tage rausfiltern (gleiche Logik wie in handleDragOver)
+            // Splitte in Gruppen um Abwesenheiten herum
+            dateGroups = splitDatesAroundAbsences(allDates, dragData.availability);
+          } else {
+            // Wochenansicht: Nur der Drop-Tag (wenn absent → abbrechen)
+            const dropDateStr = formatDateISO(dropZone.date);
             if (dragData.availability) {
               const availabilityMap = new Map<string, string>();
               for (const a of dragData.availability) {
                 availabilityMap.set(a.date, a.status);
               }
-              datesToCreate = allDates.filter((dateStr) => {
-                const status = availabilityMap.get(dateStr);
-                return status !== 'absence';
-              });
-            } else {
-              datesToCreate = allDates;
+              if (availabilityMap.get(dropDateStr) === 'absence') {
+                return; // Kann hier nicht allokieren
+              }
             }
-
-            // Keine verfügbaren Tage → abbrechen
-            if (datesToCreate.length === 0) {
-              return;
-            }
-          } else {
-            // Wochenansicht: Nur der Drop-Tag
-            datesToCreate = [formatDateISO(dropZone.date)];
+            dateGroups = [[dropDateStr]];
           }
+
+          // Keine verfügbaren Tage → abbrechen
+          if (dateGroups.length === 0 || dateGroups.every(g => g.length === 0)) {
+            return;
+          }
+
+          // Alle Daten aus allen Gruppen zusammen (flattened) für Server-Calls
+          const datesToCreate = dateGroups.flat();
 
           // 1. Optimistisches Update SOFORT - erstelle temporäre IDs
           const tempIds = datesToCreate.map(() => `temp-${crypto.randomUUID()}`);
